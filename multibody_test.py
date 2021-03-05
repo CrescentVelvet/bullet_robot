@@ -12,11 +12,9 @@ p.createMultiBody(0, plane)
 p.resetDebugVisualizerCamera(cameraDistance=1.30, cameraYaw=50.0, cameraPitch=-23.80,
                              cameraTargetPosition=[-0.65, 0.49, -0.25], physicsClientId=physicsClient)
 
-use_1 = 1
 use_2 = 1
 useConstraint = 1
 
-robotPos_1 = [0, 0.00302, 0.37853]
 robotPos_2 = [0, 0, 0]
 jointNameToID_1 = {}
 linkNameToID_1 = {}
