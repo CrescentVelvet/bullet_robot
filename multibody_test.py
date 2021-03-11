@@ -21,15 +21,15 @@ p.loadSDF("stadium.sdf")
 p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
-use_car = 0
 use_robot = 1
+use_car = 1  - use_robot
 pos_robot = [0, 0, 1]
 jointNameToID_robot = {}
 linkNameToID_robot = {}
 revoluteID_robot = []
 
 if use_car:
-    # 加载默认小车
+    # 加载默认小车(相对路径)
     car = p.loadURDF("racecar/racecar.urdf")
     # 设置小车从动轮
     inactive_wheels = [3, 5, 7]
@@ -71,8 +71,8 @@ if use_car:
             p.stepSimulation()
 
 if use_robot:
-    # 加载机器人模型
-    robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
+    # 加载机器人模型(绝对路径)
+    robot_urdf = p.loadURDF(r'/home/zjunlict-vision-1/Desktop/bullet_robot/dancer_urdf_model/model/dancer_urdf_model.URDF',
                             pos_robot,
                             useFixedBase=0,
                             )
@@ -159,13 +159,37 @@ if use_robot:
                             targetPosition=pos_body_head2,
                             force=10
                             )
-        # 控制机器人关节速度
         p.setJointMotorControl2(robot_urdf,
                             jointNameToID_robot['joint_arm_left'],
-                            p.VELOCITY_CONTROL,
-                            targetVelocity=vel_arm_left,
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_arm_left,
                             force=10
                             )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_hand_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_hand_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_arm_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_arm_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_hand_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_hand_right,
+                            force=10
+                            )
+        # 控制机器人关节速度
+        # p.setJointMotorControl2(robot_urdf,
+        #                     jointNameToID_robot['joint_arm_left'],
+        #                     p.VELOCITY_CONTROL,
+        #                     targetVelocity=vel_arm_left,
+        #                     force=10
+        #                     )
         # 实时仿真
         if useRealTimeSim == 0:
             p.stepSimulation()
