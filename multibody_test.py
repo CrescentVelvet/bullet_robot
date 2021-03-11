@@ -106,11 +106,11 @@ if use_robot:
     vel_hand_left_slider    = p.addUserDebugParameter("vel_hand_left", -10, 10, 0)
     vel_arm_right_slider    = p.addUserDebugParameter("vel_arm_right", -10, 10, 0)
     vel_hand_right_slider   = p.addUserDebugParameter("vel_hand_right", -10, 10, 0)
-    # vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, 0)
-    # vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, 0)
-    # vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, 0)
-    # vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, 0)
-    # vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, 0)
+    vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, 0)
+    vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, 0)
+    vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, 0)
+    vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, 0)
+    vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, 0)
     vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, 0)
     vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, 0)
     vel_leg3_left_slider    = p.addUserDebugParameter("vel_leg3_left", -10, 10, 0)
@@ -128,11 +128,11 @@ if use_robot:
         vel_hand_left   = p.readUserDebugParameter(vel_hand_left_slider)
         vel_arm_right   = p.readUserDebugParameter(vel_arm_right_slider)
         vel_hand_right  = p.readUserDebugParameter(vel_hand_right_slider)
-        # vel_body_hip    = p.readUserDebugParameter(vel_body_hip_slider)
-        # vel_body_hip_left   = p.readUserDebugParameter(vel_body_hip_left_slider)
-        # vel_body_hip2_left  = p.readUserDebugParameter(vel_body_hip2_left_slider)
-        # vel_body_hip_right  = p.readUserDebugParameter(vel_body_hip_right_slider)
-        # vel_body_hip2_right = p.readUserDebugParameter(vel_body_hip2_right_slider)
+        vel_body_hip    = p.readUserDebugParameter(vel_body_hip_slider)
+        vel_body_hip_left   = p.readUserDebugParameter(vel_body_hip_left_slider)
+        vel_body_hip2_left  = p.readUserDebugParameter(vel_body_hip2_left_slider)
+        vel_body_hip_right  = p.readUserDebugParameter(vel_body_hip_right_slider)
+        vel_body_hip2_right = p.readUserDebugParameter(vel_body_hip2_right_slider)
         vel_leg_left    = p.readUserDebugParameter(vel_leg_left_slider)
         vel_leg2_left   = p.readUserDebugParameter(vel_leg2_left_slider)
         vel_leg3_left   = p.readUserDebugParameter(vel_leg3_left_slider)
@@ -181,6 +181,84 @@ if use_robot:
                             jointNameToID_robot['joint_hand_right'],
                             p.POSITION_CONTROL,
                             targetPosition=vel_hand_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_body_hip'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_body_hip,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_body_hip_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_body_hip_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_body_hip2_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_body_hip2_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_body_hip_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_body_hip_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_body_hip2_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_body_hip2_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg2_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg2_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg3_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg3_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg4_left'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg4_left,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg2_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg2_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg3_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg3_right,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_leg4_right'],
+                            p.POSITION_CONTROL,
+                            targetPosition=vel_leg4_right,
                             force=10
                             )
         # 控制机器人关节速度

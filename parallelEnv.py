@@ -1,12 +1,10 @@
 import math
-
 import gym
 import numpy as np
 import pybullet as p
 import pybullet_data
 from gym import spaces
 from gym.utils import seeding
-
 
 class ParallelEnv(gym.Env):
 
