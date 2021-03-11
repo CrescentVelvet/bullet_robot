@@ -101,13 +101,47 @@ if use_robot:
                         textColorRGB = [1, 0, 0])
     # 设置控制滑块，参数分别是最小值，最大值，当前值
     pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, 0)
+    pos_body_head2_slider   = p.addUserDebugParameter("pos_body_head2", -10, 10, 0)
     vel_arm_left_slider     = p.addUserDebugParameter("vel_arm_left", -10, 10, 0)
+    vel_hand_left_slider    = p.addUserDebugParameter("vel_hand_left", -10, 10, 0)
+    vel_arm_right_slider    = p.addUserDebugParameter("vel_arm_right", -10, 10, 0)
+    vel_hand_right_slider   = p.addUserDebugParameter("vel_hand_right", -10, 10, 0)
+    # vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, 0)
+    # vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, 0)
+    # vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, 0)
+    # vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, 0)
+    # vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, 0)
+    vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, 0)
+    vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, 0)
+    vel_leg3_left_slider    = p.addUserDebugParameter("vel_leg3_left", -10, 10, 0)
+    vel_leg4_left_slider    = p.addUserDebugParameter("vel_leg4_left", -10, 10, 0)
+    vel_leg_right_slider    = p.addUserDebugParameter("vel_leg_right", -10, 10, 0)
+    vel_leg2_right_slider   = p.addUserDebugParameter("vel_leg2_right", -10, 10, 0)
+    vel_leg3_right_slider   = p.addUserDebugParameter("vel_leg3_right", -10, 10, 0)
+    vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, 0)
     reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
     while True:
         # 读取控制滑块数据
-        pos_body_head = p.readUserDebugParameter(pos_body_head_slider)
-        vel_arm_left = p.readUserDebugParameter(vel_arm_left_slider)
-        reset_all = p.readUserDebugParameter(reset_all_slider)
+        pos_body_head   = p.readUserDebugParameter(pos_body_head_slider)
+        pos_body_head2  = p.readUserDebugParameter(pos_body_head2_slider)
+        vel_arm_left    = p.readUserDebugParameter(vel_arm_left_slider)
+        vel_hand_left   = p.readUserDebugParameter(vel_hand_left_slider)
+        vel_arm_right   = p.readUserDebugParameter(vel_arm_right_slider)
+        vel_hand_right  = p.readUserDebugParameter(vel_hand_right_slider)
+        # vel_body_hip    = p.readUserDebugParameter(vel_body_hip_slider)
+        # vel_body_hip_left   = p.readUserDebugParameter(vel_body_hip_left_slider)
+        # vel_body_hip2_left  = p.readUserDebugParameter(vel_body_hip2_left_slider)
+        # vel_body_hip_right  = p.readUserDebugParameter(vel_body_hip_right_slider)
+        # vel_body_hip2_right = p.readUserDebugParameter(vel_body_hip2_right_slider)
+        vel_leg_left    = p.readUserDebugParameter(vel_leg_left_slider)
+        vel_leg2_left   = p.readUserDebugParameter(vel_leg2_left_slider)
+        vel_leg3_left   = p.readUserDebugParameter(vel_leg3_left_slider)
+        vel_leg4_left   = p.readUserDebugParameter(vel_leg4_left_slider)
+        vel_leg_right   = p.readUserDebugParameter(vel_leg_right_slider)
+        vel_leg2_right  = p.readUserDebugParameter(vel_leg2_right_slider)
+        vel_leg3_right  = p.readUserDebugParameter(vel_leg3_right_slider)
+        vel_leg4_right  = p.readUserDebugParameter(vel_leg4_right_slider)
+        reset_all       = p.readUserDebugParameter(reset_all_slider)
         # 全部复位
         if reset_all < 0:
             for joint_name in jointNameToID_robot:
@@ -117,6 +151,12 @@ if use_robot:
                             jointNameToID_robot['joint_body_head'],
                             p.POSITION_CONTROL,
                             targetPosition=pos_body_head,
+                            force=10
+                            )
+        p.setJointMotorControl2(robot_urdf,
+                            jointNameToID_robot['joint_body_head2'],
+                            p.POSITION_CONTROL,
+                            targetPosition=pos_body_head2,
                             force=10
                             )
         # 控制机器人关节速度
