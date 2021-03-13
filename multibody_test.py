@@ -71,8 +71,8 @@ if use_car:
             p.stepSimulation()
 
 if use_robot:
-    # 加载机器人模型(绝对路径)
-    robot_urdf = p.loadURDF(r'/home/zjunlict-vision-1/Desktop/bullet_robot/dancer_urdf_model/model/dancer_urdf_model.URDF',
+    # 加载机器人模型(相对路径)
+    robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             pos_robot,
                             useFixedBase=0,
                             )
