@@ -6,7 +6,7 @@ import pybullet_data
 from gym import spaces
 from gym.utils import seeding
 
-class ParallelEnv(gym.Env):
+class RobotEnv(gym.Env):
 
     def __init__(self, render=False):
         self.robotPos = [0, 0, 0]

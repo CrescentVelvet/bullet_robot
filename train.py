@@ -1,6 +1,6 @@
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "2"
-import environment
+import pleg.envs.environment
 import gym
 from stable_baselines3 import DDPG
 from stable_baselines3.common.vec_env import DummyVecEnv
@@ -14,7 +14,7 @@ params = {'learning_rate': 1e-5,
           'policy_kwargs': dict(net_arch=[256, 256, 256])}
 
 # 环境初始化
-env = gym.make('pleg-v0', render=True)
+env = gym.make('MyEnv-v0', render=True)
 
 # 创建代理
 agent = DDPG('MlpPolicy', DummyVecEnv([lambda: env]), **params)
