@@ -9,19 +9,23 @@ from gym.utils import seeding
 class ParallelEnv(gym.Env):
 
     def __init__(self, render=False):
-        self.robotPos_1 = [0, 0.00302, 0.27853]
-        self.robotPos_2 = [0, 0, 0]
-        self.jointNameToID_1 = {}
-        self.linkNameToID_1 = {}
-        self.revoluteID_1 = []
-        self.jointNameToID_2 = {}
-        self.linkNameToID_2 = {}
-        self.revoluteID_2 = []
+        self.robotPos = [0, 0, 0]
+        self.jointNameToID_robot = {}
+        self.linkNameToID = {}
+        self.revoluteID = []
         self._observation = []
-        self.action_space = spaces.Discrete(9)  # TODO
-        self.observation_space = spaces.Box(np.array([-math.pi, -math.pi, -5]),
-                                            np.array([math.pi, math.pi, 5]))  # TODO
+        self._envStepCounter = 0
+        # 设置单步时间sec
+        self.time_step = 0.01
 
+        action_dim = 12
+        self._action_bound = math.pi
+        action_high = np.array([self._action_bound] * action_dim)
+        self.action_space = spaces.Box(-action_high, action_high)
+        self.observation_space = spaces.Box(low=-math.pi, high=math.pi, shape=(1, 33))  # TODO
+        # self.action_space = spaces.Discrete(9)  # TODO
+        # self.observation_space = spaces.Box(np.array([-math.pi, -math.pi, -5]),
+        #                                     np.array([math.pi, math.pi, 5]))  # TODO
         if render:
             self.physicsClient = p.connect(p.GUI)
         else:
@@ -41,40 +45,30 @@ class ParallelEnv(gym.Env):
         self._observation = self._compute_observation()
         reward = self._compute_reward()
         done = self._compute_done()
-
         self._envStepCounter += 1
-
         return np.array(self._observation), reward, done, {}
 
     def _reset(self):
         p.resetSimulation()
-        p.setGravity(0, 0, -10)  # m/s^2
-        p.setTimeStep(0.01)  # sec
-        p.loadURDF("plane.urdf")
-        self.robot_1 = self._load_robot_1()
-        self.robot_2 = self._load_robot_2()
+        # 设置重力m/s^2
+        p.setGravity(0, 0, -10)
+        # 设置单步时间sec
+        p.setTimeStep(self.time_step)
+        # 加载默认地面
+        # p.loadURDF("plane.urdf")
+        # 加载足球场地面
+        p.loadSDF("stadium.sdf")
+        # 加载机器人模型
+        self.robot_urdf = self._load_robot()
         self._add_constraint()
-        # for joint_name in self.jointNameToID_1:
-        #     p.resetJointState(self.robot_1, self.jointNameToID_1[joint_name], 0)
-        # for joint_name in self.jointNameToID_2:
-        #     p.resetJointState(self.robot_2, self.jointNameToID_2[joint_name], 0)
         self._observation = self._compute_observation()
         return np.array(self._observation)
 
     def _assign_throttle(self, action):
-        dv = 0.1
-        deltav = [-10. * dv, -5. * dv, -2. * dv, -0.1 * dv, 0, 0.1 * dv, 2. * dv, 5. * dv, 10. * dv][action]
-        vt = clamp(self.vt + deltav, -self.maxV, self.maxV)
-        self.vt = vt
-
-        p.setJointMotorControl2(bodyUniqueId=self.robot_1,
-                                jointIndex=self.jointNameToID_1['J_R_0'],
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['J_R_0'],
                                 controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=vt)
-        p.setJointMotorControl2(bodyUniqueId=self.botId,
-                                jointIndex=1,
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=-vt)
+                                targetVelocity=action[0])
 
     def _compute_observation(self):
         pass

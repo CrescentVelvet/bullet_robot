@@ -97,7 +97,7 @@ if use_robot:
     p.addUserDebugText('base_robot',
                         [0, 0, 0],
                         parentObjectUniqueId = robot_urdf,
-                        parentLinkIndex = i,
+                        parentLinkIndex = -1,
                         textColorRGB = [1, 0, 0])
     # 设置控制滑块，参数分别是最小值，最大值，当前值
     pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, 0)
