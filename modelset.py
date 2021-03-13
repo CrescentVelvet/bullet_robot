@@ -146,7 +146,7 @@ if use_robot:
         if reset_all < 0:
             for joint_name in jointNameToID_robot:
                 p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
-        # 控制机器人关节位置
+        # 设置关节控制器
         p.setJointMotorControl2(robot_urdf,
                             jointNameToID_robot['joint_body_head'],
                             p.POSITION_CONTROL,

@@ -19,13 +19,13 @@ class ParallelEnv(gym.Env):
         self.time_step = 0.01
 
         action_dim = 12
-        self._action_bound = math.pi
+        self._action_bound = 1
         action_high = np.array([self._action_bound] * action_dim)
         self.action_space = spaces.Box(-action_high, action_high)
-        self.observation_space = spaces.Box(low=-math.pi, high=math.pi, shape=(1, 33))  # TODO
-        # self.action_space = spaces.Discrete(9)  # TODO
-        # self.observation_space = spaces.Box(np.array([-math.pi, -math.pi, -5]),
-        #                                     np.array([math.pi, math.pi, 5]))  # TODO
+        observation_dim = 36
+        self._observation_bound = math.pi
+        observation_high = np.array([self._observation_bound] * observation_dim)
+        self.observation_space = spaces.Box(-observation_high, observation_high)
         if render:
             self.physicsClient = p.connect(p.GUI)
         else:
@@ -40,7 +40,8 @@ class ParallelEnv(gym.Env):
         return [seed]
 
     def _step(self, action):
-        self._assign_throttle(action)
+        # 设置关节控制器
+        self._set_controler(action)
         p.stepSimulation()
         self._observation = self._compute_observation()
         reward = self._compute_reward()
@@ -64,10 +65,13 @@ class ParallelEnv(gym.Env):
         self._observation = self._compute_observation()
         return np.array(self._observation)
 
-    def _assign_throttle(self, action):
+    # 设置关节控制器
+    def _set_controler(self, action):
+        action = action * math.pi
+        print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
-                                jointIndex=self.jointNameToID_robot['J_R_0'],
-                                controlMode=p.VELOCITY_CONTROL,
+                                jointIndex=self.jointNameToID_robot['joint_arm_left'],
+                                controlMode=p.POSITION_CONTROL,
                                 targetVelocity=action[0])
 
     def _compute_observation(self):
