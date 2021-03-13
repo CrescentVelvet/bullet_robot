@@ -61,7 +61,6 @@ class ParallelEnv(gym.Env):
         p.loadSDF("stadium.sdf")
         # 加载机器人模型
         self.robot_urdf = self._load_robot()
-        self._add_constraint()
         self._observation = self._compute_observation()
         return np.array(self._observation)
 
@@ -73,147 +72,88 @@ class ParallelEnv(gym.Env):
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
                                 controlMode=p.POSITION_CONTROL,
                                 targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_hand_left'],
+                                controlMode=p.POSITION_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_arm_right'],
+                                controlMode=p.POSITION_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_hand_right'],
+                                controlMode=p.POSITION_CONTROL,
+                                targetVelocity=action[0])
 
+    # 计算observation
     def _compute_observation(self):
-        pass
+        states = [p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_hand_left']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_right']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_hand_right'])]
+        obs = []
+        for state in states:
+            obs.append(state[0])
+            obs.append(state[1])  # 0 for pos, 1 for vel
+        # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+        cube_pos, cube_orn = p.getBasePositionAndOrientation(self.robot_urdf)
+        # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
+        cube_euler = p.getEulerFromQuaternion(cube_orn)
+        linear, angular = p.getBaseVelocity(self.robot_urdf)
+        # print('cube_euler', cube_euler)
+        # print('cube_pos', cube_pos)
+        # print('linear', linear)
+        # print('angular', angular)
+        obs.append(cube_pos[0])
+        obs.append(cube_pos[1])
+        obs.append(cube_pos[2])
+        obs.append(cube_euler[0])
+        obs.append(cube_euler[1])
+        obs.append(cube_euler[2])
+        obs.append(linear[0])
+        obs.append(linear[1])
+        obs.append(linear[2])
+        obs.append(angular[0])
+        obs.append(angular[1])
+        obs.append(angular[2])
+        return obs
 
+    # 计算reward
     def _compute_reward(self):
-        pass
+        # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+        robot_pos, robot_orn = p.getBasePositionAndOrientation(self.robot_urdf)
+        # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
+        robot_euler = p.getEulerFromQuaternion(robot_orn)
+        # 设置reward为机器人的z坐标
+        # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
+        reward = robot_pos[2] * 10
+        print('reward', reward)
+        return reward
 
+    # 计算done
     def _compute_done(self):
-        pass
+        # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+        robot_pos, _ = p.getBasePositionAndOrientation(self.robot_urdf)
+        return self._envStepCounter >= 1500
 
     def _render(self, mode='human', close=False):
         pass
 
-    def _load_robot_1(self):
-
-        robot_1 = p.loadURDF(r'leg-1/urdf/leg-1.urdf',
-                                  self.robotPos_1,
+    # 加载机器人模型
+    def _load_robot(self):
+        robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
+                                  self.pos_robot,
                                   useFixedBase=0,
                                   )
-        for j in range(p.getNumJoints(self.robot_1)):
-            info = p.getJointInfo(self.robot_1, j)
-            print(info)
-            joint_name = info[1].decode('utf8')
-            joint_type = info[2]
-            if joint_type == p.JOINT_REVOLUTE:
-                self.jointNameToID_1[joint_name] = info[0]
-                self.linkNameToID_1[info[12].decode('UTF-8')] = info[0]
-                self.revoluteID_1.append(j)
-                p.addUserDebugText(str(joint_name),
-                                   [0, 0, 0],
-                                   parentObjectUniqueId=self.robot_1,
-                                   parentLinkIndex=j,
-                                   textColorRGB=[1, 0, 0])
-        p.addUserDebugText("base_1",
-                           [0, 0, 0],
-                           parentObjectUniqueId=self.robot_1,
-                           parentLinkIndex=-1,
-                           textColorRGB=[1, 0, 0])
-        for i in range(len(self.linkNameToID_1)):
-            p.addUserDebugLine([0., 0, 0], [0.1, 0, 0], [1, 0, 0],
-                               parentObjectUniqueId=self.robot_1, parentLinkIndex=i)
-            p.addUserDebugLine([0., 0, 0], [0, 0.1, 0], [0, 1, 0],
-                               parentObjectUniqueId=self.robot_1, parentLinkIndex=i)
-            p.addUserDebugLine([0., 0, 0], [0, 0, 0.1], [0, 0, 1],
-                               parentObjectUniqueId=self.robot_1, parentLinkIndex=i)
-        return robot_1
-
-    def _load_robot_2(self):
-        robot_2 = p.loadURDF(r'leg-2/urdf/leg-2.urdf',
-                                  self.robotPos_2,
-                                  useFixedBase=1,
-                                  )
-
-        for j in range(p.getNumJoints(self.robot_2)):
-            info = p.getJointInfo(self.robot_2, j)
-            joint_name = info[1].decode('utf8')
-            joint_type = info[2]
-            if joint_type == p.JOINT_REVOLUTE:
-                self.jointNameToID_2[joint_name] = info[0]
-                self.linkNameToID_2[info[12].decode('UTF-8')] = info[0]
-                self.revoluteID_2.append(j)
-                p.addUserDebugText(str(joint_name),
-                                   [0, 0, 0],
-                                   parentObjectUniqueId=self.robot_2,
-                                   parentLinkIndex=j,
-                                   textColorRGB=[1, 0, 0])
-
-        p.addUserDebugText("base_2",
-                           [0, 0, 0],
-                           parentObjectUniqueId=self.robot_2,
-                           parentLinkIndex=-1,
-                           textColorRGB=[1, 0, 0])
-
-        for i in range(len(self.linkNameToID_2)):
-            p.addUserDebugLine([0., 0, 0], [0.1, 0, 0], [1, 0, 0],
-                               parentObjectUniqueId=self.robot_2, parentLinkIndex=i)
-            p.addUserDebugLine([0., 0, 0], [0, 0.1, 0], [0, 1, 0],
-                               parentObjectUniqueId=self.robot_2, parentLinkIndex=i)
-            p.addUserDebugLine([0., 0, 0], [0, 0, 0.1], [0, 0, 1],
-                               parentObjectUniqueId=self.robot_2, parentLinkIndex=i)
-
-        return robot_2
-
-    def _add_constraint(self):
-
-        # collisions
-        for i in range(len(self.linkNameToID_1)):
-            for j in range(len(self.linkNameToID_2)):
-                p.setCollisionFilterPair(self.robot_1, self.robot_2, i, j, 0)
-        pass
-
-        constraintNum = 10
-        for i in range(constraintNum):
-            p.createConstraint(parentBodyUniqueId=self.robot_1,
-                               parentLinkIndex=self.linkNameToID_1["L_L_1"],
-                               childBodyUniqueId=self.robot_2,
-                               childLinkIndex=self.linkNameToID_2['L_L_2'],
-                               jointType=p.JOINT_POINT2POINT,
-                               jointAxis=[0, 0, 0],
-                               parentFramePosition=[
-                                   0.055, 0, -0.005 + (0.01 / constraintNum) * i],
-                               childFramePosition=[
-                                   0.03706, 0.00578, -0.005 + (0.01 / constraintNum) * i]
-                               )
-        for i in range(constraintNum):
-            p.createConstraint(parentBodyUniqueId=self.robot_1,
-                               parentLinkIndex=self.linkNameToID_1["L_L_3"],
-                               childBodyUniqueId=self.robot_2,
-                               childLinkIndex=self.linkNameToID_2["L_L_2"],
-                               jointType=p.JOINT_POINT2POINT,
-                               jointAxis=[0, 0, 0],
-                               parentFramePosition=[
-                                   0.06, 0, -0.005 + (0.01 / constraintNum) * i],
-                               childFramePosition=[
-                                   0.07595, -0.03311, -0.005 + (0.01 / constraintNum) * i, ]
-                               )
-        for i in range(constraintNum):
-            p.createConstraint(parentBodyUniqueId=self.robot_1,
-                               parentLinkIndex=self.linkNameToID_1["L_R_1"],
-                               childBodyUniqueId=self.robot_2,
-                               childLinkIndex=self.linkNameToID_2['L_R_2'],
-                               jointType=p.JOINT_POINT2POINT,
-                               jointAxis=[0, 0, 0],
-                               parentFramePosition=[
-                                   0.055, 0, -0.005 + (0.01 / constraintNum) * i],
-                               childFramePosition=[
-                                   0.03706, -0.00578, -0.005 + (0.01 / constraintNum) * i]
-                               )
-        for i in range(constraintNum):
-            p.createConstraint(parentBodyUniqueId=self.robot_1,
-                               parentLinkIndex=self.linkNameToID_1["L_R_3"],
-                               childBodyUniqueId=self.robot_2,
-                               childLinkIndex=self.linkNameToID_2["L_R_2"],
-                               jointType=p.JOINT_POINT2POINT,
-                               jointAxis=[0, 0, 0],
-                               parentFramePosition=[
-                                   0.06, 0, 0.005 - (0.01 / constraintNum) * i],
-                               childFramePosition=[
-                                   0.07595, 0.03311, -0.005 + (0.01 / constraintNum) * i]
-                               )
-
-
-def clamp(n, minn, maxn):
-    return max(min(maxn, n), minn)
+        # 获取机器人关节信息
+        for i in range(p.getNumJoints(robot_urdf)):
+            info = p.getJointInfo(robot_urdf, i)
+            # print(info)
+            jointID = info[0]
+            jointName = info[1].decode('UTF-8')
+            jointType = info[2]
+            if jointType == p.JOINT_REVOLUTE:
+                self.jointNameToID_robot[jointName] = info[0]
+                self.linkNameToID_robot[info[12].decode('UTF-8')] = info[0]
+                self.revoluteID_robot.append(i)
+        return robot_urdf
