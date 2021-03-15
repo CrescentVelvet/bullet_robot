@@ -39,7 +39,7 @@ class RobotEnv(gym.Env):
 
     # 步骤执行函数
     def _step(self, action):
-        # 设置关节控制器
+        # 设置关节控制器(action发送控制参数)
         self._set_controler(action)
         # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
         p.stepSimulation()
@@ -76,7 +76,7 @@ class RobotEnv(gym.Env):
 
     # 计算环境观测值(object)
     def _compute_observation(self):
-        # 获取当前机器人关节信息
+        # 获取当前机器人关节角度与角速度信息
         states = [p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_hand_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_right']),
@@ -91,7 +91,7 @@ class RobotEnv(gym.Env):
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg4_right'])]
         obs = []
         for state in states:
-            # 0是位置信息,1是速度信息
+            # 0是关节角度信息,1是关节角速度信息
             obs.append(state[0])
             obs.append(state[1])
         # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
@@ -126,7 +126,9 @@ class RobotEnv(gym.Env):
         # 设置reward为机器人的z坐标
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
         reward = robot_pos[2]
+        # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
         print('------reward', reward)
+        # print(0)
         return reward
 
     # 计算事件完成情况(bool)
@@ -202,53 +204,84 @@ class RobotEnv(gym.Env):
 
     # 设置关节控制器
     def _set_controler(self, action):
+        # 最大力矩
+        max_force = 500
+        # 最大角速度
+        max_velocity = 30
+        # 控制模式
+        control_mode = p.POSITION_CONTROL
+        # 控制参数
         action = action * math.pi
-        # print('action', action)
+        print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[0],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_hand_left'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[1],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_right'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[2],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_hand_right'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[3],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg_left'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[4],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg2_left'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[5],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg3_left'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[6],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg4_left'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[7],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg_right'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[8],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg2_right'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[9],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg3_right'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[10],
+                                force=max_force,
+                                maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg4_right'],
-                                controlMode=p.VELOCITY_CONTROL,
-                                targetVelocity=action[0])
+                                controlMode=control_mode,
+                                targetVelocity=action[11],
+                                force=max_force,
+                                maxVelocity=max_velocity)
