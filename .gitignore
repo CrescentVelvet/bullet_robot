@@ -1,7 +1,10 @@
 /__pycache__/
 /leg-1/
 /leg-2/
+/log/
 env/__pycache__/*
 env/pleg/__pycache__/*
 env/pleg/envs/__pycache__/*
 env/pleg.egg-info/*
+wyf-pleg.zip
+

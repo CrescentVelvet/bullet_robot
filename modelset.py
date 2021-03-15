@@ -14,16 +14,18 @@ p.setRealTimeSimulation(useRealTimeSim)
 # plane = p.createCollisionShape(p.GEOM_PLANE)
 # p.createMultiBody(0, plane)
 # 加载默认地面
-# p.loadURDF("plane.urdf")
+planeId = p.loadURDF("plane.urdf")
 # 加载足球场地面
-p.loadSDF("stadium.sdf")
+# planeId = p.loadSDF("stadium.sdf")
+# 设置地面摩擦力
+p.changeDynamics(planeId,-1,lateralFriction = 0,spinningFriction = 0,rollingFriction = 0)
 # 设置相机
 p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
 use_robot = 1
 use_car = 1  - use_robot
-pos_robot = [0, 0, 1]
+robotPos = [0, 0, 0.2]
 jointNameToID_robot = {}
 linkNameToID_robot = {}
 revoluteID_robot = []
@@ -74,7 +76,7 @@ if use_car:
 if use_robot:
     # 加载机器人模型(相对路径)
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
-                            pos_robot,
+                            robotPos,
                             useFixedBase=0,
                             )
     # 获取机器人关节信息
@@ -100,26 +102,46 @@ if use_robot:
                         parentObjectUniqueId = robot_urdf,
                         parentLinkIndex = -1,
                         textColorRGB = [1, 0, 0])
+    # 设置机器人直立的关节参数
+    ini_body_head = 0
+    ini_body_head2 = 0
+    ini_arm_left = 1.7
+    ini_hand_left = 0.2
+    ini_arm_right = 0.2
+    ini_hand_right = 0.2
+    ini_body_hip = 0
+    ini_body_hip_left = 0
+    ini_body_hip2_left = 0
+    ini_body_hip_right = 0
+    ini_body_hip2_right = -0.7
+    ini_leg_left = -1.7
+    ini_leg2_left = 1
+    ini_leg3_left = -0.2
+    ini_leg4_left = 0
+    ini_leg_right = 0.5
+    ini_leg2_right = 1
+    ini_leg3_right = -1
+    ini_leg4_right = -1
     # 设置控制滑块，参数分别是最小值，最大值，当前值
-    pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, 0)
-    pos_body_head2_slider   = p.addUserDebugParameter("pos_body_head2", -10, 10, 0)
-    vel_arm_left_slider     = p.addUserDebugParameter("vel_arm_left", -10, 10, 0)
-    vel_hand_left_slider    = p.addUserDebugParameter("vel_hand_left", -10, 10, 0)
-    vel_arm_right_slider    = p.addUserDebugParameter("vel_arm_right", -10, 10, 0)
-    vel_hand_right_slider   = p.addUserDebugParameter("vel_hand_right", -10, 10, 0)
-    vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, 0)
-    vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, 0)
-    vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, 0)
-    vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, 0)
-    vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, 0)
-    vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, 0)
-    vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, 0)
-    vel_leg3_left_slider    = p.addUserDebugParameter("vel_leg3_left", -10, 10, 0)
-    vel_leg4_left_slider    = p.addUserDebugParameter("vel_leg4_left", -10, 10, 0)
-    vel_leg_right_slider    = p.addUserDebugParameter("vel_leg_right", -10, 10, 0)
-    vel_leg2_right_slider   = p.addUserDebugParameter("vel_leg2_right", -10, 10, 0)
-    vel_leg3_right_slider   = p.addUserDebugParameter("vel_leg3_right", -10, 10, 0)
-    vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, 0)
+    pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, ini_body_head)
+    pos_body_head2_slider   = p.addUserDebugParameter("pos_body_head2", -10, 10, ini_body_head2)
+    vel_arm_left_slider     = p.addUserDebugParameter("vel_arm_left", -10, 10, ini_arm_left)
+    vel_hand_left_slider    = p.addUserDebugParameter("vel_hand_left", -10, 10, ini_hand_left)
+    vel_arm_right_slider    = p.addUserDebugParameter("vel_arm_right", -10, 10, ini_arm_right)
+    vel_hand_right_slider   = p.addUserDebugParameter("vel_hand_right", -10, 10, ini_hand_right)
+    vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, ini_body_hip)
+    vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, ini_body_hip_left)
+    vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, ini_body_hip2_left)
+    vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, ini_body_hip_right)
+    vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, ini_body_hip2_right)
+    vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, ini_leg_left)
+    vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, ini_leg2_left)
+    vel_leg3_left_slider    = p.addUserDebugParameter("vel_leg3_left", -10, 10, ini_leg3_left)
+    vel_leg4_left_slider    = p.addUserDebugParameter("vel_leg4_left", -10, 10, ini_leg4_left)
+    vel_leg_right_slider    = p.addUserDebugParameter("vel_leg_right", -10, 10, ini_leg_right)
+    vel_leg2_right_slider   = p.addUserDebugParameter("vel_leg2_right", -10, 10, ini_leg2_right)
+    vel_leg3_right_slider   = p.addUserDebugParameter("vel_leg3_right", -10, 10, ini_leg3_right)
+    vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, ini_leg4_right)
     reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
     while True:
         # 读取控制滑块数据
@@ -145,8 +167,28 @@ if use_robot:
         reset_all       = p.readUserDebugParameter(reset_all_slider)
         # 全部复位
         if reset_all < 0:
-            for joint_name in jointNameToID_robot:
-                p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_head'], ini_body_head)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_head2'], ini_body_head2)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_arm_left'], ini_arm_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_hand_left'], ini_hand_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_arm_right'], ini_arm_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_hand_right'], ini_hand_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip'], ini_body_hip)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_left'], ini_leg_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg3_left'], ini_leg3_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_right'], ini_leg_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg3_right'], ini_leg3_right)
+            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
+            # for joint_name in jointNameToID_robot:
+            #     print(joint_name)
+            #     p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
         # 设置关节控制器
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_body_head'],

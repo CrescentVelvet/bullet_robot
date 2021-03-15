@@ -22,8 +22,8 @@ agent = DDPG('MlpPolicy', DummyVecEnv([lambda: env]), **params)
 # 环境重置
 obs, state, dones = env.reset(), None, [False]
 
-# 为代理训练200000个时间步
-agent.learn(total_timesteps=200000)
+# 为代理训练100000个时间步
+agent.learn(total_timesteps=100000)
 agent.save('wyf-pleg')
 env.close()
 

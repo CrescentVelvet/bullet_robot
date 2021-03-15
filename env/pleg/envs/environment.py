@@ -7,17 +7,17 @@ from gym import spaces
 from gym.utils import seeding
 
 class RobotEnv(gym.Env):
-
+    # 初始化函数
     def __init__(self, render=False):
-        self.robotPos = [0, 0, 0]
+        # 机器人初始位置
+        self.robotPos = [0, 0, 0.2]
         self.jointNameToID_robot = {}
-        self.linkNameToID = {}
-        self.revoluteID = []
+        self.linkNameToID_robot = {}
+        self.revoluteID_robot = []
         self._observation = []
         self._envStepCounter = 0
         # 设置单步时间sec
         self.time_step = 0.01
-
         action_dim = 12
         self._action_bound = 1
         action_high = np.array([self._action_bound] * action_dim)
@@ -39,16 +39,23 @@ class RobotEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    # 步骤执行函数
     def _step(self, action):
         # 设置关节控制器
         self._set_controler(action)
+        # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
         p.stepSimulation()
+        # 计算环境观测值(object)
         self._observation = self._compute_observation()
+        # 计算动作奖励量(float)
         reward = self._compute_reward()
+        # 计算事件完成情况(bool)
         done = self._compute_done()
+        # 时间步数
         self._envStepCounter += 1
         return np.array(self._observation), reward, done, {}
 
+    # 重置环境函数
     def _reset(self):
         p.resetSimulation()
         # 设置重力m/s^2
@@ -56,41 +63,86 @@ class RobotEnv(gym.Env):
         # 设置单步时间sec
         p.setTimeStep(self.time_step)
         # 加载默认地面
-        # p.loadURDF("plane.urdf")
+        planeId = p.loadURDF("plane.urdf")
         # 加载足球场地面
-        p.loadSDF("stadium.sdf")
+        # planeId = p.loadSDF("stadium.sdf")
+        # 设置地面摩擦力(旋转摩擦,横向摩擦,滚动摩擦)
+        p.changeDynamics(planeId,-1,lateralFriction = 0.5,spinningFriction = 0.5,rollingFriction = 0.1)
         # 加载机器人模型
         self.robot_urdf = self._load_robot()
+        # 计算环境观测值(object)
         self._observation = self._compute_observation()
+        # 重置时间步数
+        self._envStepCounter = 0
         return np.array(self._observation)
 
     # 设置关节控制器
     def _set_controler(self, action):
         action = action * math.pi
-        print('action', action)
+        # print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
-                                controlMode=p.POSITION_CONTROL,
+                                controlMode=p.VELOCITY_CONTROL,
                                 targetVelocity=action[0])
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_hand_left'],
-                                controlMode=p.POSITION_CONTROL,
+                                controlMode=p.VELOCITY_CONTROL,
                                 targetVelocity=action[0])
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_right'],
-                                controlMode=p.POSITION_CONTROL,
+                                controlMode=p.VELOCITY_CONTROL,
                                 targetVelocity=action[0])
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_hand_right'],
-                                controlMode=p.POSITION_CONTROL,
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg_left'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg2_left'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg3_left'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg4_left'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg_right'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg2_right'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg3_right'],
+                                controlMode=p.VELOCITY_CONTROL,
+                                targetVelocity=action[0])
+        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+                                jointIndex=self.jointNameToID_robot['joint_leg4_right'],
+                                controlMode=p.VELOCITY_CONTROL,
                                 targetVelocity=action[0])
 
-    # 计算observation
+    # 计算环境观测值(object)
     def _compute_observation(self):
         states = [p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_hand_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_right']),
-                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_hand_right'])]
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_hand_right']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg_left']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg2_left']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg3_left']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg4_left']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg_right']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg2_right']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg3_right']),
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg4_right'])]
         obs = []
         for state in states:
             obs.append(state[0])
@@ -118,7 +170,7 @@ class RobotEnv(gym.Env):
         obs.append(angular[2])
         return obs
 
-    # 计算reward
+    # 计算动作奖励量(float)
     def _compute_reward(self):
         # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
         robot_pos, robot_orn = p.getBasePositionAndOrientation(self.robot_urdf)
@@ -126,15 +178,15 @@ class RobotEnv(gym.Env):
         robot_euler = p.getEulerFromQuaternion(robot_orn)
         # 设置reward为机器人的z坐标
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
-        reward = robot_pos[2] * 10
-        print('reward', reward)
+        reward = robot_pos[2]
+        print('------reward', reward)
         return reward
 
-    # 计算done
+    # 计算事件完成情况(bool)
     def _compute_done(self):
         # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
         robot_pos, _ = p.getBasePositionAndOrientation(self.robot_urdf)
-        return self._envStepCounter >= 1500
+        return self._envStepCounter >= 10000
 
     def _render(self, mode='human', close=False):
         pass
@@ -142,7 +194,7 @@ class RobotEnv(gym.Env):
     # 加载机器人模型
     def _load_robot(self):
         robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
-                                  self.pos_robot,
+                                  self.robotPos,
                                   useFixedBase=0,
                                   )
         # 获取机器人关节信息
@@ -156,4 +208,25 @@ class RobotEnv(gym.Env):
                 self.jointNameToID_robot[jointName] = info[0]
                 self.linkNameToID_robot[info[12].decode('UTF-8')] = info[0]
                 self.revoluteID_robot.append(i)
+                                textColorRGB = [1, 0, 0])
+        # 设置机器人直立的关节参数
+        ini_body_head = 0
+        ini_body_head2 = 0
+        ini_arm_left = 1.7
+        ini_hand_left = 0.2
+        ini_arm_right = 0.2
+        ini_hand_right = 0.2
+        ini_body_hip = 0
+        ini_body_hip_left = 0
+        ini_body_hip2_left = 0
+        ini_body_hip_right = 0
+        ini_body_hip2_right = -0.7
+        ini_leg_left = -1.7
+        ini_leg2_left = 1
+        ini_leg3_left = -0.2
+        ini_leg4_left = 0
+        ini_leg_right = 0.5
+        ini_leg2_right = 1
+        ini_leg3_right = -1
+        ini_leg4_right = -1
         return robot_urdf
