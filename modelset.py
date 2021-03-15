@@ -165,7 +165,7 @@ if use_robot:
         vel_leg3_right  = p.readUserDebugParameter(vel_leg3_right_slider)
         vel_leg4_right  = p.readUserDebugParameter(vel_leg4_right_slider)
         reset_all       = p.readUserDebugParameter(reset_all_slider)
-        # 全部复位
+        # 重置每一个关节的位置
         if reset_all < 0:
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_head'], ini_body_head)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_head2'], ini_body_head2)
