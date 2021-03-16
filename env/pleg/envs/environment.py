@@ -116,7 +116,7 @@ class RobotEnv(gym.Env):
         obs.append(angular[0])
         obs.append(angular[1])
         obs.append(angular[2])
-        print('------obs : ', cube_pos[0])
+        # print('------obs : ', cube_pos[0])
         return obs
 
     # 计算动作奖励量(float)
@@ -129,7 +129,7 @@ class RobotEnv(gym.Env):
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
         reward = robot_pos[2]
         # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
-        # print('------reward : ', reward)
+        print('------reward : ', reward)
         # print(0)
         return reward
 
@@ -207,9 +207,9 @@ class RobotEnv(gym.Env):
     # 设置关节控制器
     def _set_controler(self, action):
         # 最大力矩
-        max_force = 500
+        max_force = 3
         # 最大角速度
-        max_velocity = 30
+        max_velocity = 0.5
         # 控制模式
         control_mode = p.VELOCITY_CONTROL
         # 控制参数
