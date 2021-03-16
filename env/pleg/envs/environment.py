@@ -98,9 +98,10 @@ class RobotEnv(gym.Env):
         cube_pos, cube_orn = p.getBasePositionAndOrientation(self.robot_urdf)
         # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
         cube_euler = p.getEulerFromQuaternion(cube_orn)
+        # 返回世界坐标系中的速度[x,y,z]和角速度[yaw,pitch,roll]
         linear, angular = p.getBaseVelocity(self.robot_urdf)
         # print('cube_euler', cube_euler)
-        # print('cube_pos', cube_pos)
+        print('cube_pos', cube_pos)
         # print('linear', linear)
         # print('angular', angular)
         obs.append(cube_pos[0])
@@ -115,6 +116,7 @@ class RobotEnv(gym.Env):
         obs.append(angular[0])
         obs.append(angular[1])
         obs.append(angular[2])
+        print('------obs : ', cube_pos[0])
         return obs
 
     # 计算动作奖励量(float)
@@ -127,7 +129,7 @@ class RobotEnv(gym.Env):
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
         reward = robot_pos[2]
         # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
-        print('------reward', reward)
+        # print('------reward : ', reward)
         # print(0)
         return reward
 
@@ -209,10 +211,10 @@ class RobotEnv(gym.Env):
         # 最大角速度
         max_velocity = 30
         # 控制模式
-        control_mode = p.POSITION_CONTROL
+        control_mode = p.VELOCITY_CONTROL
         # 控制参数
         action = action * math.pi
-        print('action', action)
+        # print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
                                 controlMode=control_mode,
