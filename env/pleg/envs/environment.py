@@ -36,7 +36,7 @@ class RobotEnv(gym.Env):
         else:
             # 不含可视化的引擎
             self.physicsClient = p.connect(p.DIRECT)
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
+        p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self._seed()
 
     def _seed(self, seed=None):

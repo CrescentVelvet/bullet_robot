@@ -1,15 +1,20 @@
-<?xml version = "1.0"?>
+<?xml version = "1.0" encoding="utf-8"?>
 <robot
   name="dancer_urdf_model">
 <!-- root link -->
-  <link 
+  <!-- <link 
     name="world_link">
   </link>
   <joint
-    name="joint_world" type="fixed">
-    <parent link="world_link"/>
-    <child link="body_chest"/>
-  </joint>
+    name="joint_world" 
+    type="continuous">
+    <parent 
+      link="world_link"/>
+    <child 
+      link="body_chest"/>
+    <axis
+      xyz="0 0 1" />
+  </joint> -->
 <!-- body -->
   <link
     name="body_chest">
