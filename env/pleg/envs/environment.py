@@ -166,48 +166,48 @@ class RobotEnv(gym.Env):
                 self.jointNameToID_robot[jointName] = info[0]
                 self.linkNameToID_robot[info[12].decode('UTF-8')] = info[0]
                 self.revoluteID_robot.append(i)
-        # 设置机器人直立的关节参数
-        ini_body_head = 0
-        ini_body_head2 = 0
-        ini_arm_left = 0
-        ini_hand_left = 0
-        ini_arm_right = 0
-        ini_hand_right = 0
-        ini_body_hip = 0
-        ini_body_hip_left = 0
-        ini_body_hip2_left = 0
-        ini_body_hip_right = 0
-        ini_body_hip2_right = 0
-        ini_leg_left = 0
-        ini_leg2_left = 0
-        ini_leg3_left = 0
-        ini_leg4_left = 0
-        ini_leg_right = 0
-        ini_leg2_right = 0
-        ini_leg3_right = 0
-        ini_leg4_right = 0
-        # 重置每一个关节的位置
-        reset_all = -1
-        if reset_all < 0:
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_head'], ini_body_head)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_head2'], ini_body_head2)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_arm_left'], ini_arm_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_hand_left'], ini_hand_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_arm_right'], ini_arm_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_hand_right'], ini_hand_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip'], ini_body_hip)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg_left'], ini_leg_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg3_left'], ini_leg3_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg_right'], ini_leg_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg3_right'], ini_leg3_right)
-            p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
+        # # 设置机器人直立的关节参数
+        # ini_body_head = 0
+        # ini_body_head2 = 0
+        # ini_arm_left = 0
+        # ini_hand_left = 0
+        # ini_arm_right = 0
+        # ini_hand_right = 0
+        # ini_body_hip = 0
+        # ini_body_hip_left = 0
+        # ini_body_hip2_left = 0
+        # ini_body_hip_right = 0
+        # ini_body_hip2_right = 0
+        # ini_leg_left = 0
+        # ini_leg2_left = 0
+        # ini_leg3_left = 0
+        # ini_leg4_left = 0
+        # ini_leg_right = 0
+        # ini_leg2_right = 0
+        # ini_leg3_right = 0
+        # ini_leg4_right = 0
+        # # 重置每一个关节的位置
+        # reset_all = -1
+        # if reset_all < 0:
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_head'], ini_body_head)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_head2'], ini_body_head2)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_arm_left'], ini_arm_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_hand_left'], ini_hand_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_arm_right'], ini_arm_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_hand_right'], ini_hand_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip'], ini_body_hip)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg_left'], ini_leg_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg3_left'], ini_leg3_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg_right'], ini_leg_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg3_right'], ini_leg3_right)
+        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
         return robot_urdf
 
     # 设置关节控制器

@@ -1322,7 +1322,7 @@
     </sensor>
   </gazebo>
 <!-- transmission -->
-  <gazebo>
+  <!-- <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>/dancer_urdf_model</robotNamespace>
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
@@ -1517,5 +1517,5 @@
       <mechanicalReduction>1</mechanicalReduction>
       <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
     </actuator>
-  </transmission>
+  </transmission> -->
 </robot>
