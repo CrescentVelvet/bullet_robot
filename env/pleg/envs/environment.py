@@ -169,23 +169,23 @@ class RobotEnv(gym.Env):
         # 设置机器人直立的关节参数
         ini_body_head = 0
         ini_body_head2 = 0
-        ini_arm_left = 1.7
-        ini_hand_left = 0.2
-        ini_arm_right = 0.2
-        ini_hand_right = 0.2
+        ini_arm_left = 0
+        ini_hand_left = 0
+        ini_arm_right = 0
+        ini_hand_right = 0
         ini_body_hip = 0
         ini_body_hip_left = 0
         ini_body_hip2_left = 0
         ini_body_hip_right = 0
-        ini_body_hip2_right = -0.7
-        ini_leg_left = -1.7
-        ini_leg2_left = 1
-        ini_leg3_left = -0.2
+        ini_body_hip2_right = 0
+        ini_leg_left = 0
+        ini_leg2_left = 0
+        ini_leg3_left = 0
         ini_leg4_left = 0
-        ini_leg_right = 0.5
-        ini_leg2_right = 1
-        ini_leg3_right = -1
-        ini_leg4_right = -1
+        ini_leg_right = 0
+        ini_leg2_right = 0
+        ini_leg3_right = 0
+        ini_leg4_right = 0
         # 重置每一个关节的位置
         reset_all = -1
         if reset_all < 0:
