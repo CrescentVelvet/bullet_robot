@@ -2,7 +2,7 @@ import time
 import pybullet as p
 import pybullet_data
 
-# 连接物理模拟器
+# 连接物理引擎
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 # 设置重力

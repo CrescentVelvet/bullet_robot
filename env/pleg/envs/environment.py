@@ -15,21 +15,27 @@ class RobotEnv(gym.Env):
         self.linkNameToID_robot = {}
         self.revoluteID_robot = []
         self._observation = []
+        # 设置步数计数器
         self._envStepCounter = 0
         # 设置单步时间sec
         self.time_step = 0.01
+        # 动作空间
         action_dim = 12
         self._action_bound = 1
         action_high = np.array([self._action_bound] * action_dim)
         self.action_space = spaces.Box(-action_high, action_high)
+        # 观测空间
         observation_dim = 36
         self._observation_bound = math.pi
         observation_high = np.array([self._observation_bound] * observation_dim)
         self.observation_space = spaces.Box(-observation_high, observation_high)
+        # 连接物理引擎
         if render:
+            # 包含可视化的引擎
             self.physicsClient = p.connect(p.GUI)
         else:
-            self.physicsClient = p.connect(p.DIRECT)  # non-graphical version
+            # 不含可视化的引擎
+            self.physicsClient = p.connect(p.DIRECT)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())  # used by loadURDF
         self._seed()
 
@@ -207,14 +213,15 @@ class RobotEnv(gym.Env):
     # 设置关节控制器
     def _set_controler(self, action):
         # 最大力矩
-        max_force = 3
+        max_force = 500
         # 最大角速度
-        max_velocity = 0.5
+        max_velocity = 0.02
         # 控制模式
         control_mode = p.VELOCITY_CONTROL
         # 控制参数
-        action = action * math.pi
-        # print('action', action)
+        action = action
+        # action = action * math.pi
+        print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
                                 controlMode=control_mode,
