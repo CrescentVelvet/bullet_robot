@@ -16,27 +16,30 @@ params = {'learning_rate': 1e-5,
 # 创建环境
 env = gym.make('MyEnv-v0', render=True)
 
-# 创建模型(DDPG算法,)
+# 创建模型(DDPG算法,MlpPolicy类型)
 model = DDPG('MlpPolicy', DummyVecEnv([lambda: env]), **params)
 
 # 重置环境
 obs, state, dones = env.reset(), None, [False]
 
 # 构建模型
-model.learn(total_timesteps=1000) # 为代理训练10000个时间步
+model.learn(total_timesteps=10000) # 为代理训练10000个时间步
 
 # 保存模型
-# model.save('wyf-pleg')
+model.save('wyf-pleg')
+env = model.get_env()
+
+# 移除模型
+del model
 
 # 读取模型
-# model = DDPG.load(r'wyf-pleg.zip')
+model = DDPG.load(r'wyf-pleg.zip')
 
+obs = env.reset()
 # 循环训练
-# while True:
-for i in range(1000):
+while True:
     actions, state = model.predict(obs, state=state, mask=dones)
     obs, reward, done, info = env.step(actions)
+    env.render()
     if done:
         obs = env.reset()
-            # break
-env.close()

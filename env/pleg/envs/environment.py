@@ -10,10 +10,9 @@ class RobotEnv(gym.Env):
     # 初始化函数
     def __init__(self, render=False):
         # 机器人初始位置
-        self.robotPos = [0, 0, 0.2]
-        self.jointNameToID_robot = {}
-        self.linkNameToID_robot = {}
-        self.revoluteID_robot = []
+        self.robotPos = [0, 0, 0]       # 机器人坐标系
+        self.jointNameToID_robot = {}   # 机器人关节名
+        self.linkNameToID_robot = {}    # 机器人部件名
         self._observation = []
         # 设置步数计数器
         self._envStepCounter = 0
@@ -165,7 +164,6 @@ class RobotEnv(gym.Env):
             if jointType == p.JOINT_REVOLUTE:
                 self.jointNameToID_robot[jointName] = info[0]
                 self.linkNameToID_robot[info[12].decode('UTF-8')] = info[0]
-                self.revoluteID_robot.append(i)
         # # 设置机器人直立的关节参数
         # ini_body_head = 0
         # ini_body_head2 = 0

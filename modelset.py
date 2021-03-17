@@ -23,12 +23,11 @@ p.changeDynamics(planeId,-1,lateralFriction = 0,spinningFriction = 0,rollingFric
 p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
-use_robot = 1
-use_car = 1  - use_robot
-robotPos = [0, 0, 0.2]
-jointNameToID_robot = {}
-linkNameToID_robot = {}
-revoluteID_robot = []
+use_robot = 1               # 显示机器人模型
+use_car = 1  - use_robot    # 显示小车模型
+robotPos = [0, 0, 0]        # 机器人坐标系
+jointNameToID_robot = {}    # 机器人关节名
+linkNameToID_robot = {}     # 机器人部件名
 
 if use_car:
     # 加载默认小车(相对路径)
@@ -89,7 +88,6 @@ if use_robot:
         if jointType == p.JOINT_REVOLUTE:
             jointNameToID_robot[jointName] = info[0]
             linkNameToID_robot[info[12].decode('UTF-8')] = info[0]
-            revoluteID_robot.append(i)
             # 显示关节名称
             p.addUserDebugText(str(jointName),
                                 [0, 0, 0],
