@@ -34,8 +34,8 @@ del model
 
 # 读取模型
 model = DDPG.load(r'wyf-pleg.zip')
-
 obs = env.reset()
+
 # 循环训练
 while True:
     actions, state = model.predict(obs, state=state, mask=dones)
