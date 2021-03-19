@@ -10,7 +10,8 @@ class RobotEnv(gym.Env):
     # 初始化函数
     def __init__(self, render=False):
         # 机器人初始位置
-        self.robotPos = [0, 0, 0]       # 机器人坐标系
+        self.robotPos = [0, 0, 0]       # 机器人坐标
+        self.robotOri = [0, 1, 0, 1]    # 机器人方向
         self.jointNameToID_robot = {}   # 机器人关节名
         self.linkNameToID_robot = {}    # 机器人部件名
         self._observation = []
@@ -106,7 +107,7 @@ class RobotEnv(gym.Env):
         # 返回世界坐标系中的速度[x,y,z]和角速度[yaw,pitch,roll]
         linear, angular = p.getBaseVelocity(self.robot_urdf)
         # print('cube_euler', cube_euler)
-        print('cube_pos', cube_pos)
+        # print('cube_pos', cube_pos)
         # print('linear', linear)
         # print('angular', angular)
         obs.append(cube_pos[0])
@@ -130,7 +131,7 @@ class RobotEnv(gym.Env):
         robot_pos, robot_orn = p.getBasePositionAndOrientation(self.robot_urdf)
         # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
         robot_euler = p.getEulerFromQuaternion(robot_orn)
-        # 设置reward为机器人的z坐标
+        # 设置reward:头部最高,脚部最低,质心越高越好
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
         reward = robot_pos[2]
         # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
@@ -151,9 +152,11 @@ class RobotEnv(gym.Env):
     # 加载机器人模型
     def _load_robot(self):
         robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
-                                  self.robotPos,
-                                  useFixedBase=0,
-                                  )
+                                basePosition=self.robotPos,
+                                baseOrientation=self.robotOri,
+                                flags=p.URDF_USE_INERTIA_FROM_FILE,
+                                useFixedBase=0,
+                                )
         # 获取机器人关节信息
         for i in range(p.getNumJoints(robot_urdf)):
             info = p.getJointInfo(robot_urdf, i)

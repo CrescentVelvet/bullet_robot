@@ -26,7 +26,7 @@ p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23
 use_robot = 1               # 显示机器人模型
 use_car = 1  - use_robot    # 显示小车模型
 robotPos = [0, 0, 0]        # 机器人坐标
-robotOri = [0, 0, 0, 0]     # 机器人方向
+robotOri = [0, 1, 0, 1]     # 机器人方向
 jointNameToID_robot = {}    # 机器人关节名
 linkNameToID_robot = {}     # 机器人部件名
 
@@ -77,7 +77,7 @@ if use_robot:
     # 加载机器人模型(相对路径)
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition=robotPos,
-                            baseOrientation=robotPos,
+                            baseOrientation=robotOri,
                             flags=p.URDF_USE_INERTIA_FROM_FILE,
                             useFixedBase=0,
                             )
