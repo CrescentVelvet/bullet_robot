@@ -1,3 +1,10 @@
+'''
+Author       : velvet
+Date         : 2021-03-19 21:57:57
+LastEditTime : 2021-03-19 22:19:21
+LastEditors  : velvet
+Description  : 
+'''
 import math
 import gym
 import numpy as np
@@ -133,6 +140,7 @@ class RobotEnv(gym.Env):
         robot_euler = p.getEulerFromQuaternion(robot_orn)
         # 设置reward:头部最高,脚部最低,质心越高越好
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
+        # reward = robot_pos[2]
         reward = robot_pos[2]
         # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
         print('------reward : ', reward)

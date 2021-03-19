@@ -1,3 +1,10 @@
+'''
+Author       : velvet
+Date         : 2021-03-19 21:57:57
+LastEditTime : 2021-03-19 22:29:50
+LastEditors  : velvet
+Description  : 
+'''
 import time
 import pybullet as p
 import pybullet_data
@@ -84,7 +91,7 @@ if use_robot:
     # 获取机器人关节信息
     for i in range(p.getNumJoints(robot_urdf)):
         info = p.getJointInfo(robot_urdf, i)
-        print(info)
+        # print(info)
         jointID = info[0]
         jointName = info[1].decode('UTF-8')
         jointType = info[2]
@@ -331,6 +338,9 @@ if use_robot:
         #                     targetVelocity=vel_arm_left,
         #                     force=10
         #                     )
+        # 查看关节角度与坐标
+        state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
+        print('\r', state, end='', flush=True)
         # 非实时仿真
         if useRealTimeSim == 0:
             # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分

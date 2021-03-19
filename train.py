@@ -1,7 +1,13 @@
+'''
+Author       : velvet
+Date         : 2021-03-19 21:57:57
+LastEditTime : 2021-03-19 22:16:32
+LastEditors  : velvet
+Description  : 
+'''
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 import pleg.envs.environment
-import gym
 import numpy as np
 from stable_baselines3 import DDPG
 # from stable_baselines3.common.vec_env import DummyVecEnv
