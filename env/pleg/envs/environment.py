@@ -27,12 +27,12 @@ class RobotEnv(gym.Env):
         # 设置单步时间sec
         self.time_step = 0.01
         # 动作空间
-        action_dim = 12
+        action_dim = 10
         self._action_bound = 1
         action_high = np.array([self._action_bound] * action_dim)
         self.action_space = spaces.Box(-action_high, action_high)
         # 观测空间
-        observation_dim = 36
+        observation_dim = 32
         self._observation_bound = math.pi
         observation_high = np.array([self._observation_bound] * observation_dim)
         self.observation_space = spaces.Box(-observation_high, observation_high)
@@ -97,11 +97,9 @@ class RobotEnv(gym.Env):
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg2_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg3_left']),
-                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg4_left']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg_right']),
                   p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg2_right']),
-                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg3_right']),
-                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg4_right'])]
+                  p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_leg3_right'])]
         obs = []
         for state in states:
             # 0是关节角度信息,1是关节角速度信息
@@ -141,7 +139,8 @@ class RobotEnv(gym.Env):
         # 设置reward:头部最高,脚部最低,质心越高越好
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
         # reward = robot_pos[2]
-        reward = robot_pos[2]
+        # reward = p.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]
+        reward = p.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['leg3_left'])[4][2] - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['leg3_right'])[4][2]
         # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
         print('------reward : ', reward)
         # print(0)
@@ -149,9 +148,9 @@ class RobotEnv(gym.Env):
 
     # 计算事件完成情况(bool)
     def _compute_done(self):
-        # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
-        robot_pos, _ = p.getBasePositionAndOrientation(self.robot_urdf)
-        return self._envStepCounter >= 10000
+        is_done = p.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['leg3_left'])[4][2] - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['leg3_right'])[4][2]
+        if self._envStepCounter >= 10000 or is_done >= 1.0:
+            return True
 
     # 图形化显示
     def _render(self, mode='human', close=False):
@@ -182,19 +181,12 @@ class RobotEnv(gym.Env):
         # ini_hand_left = 0
         # ini_arm_right = 0
         # ini_hand_right = 0
-        # ini_body_hip = 0
-        # ini_body_hip_left = 0
-        # ini_body_hip2_left = 0
-        # ini_body_hip_right = 0
-        # ini_body_hip2_right = 0
         # ini_leg_left = 0
         # ini_leg2_left = 0
         # ini_leg3_left = 0
-        # ini_leg4_left = 0
         # ini_leg_right = 0
         # ini_leg2_right = 0
         # ini_leg3_right = 0
-        # ini_leg4_right = 0
         # # 重置每一个关节的位置
         # reset_all = -1
         # if reset_all < 0:
@@ -204,19 +196,12 @@ class RobotEnv(gym.Env):
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_hand_left'], ini_hand_left)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_arm_right'], ini_arm_right)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_hand_right'], ini_hand_right)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip'], ini_body_hip)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg_left'], ini_leg_left)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg3_left'], ini_leg3_left)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg_right'], ini_leg_right)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
         #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg3_right'], ini_leg3_right)
-        #     p.resetJointState(robot_urdf, self.jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
         return robot_urdf
 
     # 设置关节控制器
@@ -229,8 +214,8 @@ class RobotEnv(gym.Env):
         control_mode = p.VELOCITY_CONTROL
         # 控制参数
         action = action
-        # action = action * math.pi
-        print('action', action)
+        action = action * math.pi
+        # print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
                                 controlMode=control_mode,
@@ -274,32 +259,20 @@ class RobotEnv(gym.Env):
                                 force=max_force,
                                 maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
-                                jointIndex=self.jointNameToID_robot['joint_leg4_left'],
+                                jointIndex=self.jointNameToID_robot['joint_leg_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[7],
                                 force=max_force,
                                 maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
-                                jointIndex=self.jointNameToID_robot['joint_leg_right'],
+                                jointIndex=self.jointNameToID_robot['joint_leg2_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[8],
                                 force=max_force,
                                 maxVelocity=max_velocity)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
-                                jointIndex=self.jointNameToID_robot['joint_leg2_right'],
-                                controlMode=control_mode,
-                                targetVelocity=action[9],
-                                force=max_force,
-                                maxVelocity=max_velocity)
-        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg3_right'],
                                 controlMode=control_mode,
-                                targetVelocity=action[10],
-                                force=max_force,
-                                maxVelocity=max_velocity)
-        p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
-                                jointIndex=self.jointNameToID_robot['joint_leg4_right'],
-                                controlMode=control_mode,
-                                targetVelocity=action[11],
+                                targetVelocity=action[9],
                                 force=max_force,
                                 maxVelocity=max_velocity)

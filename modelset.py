@@ -6,6 +6,7 @@ LastEditors  : velvet
 Description  : 
 '''
 import time
+import math
 import pybullet as p
 import pybullet_data
 
@@ -36,6 +37,102 @@ robotPos = [0, 0, 0]        # 机器人坐标
 robotOri = [0, 1, 0, 1]     # 机器人方向
 jointNameToID_robot = {}    # 机器人关节名
 linkNameToID_robot = {}     # 机器人部件名
+
+def drawInertiaBox(parentUid, parentLinkIndex, color):
+    dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
+    mass = dyn[0]
+    frictionCoeff = dyn[1]
+    inertia = dyn[2]
+    if (mass > 0):
+        Ixx = inertia[0]
+        Iyy = inertia[1]
+        Izz = inertia[2]
+        boxScaleX = 0.5 * math.sqrt(6 * (Izz + Iyy - Ixx) / mass)
+        boxScaleY = 0.5 * math.sqrt(6 * (Izz + Ixx - Iyy) / mass)
+        boxScaleZ = 0.5 * math.sqrt(6 * (Ixx + Iyy - Izz) / mass)
+        halfExtents = [boxScaleX, boxScaleY, boxScaleZ]
+        pts = [[halfExtents[0], halfExtents[1], halfExtents[2]],
+               [-halfExtents[0], halfExtents[1], halfExtents[2]],
+               [halfExtents[0], -halfExtents[1], halfExtents[2]],
+               [-halfExtents[0], -halfExtents[1], halfExtents[2]],
+               [halfExtents[0], halfExtents[1], -halfExtents[2]],
+               [-halfExtents[0], halfExtents[1], -halfExtents[2]],
+               [halfExtents[0], -halfExtents[1], -halfExtents[2]],
+               [-halfExtents[0], -halfExtents[1], -halfExtents[2]]]
+        p.addUserDebugLine(pts[0],
+                           pts[1],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[1],
+                           pts[3],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[3],
+                           pts[2],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[2],
+                           pts[0],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+
+        p.addUserDebugLine(pts[0],
+                           pts[4],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[1],
+                           pts[5],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[2],
+                           pts[6],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[3],
+                           pts[7],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+
+        p.addUserDebugLine(pts[4 + 0],
+                           pts[4 + 1],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[4 + 1],
+                           pts[4 + 3],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[4 + 3],
+                           pts[4 + 2],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[4 + 2],
+                           pts[4 + 0],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
 
 if use_car:
     # 加载默认小车(相对路径)
@@ -136,19 +233,19 @@ if use_robot:
     ini_hand_left = 0
     ini_arm_right = 0
     ini_hand_right = 0
-    ini_body_hip = 0
-    ini_body_hip_left = 0
-    ini_body_hip2_left = 0
-    ini_body_hip_right = 0
-    ini_body_hip2_right = 0
+    # ini_body_hip = 0
+    # ini_body_hip_left = 0
+    # ini_body_hip2_left = 0
+    # ini_body_hip_right = 0
+    # ini_body_hip2_right = 0
     ini_leg_left = 0
     ini_leg2_left = 0
     ini_leg3_left = 0
-    ini_leg4_left = 0
+    # ini_leg4_left = 0
     ini_leg_right = 0
     ini_leg2_right = 0
     ini_leg3_right = 0
-    ini_leg4_right = 0
+    # ini_leg4_right = 0
     # 设置控制滑块，参数分别是最小值，最大值，当前值
     pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, ini_body_head)
     pos_body_head2_slider   = p.addUserDebugParameter("pos_body_head2", -10, 10, ini_body_head2)
@@ -156,19 +253,19 @@ if use_robot:
     vel_hand_left_slider    = p.addUserDebugParameter("vel_hand_left", -10, 10, ini_hand_left)
     vel_arm_right_slider    = p.addUserDebugParameter("vel_arm_right", -10, 10, ini_arm_right)
     vel_hand_right_slider   = p.addUserDebugParameter("vel_hand_right", -10, 10, ini_hand_right)
-    vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, ini_body_hip)
-    vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, ini_body_hip_left)
-    vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, ini_body_hip2_left)
-    vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, ini_body_hip_right)
-    vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, ini_body_hip2_right)
+    # vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, ini_body_hip)
+    # vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, ini_body_hip_left)
+    # vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, ini_body_hip2_left)
+    # vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, ini_body_hip_right)
+    # vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, ini_body_hip2_right)
     vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, ini_leg_left)
     vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, ini_leg2_left)
     vel_leg3_left_slider    = p.addUserDebugParameter("vel_leg3_left", -10, 10, ini_leg3_left)
-    vel_leg4_left_slider    = p.addUserDebugParameter("vel_leg4_left", -10, 10, ini_leg4_left)
+    # vel_leg4_left_slider    = p.addUserDebugParameter("vel_leg4_left", -10, 10, ini_leg4_left)
     vel_leg_right_slider    = p.addUserDebugParameter("vel_leg_right", -10, 10, ini_leg_right)
     vel_leg2_right_slider   = p.addUserDebugParameter("vel_leg2_right", -10, 10, ini_leg2_right)
     vel_leg3_right_slider   = p.addUserDebugParameter("vel_leg3_right", -10, 10, ini_leg3_right)
-    vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, ini_leg4_right)
+    # vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, ini_leg4_right)
     reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
     while True:
         # 读取控制滑块数据
@@ -178,19 +275,19 @@ if use_robot:
         vel_hand_left   = p.readUserDebugParameter(vel_hand_left_slider)
         vel_arm_right   = p.readUserDebugParameter(vel_arm_right_slider)
         vel_hand_right  = p.readUserDebugParameter(vel_hand_right_slider)
-        vel_body_hip    = p.readUserDebugParameter(vel_body_hip_slider)
-        vel_body_hip_left   = p.readUserDebugParameter(vel_body_hip_left_slider)
-        vel_body_hip2_left  = p.readUserDebugParameter(vel_body_hip2_left_slider)
-        vel_body_hip_right  = p.readUserDebugParameter(vel_body_hip_right_slider)
-        vel_body_hip2_right = p.readUserDebugParameter(vel_body_hip2_right_slider)
+        # vel_body_hip    = p.readUserDebugParameter(vel_body_hip_slider)
+        # vel_body_hip_left   = p.readUserDebugParameter(vel_body_hip_left_slider)
+        # vel_body_hip2_left  = p.readUserDebugParameter(vel_body_hip2_left_slider)
+        # vel_body_hip_right  = p.readUserDebugParameter(vel_body_hip_right_slider)
+        # vel_body_hip2_right = p.readUserDebugParameter(vel_body_hip2_right_slider)
         vel_leg_left    = p.readUserDebugParameter(vel_leg_left_slider)
         vel_leg2_left   = p.readUserDebugParameter(vel_leg2_left_slider)
         vel_leg3_left   = p.readUserDebugParameter(vel_leg3_left_slider)
-        vel_leg4_left   = p.readUserDebugParameter(vel_leg4_left_slider)
+        # vel_leg4_left   = p.readUserDebugParameter(vel_leg4_left_slider)
         vel_leg_right   = p.readUserDebugParameter(vel_leg_right_slider)
         vel_leg2_right  = p.readUserDebugParameter(vel_leg2_right_slider)
         vel_leg3_right  = p.readUserDebugParameter(vel_leg3_right_slider)
-        vel_leg4_right  = p.readUserDebugParameter(vel_leg4_right_slider)
+        # vel_leg4_right  = p.readUserDebugParameter(vel_leg4_right_slider)
         reset_all       = p.readUserDebugParameter(reset_all_slider)
         # 重置每一个关节的位置
         if reset_all < 0:
@@ -200,19 +297,19 @@ if use_robot:
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_hand_left'], ini_hand_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_arm_right'], ini_arm_right)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_hand_right'], ini_hand_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip'], ini_body_hip)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip'], ini_body_hip)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_left'], ini_leg_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg3_left'], ini_leg3_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_right'], ini_leg_right)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg3_right'], ini_leg3_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
             # for joint_name in jointNameToID_robot:
             #     print(joint_name)
             #     p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
@@ -253,36 +350,36 @@ if use_robot:
                             targetPosition=vel_hand_right,
                             force=10
                             )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_hip'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_body_hip,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_hip_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_body_hip_left,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_hip2_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_body_hip2_left,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_hip_right'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_body_hip_right,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_hip2_right'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_body_hip2_right,
-                            force=10
-                            )
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_body_hip'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_body_hip,
+        #                     force=10
+        #                     )
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_body_hip_left'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_body_hip_left,
+        #                     force=10
+        #                     )
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_body_hip2_left'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_body_hip2_left,
+        #                     force=10
+        #                     )
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_body_hip_right'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_body_hip_right,
+        #                     force=10
+        #                     )
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_body_hip2_right'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_body_hip2_right,
+        #                     force=10
+        #                     )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_leg_left'],
                             controlMode=p.POSITION_CONTROL,
@@ -301,12 +398,12 @@ if use_robot:
                             targetPosition=vel_leg3_left,
                             force=10
                             )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_leg4_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_leg4_left,
-                            force=10
-                            )
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_leg4_left'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_leg4_left,
+        #                     force=10
+        #                     )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_leg_right'],
                             controlMode=p.POSITION_CONTROL,
@@ -325,24 +422,24 @@ if use_robot:
                             targetPosition=vel_leg3_right,
                             force=10
                             )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_leg4_right'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_leg4_right,
-                            force=10
-                            )
-        # 控制机器人关节速度
-        # p.setJointMotorControl2(robot_urdf,
-        #                     jointNameToID_robot['joint_arm_left'],
-        #                     controlMode=p.VELOCITY_CONTROL,
-        #                     targetVelocity=vel_arm_left,
+        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+        #                     jointIndex=jointNameToID_robot['joint_leg4_right'],
+        #                     controlMode=p.POSITION_CONTROL,
+        #                     targetPosition=vel_leg4_right,
         #                     force=10
         #                     )
-        # 查看关节角度与坐标
-        state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
-        print('\r', state, end='', flush=True)
+        # 查看关节参数,state = (关节角度vec1,关节角速度vec1,关节力与力矩vec6,关节电机转矩vec1)
+        # state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
+        # 查看部件参数,state = (质心坐标vec3,质心朝向vec4,,,部件坐标vec3,部件坐标vec4,部件速度vec3,部件角速度vec3)
+        # state = p.getLinkState(robot_urdf, linkNameToID_robot['arm_left'])
+        # print('\r', state[4][2], end='', flush=True)
+        # 查看部件转动惯量
+        drawInertiaBox(robot_urdf, -1, [1, 0, 0])
+        for i in range(p.getNumJoints(robot_urdf)):
+            drawInertiaBox(robot_urdf, i, [0, 1, 0])
         # 非实时仿真
         if useRealTimeSim == 0:
             # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
             p.stepSimulation()
             time.sleep(0.01)
+

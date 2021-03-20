@@ -7,6 +7,7 @@ Description  :
 '''
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+import gym
 import pleg.envs.environment
 import numpy as np
 from stable_baselines3 import DDPG
@@ -21,7 +22,7 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 #           'tensorboard_log': './log/',
 #           'policy_kwargs': dict(net_arch=[256, 256, 256])}
 # 创建环境(名为MyEnv-v0,可被render绘制)
-env = gym.make('MyEnv-v0', render=True)
+env = gym.make('MyEnv-v0', render=False)
 # 添加噪声
 n_actions = env.action_space.shape[-1]
 action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
