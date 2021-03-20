@@ -1,15 +1,23 @@
 # bullet_robot
 
 ## 构建环境
-
-pip install  -e . --user
-
+```ssh
+./build_environment.sh
+```
+## 由尺寸计算转动惯量
+```python
+python inertia_calculator.py
+```
+## 由转动惯量计算尺寸
+```python
+python length_calculator.py
+```
 ## Ubuntu18安装Gym
 
 [安装须知](https://blog.csdn.net/ms961516792/article/details/79122914)
-
+```ssh
 pip install gym
-
+```
 ## DDPG算法
 
 DDPG用来解决连续动作问题

@@ -9,3 +9,4 @@ env/pleg.egg-info/*
 wyf-pleg.zip
 ddpg_pendulum.zip
 demo.py
+genericlogdata.bin
