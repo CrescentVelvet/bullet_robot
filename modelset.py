@@ -31,13 +31,13 @@ p.changeDynamics(planeId,-1,lateralFriction = 0,spinningFriction = 0,rollingFric
 p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
-use_robot = 1               # 显示机器人模型
-use_car = 1  - use_robot    # 显示小车模型
-draw_interia = 0            # 绘制转动惯量
-robotPos = [0, 0, 0]        # 机器人坐标
-robotOri = [0, 1, 0, 1]     # 机器人方向
-jointNameToID_robot = {}    # 机器人关节名
-linkNameToID_robot = {}     # 机器人部件名
+use_robot = 1                       # 显示机器人模型
+use_car = 1  - use_robot            # 显示小车模型
+draw_interia = 1                    # 绘制转动惯量
+robotPos = [0, 0, 0.28]             # 机器人坐标
+robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向
+jointNameToID_robot = {}            # 机器人关节名
+linkNameToID_robot = {}             # 机器人部件名
 
 def drawInertiaBox(parentUid, parentLinkIndex, color):
     dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
@@ -202,12 +202,27 @@ if use_robot:
                                 parentObjectUniqueId = robot_urdf,
                                 parentLinkIndex = i,
                                 textColorRGB = [1, 0, 0])
-    # 显示基本关节名称
-    p.addUserDebugText('base_robot',
+    # 查看关节参数,state = (关节角度vec1,关节角速度vec1,关节力与力矩vec6,关节电机转矩vec1)
+    # joint_state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
+    # 查看部件参数,state = (质心坐标vec3,质心朝向vec4,,,部件坐标vec3,部件坐标vec4,部件速度vec3,部件角速度vec3)
+    # link_state = p.getLinkState(robot_urdf, linkNameToID_robot['arm_left'])
+    # print('\r', state[4][2], end='', flush=True)
+    # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+    cube_pos, cube_orn = p.getBasePositionAndOrientation(robot_urdf)
+    # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
+    # cube_euler = p.getEulerFromQuaternion(cube_orn)
+    # 显示debug信息
+    p.addUserDebugText(str(cube_orn),
                         [0, 0, 0],
+                        textSize = 2,
                         parentObjectUniqueId = robot_urdf,
                         parentLinkIndex = -1,
-                        textColorRGB = [1, 0, 0])
+                        textColorRGB = [0, 0, 0])
+    # 绘制部件转动惯量
+    if draw_interia:
+        drawInertiaBox(robot_urdf, -1, [1, 0, 0])
+        for i in range(p.getNumJoints(robot_urdf)):
+            drawInertiaBox(robot_urdf, i, [0, 1, 0])
     # 设置机器人直立的关节参数
     # ini_body_head = 0
     # ini_body_head2 = 0
@@ -269,6 +284,10 @@ if use_robot:
     # vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, ini_leg4_right)
     reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
     while True:
+        # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+        # cube_pos, cube_orn = p.getBasePositionAndOrientation(robot_urdf)
+        # 输出debug信息
+        # print('\r', cube_orn, end='', flush=True)
         # 读取控制滑块数据
         pos_body_head   = p.readUserDebugParameter(pos_body_head_slider)
         pos_body_head2  = p.readUserDebugParameter(pos_body_head2_slider)
@@ -429,16 +448,7 @@ if use_robot:
         #                     targetPosition=vel_leg4_right,
         #                     force=10
         #                     )
-        # 查看关节参数,state = (关节角度vec1,关节角速度vec1,关节力与力矩vec6,关节电机转矩vec1)
-        # state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
-        # 查看部件参数,state = (质心坐标vec3,质心朝向vec4,,,部件坐标vec3,部件坐标vec4,部件速度vec3,部件角速度vec3)
-        # state = p.getLinkState(robot_urdf, linkNameToID_robot['arm_left'])
-        # print('\r', state[4][2], end='', flush=True)
-        # 查看部件转动惯量
-        if draw_interia:
-            drawInertiaBox(robot_urdf, -1, [1, 0, 0])
-            for i in range(p.getNumJoints(robot_urdf)):
-                drawInertiaBox(robot_urdf, i, [0, 1, 0])
+
         # 非实时仿真
         if useRealTimeSim == 0:
             # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
