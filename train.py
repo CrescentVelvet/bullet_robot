@@ -21,7 +21,7 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 #           'verbose': 1,
 #           'tensorboard_log': './log/',
 #           'policy_kwargs': dict(net_arch=[256, 256, 256])}
-# 创建环境(名为MyEnv-v0,可被render绘制)
+# 创建环境(名为MyEnv-v0,True绘制bullet仿真界面)
 env = gym.make('MyEnv-v0', render=False)
 # 添加噪声
 n_actions = env.action_space.shape[-1]
