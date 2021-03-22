@@ -26,7 +26,7 @@ planeId = p.loadURDF("plane.urdf")
 # 加载足球场地面
 # planeId = p.loadSDF("stadium.sdf")
 # 设置地面摩擦力
-p.changeDynamics(planeId,-1,lateralFriction = 0,spinningFriction = 0,rollingFriction = 0)
+p.changeDynamics(planeId,-1,lateralFriction = 0.6,spinningFriction = 0.3,rollingFriction = 0.0001)
 # 设置相机
 p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)

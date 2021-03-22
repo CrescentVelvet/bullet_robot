@@ -78,7 +78,7 @@ class RobotEnv(gym.Env):
         # 加载足球场地面
         # planeId = p.loadSDF("stadium.sdf")
         # 设置地面摩擦力(旋转摩擦,横向摩擦,滚动摩擦)
-        p.changeDynamics(planeId,-1,lateralFriction = 0.5,spinningFriction = 0.5,rollingFriction = 0.1)
+        p.changeDynamics(planeId,-1,lateralFriction = 0.6,spinningFriction = 0.3,rollingFriction = 0.0001)
         # 加载机器人模型
         self.robot_urdf = self._load_robot()
         # 计算环境观测值(object)
