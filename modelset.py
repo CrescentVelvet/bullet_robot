@@ -32,13 +32,16 @@ p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
 use_robot = 1                       # 显示机器人模型
-use_car = 1  - use_robot            # 显示小车模型
+use_car = 0                         # 显示小车模型
+use_rozen = 0                       # 显示我的模型
 draw_interia = 1                    # 绘制转动惯量
+draw_sphere  = 0                    # 绘制质心小球
 robotPos = [0, 0, 0.28]             # 机器人坐标
 robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向
 jointNameToID_robot = {}            # 机器人关节名
 linkNameToID_robot = {}             # 机器人部件名
 
+# 绘制转动惯量函数
 def drawInertiaBox(parentUid, parentLinkIndex, color):
     dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
     mass = dyn[0]
@@ -135,48 +138,12 @@ def drawInertiaBox(parentUid, parentLinkIndex, color):
                            parentObjectUniqueId=parentUid,
                            parentLinkIndex=parentLinkIndex)
 
-if use_car:
-    # 加载默认小车(相对路径)
-    car = p.loadURDF("racecar/racecar.urdf")
-    # 设置小车从动轮
-    inactive_wheels = [3, 5, 7]
-    for wheel in inactive_wheels:
-        p.setJointMotorControl2(car,
-                                wheel,
-                                p.VELOCITY_CONTROL,
-                                targetVelocity=0,
-                                force=0)
-    # 设置小车主动轮
-    wheels = [2]
-    # 设置小车转向轮
-    steering = [4, 6]
-    # 自定义参数滑块，分别为速度，转向角度，驱动力参数
-    targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -10, 10, 0)
-    steeringSlider = p.addUserDebugParameter("steering", -0.5, 0.5, 0)
-    maxForceSlider = p.addUserDebugParameter("maxForce", 0, 10, 10)
-    # 开始仿真
-    while 1:
-        # 读取速度，转向角度，驱动力参数
-        maxForce = p.readUserDebugParameter(maxForceSlider)
-        targetVelocity = p.readUserDebugParameter(targetVelocitySlider)
-        steeringAngle = p.readUserDebugParameter(steeringSlider)
-        # 根据上面读取到的值对小车主动轮进行设置
-        for wheel in wheels:
-            p.setJointMotorControl2(car,
-                                    wheel,
-                                    p.VELOCITY_CONTROL,
-                                    targetVelocity=targetVelocity,
-                                    force=maxForce)
-        # 根据上面读取到的值对小车转向轮进行设置
-        for steer in steering:
-            p.setJointMotorControl2(car,
-                                    steer,
-                                    p.POSITION_CONTROL,
-                                    targetPosition=steeringAngle)
-        # 非实时仿真
-        if useRealTimeSim == 0:
-            # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
-            p.stepSimulation()
+# 绘制质心小球函数
+def drawLinkSphere(i, link_pos):
+    p.loadURDF(r'dancer_urdf_model/model/sphere_1cm.urdf',
+                link_pos,
+                useMaximalCoordinates=True,
+                useFixedBase=1)
 
 if use_robot:
     # 加载机器人模型(相对路径)
@@ -210,19 +177,24 @@ if use_robot:
     # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
     cube_pos, cube_orn = p.getBasePositionAndOrientation(robot_urdf)
     # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
-    # cube_euler = p.getEulerFromQuaternion(cube_orn)
+    cube_euler = p.getEulerFromQuaternion(cube_orn)
     # 显示debug信息
     p.addUserDebugText(str(cube_orn),
                         [0, 0, 0],
-                        textSize = 2,
+                        textSize = 1,
                         parentObjectUniqueId = robot_urdf,
                         parentLinkIndex = -1,
-                        textColorRGB = [0, 0, 0])
-    # 绘制部件转动惯量
+                        textColorRGB = [0.3, 0.3, 0.3])
+    # 绘制机器人模型部件link转动惯量
     if draw_interia:
         drawInertiaBox(robot_urdf, -1, [1, 0, 0])
         for i in range(p.getNumJoints(robot_urdf)):
             drawInertiaBox(robot_urdf, i, [0, 1, 0])
+    # 绘制机器人模型部件link质心小球
+    if draw_sphere:
+        drawLinkSphere(-1, p.getBasePositionAndOrientation(robot_urdf)[0][:3])
+        for i in range(p.getNumJoints(robot_urdf)):
+            drawLinkSphere(i, p.getLinkState(robot_urdf, i)[0][:3])
     # 设置机器人直立的关节参数
     # ini_body_head = 0
     # ini_body_head2 = 0
@@ -455,3 +427,45 @@ if use_robot:
             p.stepSimulation()
             time.sleep(0.01)
 
+if use_car:
+    # 加载默认小车(相对路径)
+    car = p.loadURDF("racecar/racecar.urdf")
+    # 设置小车从动轮
+    inactive_wheels = [3, 5, 7]
+    for wheel in inactive_wheels:
+        p.setJointMotorControl2(car,
+                                wheel,
+                                p.VELOCITY_CONTROL,
+                                targetVelocity=0,
+                                force=0)
+    # 设置小车主动轮
+    wheels = [2]
+    # 设置小车转向轮
+    steering = [4, 6]
+    # 自定义参数滑块，分别为速度，转向角度，驱动力参数
+    targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -10, 10, 0)
+    steeringSlider = p.addUserDebugParameter("steering", -0.5, 0.5, 0)
+    maxForceSlider = p.addUserDebugParameter("maxForce", 0, 10, 10)
+    # 开始仿真
+    while 1:
+        # 读取速度，转向角度，驱动力参数
+        maxForce = p.readUserDebugParameter(maxForceSlider)
+        targetVelocity = p.readUserDebugParameter(targetVelocitySlider)
+        steeringAngle = p.readUserDebugParameter(steeringSlider)
+        # 根据上面读取到的值对小车主动轮进行设置
+        for wheel in wheels:
+            p.setJointMotorControl2(car,
+                                    wheel,
+                                    p.VELOCITY_CONTROL,
+                                    targetVelocity=targetVelocity,
+                                    force=maxForce)
+        # 根据上面读取到的值对小车转向轮进行设置
+        for steer in steering:
+            p.setJointMotorControl2(car,
+                                    steer,
+                                    p.POSITION_CONTROL,
+                                    targetPosition=steeringAngle)
+        # 非实时仿真
+        if useRealTimeSim == 0:
+            # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
+            p.stepSimulation()
