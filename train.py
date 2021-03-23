@@ -10,9 +10,13 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 import gym
 import pleg.envs.environment
 import numpy as np
+from stable_baselines3 import PPO
 from stable_baselines3 import DDPG
 # from stable_baselines3.common.vec_env import DummyVecEnv
+# from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
+
+# from my_ddpg import DDPG
 
 # 定义超参数
 # params = {'learning_rate': 1e-5,    # 学习率
@@ -22,12 +26,17 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 #           'tensorboard_log': './log/',
 #           'policy_kwargs': dict(net_arch=[256, 256, 256])}
 # 创建环境(名为MyEnv-v0,True绘制bullet仿真界面)
+# env = make_vec_env('MyEnv-v0', n_envs = 4)
 env = gym.make('MyEnv-v0', render=False)
+env = env.unwrapped
+env.seed(1)
 # 添加噪声
-n_actions = env.action_space.shape[-1]
-action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
-# 创建模型(DDPG算法,MlpPolicy类型)
-model = DDPG("MlpPolicy", env, action_noise=action_noise, verbose=1)
+# n_actions = env.action_space.shape[-1]
+# action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+# 创建模型(DDPG/PPO算法,MlpPolicy类型)
+# model = PPO("MlpPolicy", env, verbose=1)
+model = DDPG("MlpPolicy", env, verbose=1)
+# model = DDPG("MlpPolicy", env, action_noise=action_noise, verbose=1)
 # model = DDPG('MlpPolicy', DummyVecEnv([lambda: env]), **params)
 # 构建模型(代理执行最大步数total_timesteps,采集数据样本时间间隔log_interval)
 total_timesteps = 10000
@@ -38,6 +47,7 @@ model.save('wyf-pleg')
 env = model.get_env()
 del model
 model = DDPG.load(r'wyf-pleg.zip')
+# model = PPO.load(r'wyf-pleg.zip')
 # 初始化环境(获取obs反馈)
 obs, state, dones = env.reset(), None, [False]
 # 循环训练
