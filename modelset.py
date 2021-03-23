@@ -33,8 +33,8 @@ p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23
 # 各种参数
 use_robot = 1                       # 显示机器人模型
 use_car = 0                         # 显示小车模型
-use_rozen = 0                       # 显示我的模型
-draw_interia = 1                    # 绘制转动惯量
+use_rozen = 1 - use_robot           # 显示我的模型
+draw_interia = 0                    # 绘制转动惯量
 draw_sphere  = 0                    # 绘制质心小球
 robotPos = [0, 0, 0.28]             # 机器人坐标
 robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向
@@ -43,12 +43,13 @@ linkNameToID_robot = {}             # 机器人部件名
 
 # 仿真机器人函数
 def useRobot():
-    # 加载机器人模型(相对路径)
+    # 加载机器人模型(相对路径)(转动惯量URDF_USE_INERTIA_FROM_FILE,碰撞URDF_USE_SELF_COLLISION)
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
-                            basePosition=robotPos,
-                            baseOrientation=robotOri,
-                            flags=p.URDF_USE_INERTIA_FROM_FILE,
-                            useFixedBase=0,
+                            basePosition = robotPos,
+                            baseOrientation = robotOri,
+                            # flags = p.URDF_USE_INERTIA_FROM_FILE,
+                            flags = p.URDF_USE_SELF_COLLISION or p.URDF_USE_INERTIA_FROM_FILE,
+                            useFixedBase = 0,
                             )
     # 获取机器人关节信息
     for i in range(p.getNumJoints(robot_urdf)):
@@ -107,11 +108,11 @@ def useRobot():
     # ini_leg_left = -1.7
     # ini_leg2_left = 1
     # ini_foot1_left = -0.2
-    # ini_leg4_left = 0
+    # ini_foot2_left = 0
     # ini_leg_right = 0.5
     # ini_leg2_right = 1
     # ini_foot1_right = -1
-    # ini_leg4_right = -1
+    # ini_foot2_right = -1
     ini_body_head = 0
     ini_body_head2 = 0
     ini_arm_left = 0
@@ -126,11 +127,11 @@ def useRobot():
     ini_leg_left = 0
     ini_leg2_left = 0
     ini_foot1_left = 0
-    # ini_leg4_left = 0
+    # ini_foot2_left = 0
     ini_leg_right = 0
     ini_leg2_right = 0
     ini_foot1_right = 0
-    # ini_leg4_right = 0
+    # ini_foot2_right = 0
     # 设置控制滑块，参数分别是最小值，最大值，当前值
     pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, ini_body_head)
     pos_body_head2_slider   = p.addUserDebugParameter("pos_body_head2", -10, 10, ini_body_head2)
@@ -146,11 +147,11 @@ def useRobot():
     vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, ini_leg_left)
     vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, ini_leg2_left)
     vel_foot1_left_slider    = p.addUserDebugParameter("vel_foot1_left", -10, 10, ini_foot1_left)
-    # vel_leg4_left_slider    = p.addUserDebugParameter("vel_leg4_left", -10, 10, ini_leg4_left)
+    # vel_foot2_left_slider    = p.addUserDebugParameter("vel_foot2_left", -10, 10, ini_foot2_left)
     vel_leg_right_slider    = p.addUserDebugParameter("vel_leg_right", -10, 10, ini_leg_right)
     vel_leg2_right_slider   = p.addUserDebugParameter("vel_leg2_right", -10, 10, ini_leg2_right)
     vel_foot1_right_slider   = p.addUserDebugParameter("vel_foot1_right", -10, 10, ini_foot1_right)
-    # vel_leg4_right_slider   = p.addUserDebugParameter("vel_leg4_right", -10, 10, ini_leg4_right)
+    # vel_foot2_right_slider   = p.addUserDebugParameter("vel_foot2_right", -10, 10, ini_foot2_right)
     reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
     while True:
         # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
@@ -172,11 +173,11 @@ def useRobot():
         vel_leg_left    = p.readUserDebugParameter(vel_leg_left_slider)
         vel_leg2_left   = p.readUserDebugParameter(vel_leg2_left_slider)
         vel_foot1_left   = p.readUserDebugParameter(vel_foot1_left_slider)
-        # vel_leg4_left   = p.readUserDebugParameter(vel_leg4_left_slider)
+        # vel_foot2_left   = p.readUserDebugParameter(vel_foot2_left_slider)
         vel_leg_right   = p.readUserDebugParameter(vel_leg_right_slider)
         vel_leg2_right  = p.readUserDebugParameter(vel_leg2_right_slider)
         vel_foot1_right  = p.readUserDebugParameter(vel_foot1_right_slider)
-        # vel_leg4_right  = p.readUserDebugParameter(vel_leg4_right_slider)
+        # vel_foot2_right  = p.readUserDebugParameter(vel_foot2_right_slider)
         reset_all       = p.readUserDebugParameter(reset_all_slider)
         # 重置每一个关节的位置
         if reset_all < 0:
@@ -194,11 +195,11 @@ def useRobot():
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_left'], ini_leg_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot1_left'], ini_foot1_left)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_left'], ini_leg4_left)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot2_left'], ini_foot2_left)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_right'], ini_leg_right)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
             p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot1_right'], ini_foot1_right)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg4_right'], ini_leg4_right)
+            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot2_right'], ini_foot2_right)
             # for joint_name in jointNameToID_robot:
             #     print(joint_name)
             #     p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
@@ -288,9 +289,9 @@ def useRobot():
                             force=10
                             )
         # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_leg4_left'],
+        #                     jointIndex=jointNameToID_robot['joint_foot2_left'],
         #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_leg4_left,
+        #                     targetPosition=vel_foot2_left,
         #                     force=10
         #                     )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
@@ -312,9 +313,9 @@ def useRobot():
                             force=10
                             )
         # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_leg4_right'],
+        #                     jointIndex=jointNameToID_robot['joint_foot2_right'],
         #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_leg4_right,
+        #                     targetPosition=vel_foot2_right,
         #                     force=10
         #                     )
 
@@ -370,7 +371,15 @@ def useCar():
 
 # 仿真模型函数
 def useRozen():
-    pass
+    rozen_urdf = p.loadURDF(r'dancer_urdf_model/model/rozen_urdf_model.URDF',
+                            basePosition = robotPos,
+                            baseOrientation = robotOri,
+                            flags = p.URDF_USE_INERTIA_FROM_FILE,
+                            useFixedBase = 0)
+    while True:
+        if useRealTimeSim == 0:
+            p.stepSimulation()
+            time.sleep(0.01)
 
 # 绘制转动惯量函数
 def drawInertiaBox(parentUid, parentLinkIndex, color):

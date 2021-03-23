@@ -1,0 +1,1052 @@
+<?xml version = "1.0" encoding="utf-8"?>
+<robot
+  name="dancer_urdf_model">
+  <link
+    name="body_chest">
+    <inertial>
+      <origin
+        xyz="-0.616313494681162 -0.215606025502619 0.218328112191186"
+        rpy="0 0 0" />
+      <mass
+        value="0.882484739618511" />
+      <inertia
+        ixx="0.00046279697033304"
+        ixy="-1.29208732985506E-06"
+        ixz="3.13480143442607E-08"
+        iyy="0.000569939112981271"
+        iyz="-3.23018574616647E-06"
+        izz="0.000627101614709985" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <box
+          size="0.1 0.1 0.1" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_chest.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="body_head">
+    <inertial>
+      <origin
+        xyz="0.000414526290536621 5.46344108842689E-09 0.032686211294751"
+        rpy="0 0 0" />
+      <mass
+        value="0.05496" />
+      <inertia
+        ixx="1.15560765805171E-05"
+        ixy="-6.37698448820114E-12"
+        ixz="8.72982482484381E-08"
+        iyy="1.38245262746023E-05"
+        iyz="-6.32904633697489E-12"
+        izz="1.00312989309914E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_head.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.90983 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_head.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_head"
+    type="continuous">
+    <origin
+      xyz="-0.615612428513425 -0.285967486211966 0.20056776073696"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_head" />
+    <axis
+      xyz="0.0149998112887428 0 0.999887496502132" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_head2">
+    <inertial>
+      <origin
+        xyz="-0.0496692849997094 -0.00262565458459788 0.0523169063751714"
+        rpy="0 0 0" />
+      <mass
+        value="0.0803703275300652" />
+      <inertia
+        ixx="3.64947790343948E-05"
+        ixy="3.45134666590487E-08"
+        ixz="-2.25159079858521E-07"
+        iyy="4.52013276356543E-05"
+        iyz="3.25342165484819E-06"
+        izz="2.12016157986899E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_head2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.25098 0.25098 0.25098 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_head2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_head2"
+    type="continuous">
+    <origin
+      xyz="0.0507513535336471 0 0.0497102139820205"
+      rpy="0 0 0" />
+    <parent
+      link="body_head" />
+    <child
+      link="body_head2" />
+    <axis
+      xyz="0.999887496502133 0 -0.0149998112887384" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="arm_left">
+    <inertial>
+      <origin
+        xyz="-0.0330847414453067 0.00188579224537025 -0.0802758177228025"
+        rpy="0 0 0" />
+      <mass
+        value="0.140880460038681" />
+      <inertia
+        ixx="0.000120172742185719"
+        ixy="-1.59278019073766E-07"
+        ixz="5.25020978487963E-06"
+        iyy="0.000123100393049993"
+        iyz="2.41797266022087E-09"
+        izz="2.05665605944976E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/arm_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/arm_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_left"
+    type="continuous">
+    <origin
+      xyz="-0.480637621395787 -0.270857071736484 0.200567760736966"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="arm_left" />
+    <axis
+      xyz="0.999887496502133 0 -0.0149998112887317" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="hand_left">
+    <inertial>
+      <origin
+        xyz="-0.00479785812890254 -7.54951656745106E-15 -0.0635843345452896"
+        rpy="0 0 0" />
+      <mass
+        value="0.0240442691962686" />
+      <inertia
+        ixx="5.18779346882441E-05"
+        ixy="3.23558452235391E-20"
+        ixz="-7.49042003282551E-07"
+        iyy="4.9981652173878E-05"
+        iyz="1.76589230995525E-18"
+        izz="1.9581507829635E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/hand_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/hand_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_hand_left"
+    type="continuous">
+    <origin
+      xyz="-0.00831303371965708 0 -0.135890594230151"
+      rpy="0 0 0" />
+    <parent
+      link="arm_left" />
+    <child
+      link="hand_left" />
+    <axis
+      xyz="0.999887496502131 0 -0.0149998112888278" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="arm_right">
+    <inertial>
+      <origin
+        xyz="-0.030307333521772 0.00188579156361365 -0.0803174776823527"
+        rpy="0 0 0" />
+      <mass
+        value="0.140880462107965" />
+      <inertia
+        ixx="0.000119768286367428"
+        ixy="1.59272773011466E-07"
+        ixz="-8.22722138877276E-06"
+        iyy="0.000123100386580979"
+        iyz="-2.37793470819043E-09"
+        izz="2.09710170767841E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/arm_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89875 0.91729 0.92982 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/arm_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_arm_right"
+    type="continuous">
+    <origin
+      xyz="-0.690210517946081 -0.274000979336581 0.20056776073696"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="arm_right" />
+    <axis
+      xyz="0.999887496502132 0 -0.0149998112887528" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="hand_right">
+    <inertial>
+      <origin
+        xyz="-0.00469304011310134 1.65145674912992E-14 -0.0672826860647183"
+        rpy="0 0 0" />
+      <mass
+        value="0.0227245679584811" />
+      <inertia
+        ixx="5.18047025522023E-05"
+        ixy="3.31301055921671E-19"
+        ixz="-7.48520829858133E-07"
+        iyy="4.99429963653671E-05"
+        iyz="2.1798867900886E-17"
+        izz="1.9194835923031E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/hand_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/hand_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_hand_right"
+    type="continuous">
+    <origin
+      xyz="-0.0493202167072464 0 -0.135275425015181"
+      rpy="0 0 0" />
+    <parent
+      link="arm_right" />
+    <child
+      link="hand_right" />
+    <axis
+      xyz="0.999887496502134 0 -0.0149998112886474" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip_left">
+    <inertial>
+      <origin
+        xyz="0.000945067783106102 -0.00416671476409239 0.0629976565509531"
+        rpy="0 0 0" />
+      <mass
+        value="0.0606904859381705" />
+      <inertia
+        ixx="3.05254383377384E-05"
+        ixy="1.39836208317736E-09"
+        ixz="-1.28861971999565E-09"
+        iyy="1.17463917453059E-05"
+        iyz="9.419363591995E-08"
+        izz="3.04400866114059E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.77694 0.75639 0.73784 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip_left"
+    type="continuous">
+    <origin
+      xyz="-0.574767957608413 -0.00862238094696859 0.200607760736968"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_hip_left" />
+    <axis
+      xyz="0.0149998112887428 0 0.999887496502133" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip2_left">
+    <inertial>
+      <origin
+        xyz="-2.28435030289464E-05 -0.0309433797840232 -0.0141527835068525"
+        rpy="0 0 0" />
+      <mass
+        value="0.159177872474359" />
+      <inertia
+        ixx="5.36133737563341E-05"
+        ixy="-5.96397221650733E-21"
+        ixz="2.02453010024122E-07"
+        iyy="5.43148029796541E-05"
+        iyz="-2.14841517470244E-07"
+        izz="3.27173793791275E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip2_left"
+    type="continuous">
+    <origin
+      xyz="0.000579999589308322 0 0.038662775562355"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip_left" />
+    <child
+      link="body_hip2_left" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg_left">
+    <inertial>
+      <origin
+        xyz="-0.0116252060739156 0.00120888924666671 -0.0786191617254281"
+        rpy="0 0 0" />
+      <mass
+        value="0.11789850487658" />
+      <inertia
+        ixx="7.43113045276454E-05"
+        ixy="-2.26804392296794E-12"
+        ixz="-2.02457513575927E-07"
+        iyy="7.40607882060034E-05"
+        iyz="5.48826459972443E-06"
+        izz="2.08105251807748E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg_left"
+    type="continuous">
+    <origin
+      xyz="0.0117489242262162 -0.0103000000000123 0"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip2_left" />
+    <child
+      link="leg_left" />
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg2_left">
+    <inertial>
+      <origin
+        xyz="-0.0620521617566315 0.0116999543672374 -0.0623319986115592"
+        rpy="0 0 0" />
+      <mass
+        value="0.0468789275178147" />
+      <inertia
+        ixx="4.61873372876244E-05"
+        ixy="4.73015151731043E-12"
+        ixz="-7.49486610184811E-12"
+        iyy="4.39066187165455E-05"
+        iyz="6.93235154853255E-06"
+        izz="4.78336189725116E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.90927 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg2_left"
+    type="continuous">
+    <origin
+      xyz="0.0499806689582331 0 -0.120000000000317"
+      rpy="0 0 0" />
+    <parent
+      link="leg_left" />
+    <child
+      link="leg2_left" />
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot1_left">
+    <inertial>
+      <origin
+        xyz="-0.0530989934891989 -0.0175901755307813 0.0141878018170923"
+        rpy="0 0 0" />
+      <mass
+        value="0.158402372500407" />
+      <inertia
+        ixx="5.3375881657705E-05"
+        ixy="-3.54984559877132E-21"
+        ixz="-2.02463791844223E-07"
+        iyy="5.42458702551359E-05"
+        iyz="-1.9007867850504E-07"
+        izz="3.2547948310614E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot1_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot1_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot1_left"
+    type="continuous">
+    <origin
+      xyz="-0.0102535550345806 0.0220306418254577 -0.128119673824045"
+      rpy="0 0 0" />
+    <parent
+      link="leg2_left" />
+    <child
+      link="foot1_left" />
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot2_left">
+    <inertial>
+      <origin
+        xyz="-0.582199195289208 0.211126147361554 -0.236761477035537"
+        rpy="0 0 0" />
+      <mass
+        value="0.14417666873715" />
+      <inertia
+        ixx="0.000141494770501712"
+        ixy="1.84880295385669E-12"
+        ixz="-9.12447801802343E-12"
+        iyy="5.06452586250787E-05"
+        iyz="-3.33958900997396E-07"
+        izz="0.000183701625816014" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot2_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.86667 0.90927 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot2_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot2_left"
+    type="continuous">
+    <origin
+      xyz="0.522711919869236 -0.21233840256255 0.200834517315037"
+      rpy="0 0 0" />
+    <parent
+      link="foot1_left" />
+    <child
+      link="foot2_left" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip_right">
+    <inertial>
+      <origin
+        xyz="0.000907183709312309 0.00424992243988156 0.0604701704492792"
+        rpy="0 0 0" />
+      <mass
+        value="0.0606904859337575" />
+      <inertia
+        ixx="3.05254258936741E-05"
+        ixy="-1.42567647782977E-09"
+        ixz="-1.28614118753563E-09"
+        iyy="1.17463917445773E-05"
+        iyz="-9.41881356880309E-08"
+        izz="3.04400990563153E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip_right"
+    type="continuous">
+    <origin
+      xyz="-0.664719916505049 -0.0124998306201608 0.20060776073697"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="body_chest" />
+    <child
+      link="body_hip_right" />
+    <axis
+      xyz="0.0149998112887428 0 0.999887496502133" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="body_hip2_right">
+    <inertial>
+      <origin
+        xyz="-2.2843503021619E-05 -0.020643379783998 -0.0141527835068197"
+        rpy="0 0 0" />
+      <mass
+        value="0.159177872474359" />
+      <inertia
+        ixx="5.3613373756334E-05"
+        ixy="1.1123428892363E-20"
+        ixz="2.0245301002463E-07"
+        iyy="5.43148029796541E-05"
+        iyz="-2.14841517470345E-07"
+        izz="3.27173793791274E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/body_hip2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_body_hip2_right"
+    type="continuous">
+    <origin
+      xyz="0.000542083800765036 0 0.0361353089051728"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip_right" />
+    <child
+      link="body_hip2_right" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg_right">
+    <inertial>
+      <origin
+        xyz="0.0128726423785163 0.00120889814603442 -0.0786191832104045"
+        rpy="0 0 0" />
+      <mass
+        value="0.11789850487658" />
+      <inertia
+        ixx="7.43113045276455E-05"
+        ixy="3.27778988376902E-13"
+        ixz="-2.02463780446535E-07"
+        iyy="7.40608022516867E-05"
+        iyz="5.48825055404415E-06"
+        izz="2.08105111350916E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg_right"
+    type="continuous">
+    <origin
+      xyz="-0.0127489242262093 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="body_hip2_right" />
+    <child
+      link="leg_right" />
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="leg2_right">
+    <inertial>
+      <origin
+        xyz="-0.0378134938167345 0.00668575513211081 -0.0630671561255923"
+        rpy="0 0 0" />
+      <mass
+        value="0.0468789275178147" />
+      <inertia
+        ixx="4.61873372876243E-05"
+        ixy="7.36762713958321E-12"
+        ixz="-6.14345132550088E-12"
+        iyy="4.47607005070523E-05"
+        iyz="3.73014655151864E-06"
+        izz="3.92928010674436E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75288 0.75288 0.75288 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/leg2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_leg2_right"
+    type="continuous">
+    <origin
+      xyz="0.0513478626051265 0 -0.120000000000008"
+      rpy="0 0 0" />
+    <parent
+      link="leg_right" />
+    <child
+      link="leg2_right" />
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot1_right">
+    <inertial>
+      <origin
+        xyz="-0.03862189371824 -0.0175901755307635 0.0141878018170996"
+        rpy="0 0 0" />
+      <mass
+        value="0.158402372500407" />
+      <inertia
+        ixx="5.3375881657705E-05"
+        ixy="4.51772963351962E-20"
+        ixz="-2.02463791843962E-07"
+        iyy="5.4245870255136E-05"
+        iyz="-1.90078678504309E-07"
+        izz="3.2547948310614E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot1_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.88271 0.91378 0.96441 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot1_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot1_right"
+    type="continuous">
+    <origin
+      xyz="0 0.011730641825261 -0.129469656840417"
+      rpy="0 0 0" />
+    <parent
+      link="leg2_right" />
+    <child
+      link="foot1_right" />
+    <axis
+      xyz="1 0 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+  <link
+    name="foot2_right">
+    <inertial>
+      <origin
+        xyz="0.00644468610549209 -0.00115042641687507 -0.0360005503131604"
+        rpy="0 0 0" />
+      <mass
+        value="0.143428639592448" />
+      <inertia
+        ixx="0.000141337401597565"
+        ixy="8.13812964666709E-12"
+        ixz="-9.05359254310782E-12"
+        iyy="5.04596437658567E-05"
+        iyz="-3.20375904544445E-07"
+        izz="0.000183618474018626" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot2_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89875 0.91729 0.92982 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://dancer_urdf_model/meshes/foot2_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_foot2_right"
+    type="continuous">
+    <origin
+      xyz="-0.0385989383789022 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="foot1_right" />
+    <child
+      link="foot2_right" />
+    <axis
+      xyz="0 1 0" />
+    <dynamics
+      damping="0.0"
+      friction="0.0" />
+  </joint>
+</robot>
