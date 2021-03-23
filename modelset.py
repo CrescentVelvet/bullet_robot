@@ -41,111 +41,8 @@ robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向
 jointNameToID_robot = {}            # 机器人关节名
 linkNameToID_robot = {}             # 机器人部件名
 
-# 绘制转动惯量函数
-def drawInertiaBox(parentUid, parentLinkIndex, color):
-    dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
-    mass = dyn[0]
-    frictionCoeff = dyn[1]
-    inertia = dyn[2]
-    if (mass > 0):
-        Ixx = inertia[0]
-        Iyy = inertia[1]
-        Izz = inertia[2]
-        boxScaleX = 0.5 * math.sqrt(6 * (Izz + Iyy - Ixx) / mass)
-        boxScaleY = 0.5 * math.sqrt(6 * (Izz + Ixx - Iyy) / mass)
-        boxScaleZ = 0.5 * math.sqrt(6 * (Ixx + Iyy - Izz) / mass)
-        halfExtents = [boxScaleX, boxScaleY, boxScaleZ]
-        pts = [[halfExtents[0], halfExtents[1], halfExtents[2]],
-               [-halfExtents[0], halfExtents[1], halfExtents[2]],
-               [halfExtents[0], -halfExtents[1], halfExtents[2]],
-               [-halfExtents[0], -halfExtents[1], halfExtents[2]],
-               [halfExtents[0], halfExtents[1], -halfExtents[2]],
-               [-halfExtents[0], halfExtents[1], -halfExtents[2]],
-               [halfExtents[0], -halfExtents[1], -halfExtents[2]],
-               [-halfExtents[0], -halfExtents[1], -halfExtents[2]]]
-        p.addUserDebugLine(pts[0],
-                           pts[1],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[1],
-                           pts[3],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[3],
-                           pts[2],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[2],
-                           pts[0],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-
-        p.addUserDebugLine(pts[0],
-                           pts[4],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[1],
-                           pts[5],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[2],
-                           pts[6],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[3],
-                           pts[7],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-
-        p.addUserDebugLine(pts[4 + 0],
-                           pts[4 + 1],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[4 + 1],
-                           pts[4 + 3],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[4 + 3],
-                           pts[4 + 2],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-        p.addUserDebugLine(pts[4 + 2],
-                           pts[4 + 0],
-                           color,
-                           1,
-                           parentObjectUniqueId=parentUid,
-                           parentLinkIndex=parentLinkIndex)
-
-# 绘制质心小球函数
-def drawLinkSphere(i, link_pos):
-    p.loadURDF(r'dancer_urdf_model/model/sphere_1cm.urdf',
-                link_pos,
-                useMaximalCoordinates=True,
-                useFixedBase=1)
-
-if use_robot:
+# 仿真机器人函数
+def useRobot():
     # 加载机器人模型(相对路径)
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition=robotPos,
@@ -427,7 +324,8 @@ if use_robot:
             p.stepSimulation()
             time.sleep(0.01)
 
-if use_car:
+# 仿真小车函数
+def useCar():
     # 加载默认小车(相对路径)
     car = p.loadURDF("racecar/racecar.urdf")
     # 设置小车从动轮
@@ -469,3 +367,123 @@ if use_car:
         if useRealTimeSim == 0:
             # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
             p.stepSimulation()
+
+# 仿真模型函数
+def useRozen():
+    pass
+
+# 绘制转动惯量函数
+def drawInertiaBox(parentUid, parentLinkIndex, color):
+    dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
+    mass = dyn[0]
+    frictionCoeff = dyn[1]
+    inertia = dyn[2]
+    if (mass > 0):
+        Ixx = inertia[0]
+        Iyy = inertia[1]
+        Izz = inertia[2]
+        boxScaleX = 0.5 * math.sqrt(6 * (Izz + Iyy - Ixx) / mass)
+        boxScaleY = 0.5 * math.sqrt(6 * (Izz + Ixx - Iyy) / mass)
+        boxScaleZ = 0.5 * math.sqrt(6 * (Ixx + Iyy - Izz) / mass)
+        halfExtents = [boxScaleX, boxScaleY, boxScaleZ]
+        pts = [[halfExtents[0], halfExtents[1], halfExtents[2]],
+               [-halfExtents[0], halfExtents[1], halfExtents[2]],
+               [halfExtents[0], -halfExtents[1], halfExtents[2]],
+               [-halfExtents[0], -halfExtents[1], halfExtents[2]],
+               [halfExtents[0], halfExtents[1], -halfExtents[2]],
+               [-halfExtents[0], halfExtents[1], -halfExtents[2]],
+               [halfExtents[0], -halfExtents[1], -halfExtents[2]],
+               [-halfExtents[0], -halfExtents[1], -halfExtents[2]]]
+        p.addUserDebugLine(pts[0],
+                           pts[1],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[1],
+                           pts[3],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[3],
+                           pts[2],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[2],
+                           pts[0],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+
+        p.addUserDebugLine(pts[0],
+                           pts[4],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[1],
+                           pts[5],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[2],
+                           pts[6],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[3],
+                           pts[7],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+
+        p.addUserDebugLine(pts[4 + 0],
+                           pts[4 + 1],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[4 + 1],
+                           pts[4 + 3],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[4 + 3],
+                           pts[4 + 2],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+        p.addUserDebugLine(pts[4 + 2],
+                           pts[4 + 0],
+                           color,
+                           1,
+                           parentObjectUniqueId=parentUid,
+                           parentLinkIndex=parentLinkIndex)
+
+# 绘制质心小球函数
+def drawLinkSphere(i, link_pos):
+    p.loadURDF(r'dancer_urdf_model/model/sphere_1cm.urdf',
+                link_pos,
+                useMaximalCoordinates=True,
+                useFixedBase=1)
+
+# 仿真机器人
+if use_robot:
+    useRobot()
+
+# 仿真小车
+if use_car:
+    useCar()
+
+# 仿真模型
+if use_rozen:
+    useRozen()
