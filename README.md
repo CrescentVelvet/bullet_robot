@@ -27,3 +27,11 @@ DDPG用来解决连续动作问题
 [baselines3代码](https://github.com/DLR-RM/stable-baselines3)
 
 [baselines3官方文档](https://stable-baselines3.readthedocs.io/en/master/)
+
+[DDPG参数调节](https://www.zhihu.com/question/309162916)
+[DDPG调参理论](https://zhuanlan.zhihu.com/p/345353294)
+
+[手写DDPG代码](https://zhuanlan.zhihu.com/p/47873624)
+
+[PPO算法理论](https://zhuanlan.zhihu.com/p/111068310)
+[PPO算法实战](https://zhuanlan.zhihu.com/p/111049450)
