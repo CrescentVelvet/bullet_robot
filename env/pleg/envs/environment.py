@@ -162,7 +162,7 @@ class RobotEnv(gym.Env):
         robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                                 basePosition=self.robotPos,
                                 baseOrientation=self.robotOri,
-                                flags=p.URDF_USE_INERTIA_FROM_FILE,
+                                flags=p.URDF_USE_SELF_COLLISION or p.URDF_USE_INERTIA_FROM_FILE,
                                 useFixedBase=0,
                                 )
         # 获取机器人关节信息

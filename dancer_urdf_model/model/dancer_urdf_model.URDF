@@ -1049,8 +1049,11 @@
         iyy="0.00132721812"
         iyz="0"
         izz="0.000488739105" /> -->
-      <origin
+      <!-- <origin
         xyz="-0.582199195289208 0.211126147361554 -0.236761477035537"
+        rpy="0 0 0" /> -->
+      <origin
+        xyz="-0.00641123727010962 0.0305388205728046 -0.0359269597204822"
         rpy="0 0 0" />
       <mass
         value="0.14417666873715" />
@@ -1094,7 +1097,7 @@
       rpy="-2.9765 -0.0132 0.03369" /> -->
       <!--rpy="-2.9765 -0.0732 0.41369" put 0.41 into p-->
     <origin
-      xyz="0.522711919869236 -0.21233840256255 0.200834517315037"
+      xyz="-0.0530760381498626 -0.031751075773801 0"
       rpy="0 0 0" />
     <parent
       link="foot1_left" />
@@ -1652,7 +1655,7 @@
       friction="0.0" />
   </joint> -->
 <!-- gazebo -->
-  <gazebo reference="body_chest">
+  <!-- <gazebo reference="body_chest">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
     <material>Gazebo/Gray</material>
@@ -1687,11 +1690,11 @@
     <mu2>0.2</mu2>
     <material>Gazebo/Orange</material>
   </gazebo>
-  <!-- <gazebo reference="body_hip">
+  <gazebo reference="body_hip">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
     <material>Gazebo/Green</material>
-  </gazebo> -->
+  </gazebo>
   <gazebo reference="body_hip_left">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
@@ -1751,7 +1754,7 @@
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
     <material>Gazebo/Blue</material>
-  </gazebo>
+  </gazebo> -->
   <!-- <gazebo reference="body_camera">
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
