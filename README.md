@@ -4,19 +4,27 @@
 ```ssh
 ./build_environment.sh
 ```
-## 由尺寸计算转动惯量
+由尺寸计算转动惯量
 ```python
 python inertia_calculator.py
 ```
-## 由转动惯量计算尺寸
+由转动惯量计算尺寸
 ```python
 python length_calculator.py
 ```
-## Ubuntu18安装Gym
-
-[安装须知](https://blog.csdn.net/ms961516792/article/details/79122914)
+[Gym安装教程](https://blog.csdn.net/ms961516792/article/details/79122914)
 ```ssh
-pip install gym
+git clone https://github.com/openai/gym.git
+cd gym
+pip install -e .
+```
+[mujoco安装教程](https://blog.csdn.net/jianghao_ava/article/details/81062337)
+[与问题解决](https://blog.csdn.net/jianghao_ava/article/details/80874254)
+```
+Full name	velvet
+Email address	crescentvelvet3@gmail.com
+Computer id	LINUX_SBEP2I_25HK8HP2W6A35SNN6LG6EDHKT093340
+IP address	210.32.151.94
 ```
 ## DDPG算法
 
@@ -38,3 +46,6 @@ DDPG用来解决连续动作问题
 
 [PPO机器人代码](https://github.com/openai/baselines/tree/master/baselines/ppo2)
 [PPO机器人演示](https://openai.com/blog/openai-baselines-ppo/)
+
+
+

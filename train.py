@@ -12,6 +12,7 @@ import pleg.envs.environment
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3 import DDPG
+# from stable_baselines3.ppo2 import ppo2
 # from stable_baselines3.common.vec_env import DummyVecEnv
 # from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
@@ -25,7 +26,7 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 #           'verbose': 1,
 #           'tensorboard_log': './log/',
 #           'policy_kwargs': dict(net_arch=[256, 256, 256])}
-# 创建环境(名为MyEnv-v0,True绘制bullet仿真界面)
+# 创建环境(名为MyEnv-v0,render绘制bullet仿真界面,unwrapped解除环境限制)
 # env = make_vec_env('MyEnv-v0', n_envs = 4)
 env = gym.make('MyEnv-v0', render=False)
 env = env.unwrapped
