@@ -30,12 +30,12 @@ class RobotEnv(gym.Env):
         action_dim = 10
         self._action_bound = 1
         action_high = np.array([self._action_bound] * action_dim)
-        self.action_space = spaces.Box(-action_high, action_high)
+        self.action_space = spaces.Box(np.float32(-action_high), np.float32(action_high))
         # 观测空间
         observation_dim = 32
         self._observation_bound = math.pi
         observation_high = np.array([self._observation_bound] * observation_dim)
-        self.observation_space = spaces.Box(-observation_high, observation_high)
+        self.observation_space = spaces.Box(np.float32(-observation_high), np.float32(observation_high))
         # 连接物理引擎
         if render:
             # 包含可视化的引擎
@@ -51,7 +51,7 @@ class RobotEnv(gym.Env):
         return [seed]
 
     # 步骤执行函数
-    def _step(self, action):
+    def step(self, action):
         # 设置关节控制器(action发送控制参数)
         self._set_controler(action)
         # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
@@ -67,7 +67,7 @@ class RobotEnv(gym.Env):
         return np.array(self._observation), reward, done, {}
 
     # 重置环境函数
-    def _reset(self):
+    def reset(self):
         p.resetSimulation()
         # 设置重力m/s^2
         p.setGravity(0, 0, -9.8)
