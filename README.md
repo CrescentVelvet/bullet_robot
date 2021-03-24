@@ -47,5 +47,7 @@ DDPG用来解决连续动作问题
 [PPO机器人代码](https://github.com/openai/baselines/tree/master/baselines/ppo2)
 [PPO机器人演示](https://openai.com/blog/openai-baselines-ppo/)
 
+[pytorch的PPO思路](https://blog.csdn.net/melody_cjw/article/details/112851552)
+
 
 
