@@ -8,10 +8,26 @@ class PPO:
         self.actor  = FeedForwardNN(self.obs_dim, self.act_dim) # actor网络初始化
         self.critic = FeedForwardNN(self.obs_dim, 1) # critic网络初始化
         self._init_hyperparameters(hyperparameters) # 使用默认的超参数
+        self.actor_optim = Adam(self.actor.parameters(), lr=self.lr) # 定义Adam优化器
     def learn(self, total_timesteps):
         t_so_far = 0 # 到目前为止已经训练了多少步
         while t_so_far < total_timesteps: # 循环设定总步数
             batch_obs, batch_acts, batch_log_probs, batch_rtgs, batch_lens = self.rollout() # 运行策略收集数据batch
+            V, _ = self.evaluate(batch_obs, batch_acts) # 计算obs的预测值（V-value）
+            A_k = batch_rtgs - V.detach() # 计算优势函数
+            A_k = (A_k - A_k.mean()) / (A_k.std() + 1e-10) # 对优势函数进行规范化
+            ratios = torch.exp(curr_log_probs - batch_log_probs) # 两个log概率相减再取e的幂
+            surr1 = ratios * A_k # 计算代替损失
+            surr2 = torch.clamp(ratios, 1 - self.clip, 1 + self.clip) * A_k
+            actor_loss = (-torch.min(surr1, surr2)).mean() # 计算loss
+            self.actor_optim.zero_grad() # 计算梯度
+            actor_loss.backward() # 反向传播
+            self.actor_optim.step()
+            self.critic_optim = Adam(self.critic.parameters(), lr=self.lr) # 定义critic的Adam优化器
+            critic_loss = nn.MSELoss()(V, batch_rtgs) # 计算loss
+            self.critic_optim.zero_grad() # 计算梯度
+            critic_loss.backward() # 反向传播
+            self.critic_optim.step()
     def _init_hyperparameters(self, hyperparameters): # 定义默认的超参数
         self.timesteps_per_batch = 4800 # 运行一个batch的步数,batch是一次批处理的数据集样本数
         self.max_timesteps_per_episode = 1600 # 运行一个episode的最大步数,episode是agent在环境中根据某个策略执行一系列action到结束的过程
@@ -22,6 +38,7 @@ class PPO:
         self.render = False # 是否在rollout期间可视化
         self.save_freq = 10 # 迭代多少次保存一下
         self.seed = None # 设置程序种子,用于结果再现
+        self.lr = 0.005 # 设置Adam参数
         for param, val in hyperparameters.items(): # 将超参数的默认值修改为自定义值
             exec('self.' + param + ' = ' + str(val))
         if self.seed != None: # 设置程序种子
@@ -57,13 +74,13 @@ class PPO:
         batch_acts = torch.tensor(batch_acts, dtype=torch.float) # 转换为张量
         batch_log_probs = torch.tensor(batch_log_probs, dtype=torch.float) # 转换为张量
         batch_rtgs = self.compute_rtgs(batch_rews) # 计算batch奖励rews的后续奖励rtgs
-    def get_action(self, obs): # 根据一个观测空间obs来得到动作空间act，输入obs输出act和log概率
+    def get_action(self, obs): # 根据一个观测空间obs来得到动作空间act，输入obs，输出act和log概率
         mean = self.actor(obs) # 使用actor网络在前向输出mean动作act
         dist = MultivariateNormal(mean, self.cov_mat) # 使用act和std创建多元正态分布
         action = dist.sample() # 对接近均值的act进行采样，随机选取一个act
         log_prob = dist.log_prob(action) # 计算该act在分布中的log概率
         return action.detach().numpy(), log_prob.detach() # 返回采样的act和该act在分布中的log概率
-    def compute_rtgs(self, batch_rews): # 计算给定batch奖励rews的后续奖励rtgs，输入batch奖励rews输出后续奖励rtgs
+    def compute_rtgs(self, batch_rews): # 计算给定batch奖励rews的后续奖励rtgs，输入batch奖励rews，输出后续奖励rtgs（Q-value）
         batch_rtgs = [] # batch后续奖励rtgs
         for ep_rews in reversed(batch_rews): # 循环每一个episode
             discounted_reward = 0 # 到目前为止的奖励
@@ -72,3 +89,10 @@ class PPO:
                 batch_rtgs.insert(0, discounted_reward) # 把奖励插入后续奖励rtgs的第一个位置
         batch_rtgs = torch.tensor(batch_rtgs, dtype=torch.float) # 将后续奖励rtgs转换为张量tensor
         return batch_rtgs # 返回后续奖励rtgs
+    def evaluate(self, batch_obs, batch_acts): # 计算log概率和obs的value，输入obs和act，输出log概率和obs的预测值（V-value）
+        V = self.critic(batch_obs).squeeze() # 查询critic网络中对于obs的V的值，V的维度应该与batch_rtgs相同
+        mean = self.actor(batch_obs) # 这三句代码
+        dist = MultivariateNormal(mean, self.cov_mat) # 类似于get_action函数
+        log_probs = dist.log_prob(batch_acts) # 使用actor网络计算log概率
+        return V, log_probs # 返回V-value和log概率
+
