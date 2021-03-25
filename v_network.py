@@ -12,7 +12,7 @@ class FeedForwardNN(nn.Module):
         self.layer3 = nn.Linear(64, out_dim)
     def forward(self, obs): # 前向传播函数,用来定义actor和critic,输入obs输出action
         if isinstance(obs, np.ndarray): # 将obs从数组array转换为张量tensor
-            obs = torch.tensor(obs, dtype=torch.float32)
+            obs = torch.tensor(obs, dtype=torch.float)
         activation1 = F.relu(self.layer1(obs)) # 使用ReLU函数激活,经过三层全连接层后输出
         activation2 = F.relu(self.layer2(activation1))
         output = self.layer3(activation2)

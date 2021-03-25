@@ -48,6 +48,8 @@ DDPG用来解决连续动作问题
 [PPO机器人演示](https://openai.com/blog/openai-baselines-ppo/)
 
 [pytorch的PPO思路](https://blog.csdn.net/melody_cjw/article/details/112851552)
+## debug记录
+报错unindent does not match any outer indentation level：
 
-
+tab和空格缩进混用
 
