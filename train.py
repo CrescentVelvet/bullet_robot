@@ -8,17 +8,15 @@ Description  :
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "2"
 import gym
+# import helper
 import pleg.envs.environment
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3 import DDPG
-# from stable_baselines3.ppo2 import ppo2
 # from stable_baselines3.common.vec_env import DummyVecEnv
 # from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
-
-# from my_ddpg import DDPG
-
+# from wrappers import Reset, Monitor
 # 定义超参数
 # params = {'learning_rate': 1e-5,    # 学习率
 #           'gamma': 0.99,            # reward的衰减因子
@@ -28,15 +26,17 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 #           'policy_kwargs': dict(net_arch=[256, 256, 256])}
 # 创建环境(名为MyEnv-v0,render绘制bullet仿真界面,unwrapped解除环境限制)
 # env = make_vec_env('MyEnv-v0', n_envs = 4)
-env = gym.make('MyEnv-v0', render=False)
-env = env.unwrapped
-env.seed(1)
+env = gym.make('MyEnv-v0', render=True)
+# env = env.unwrapped
+# env = Monitor(env, helper.ensure_dir('./monitor'), allow_early_resets=True) # 添加监视器
+# env = Reset(env)
+# env.seed(1)
 # 添加噪声
 # n_actions = env.action_space.shape[-1]
 # action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
 # 创建模型(DDPG/PPO算法,MlpPolicy类型)
-# model = PPO("MlpPolicy", env, verbose=1)
-model = DDPG("MlpPolicy", env, verbose=1)
+model = PPO("MlpPolicy", env, verbose=1)
+# model = DDPG("MlpPolicy", env, verbose=1)
 # model = DDPG("MlpPolicy", env, action_noise=action_noise, verbose=1)
 # model = DDPG('MlpPolicy', DummyVecEnv([lambda: env]), **params)
 # 构建模型(代理执行最大步数total_timesteps,采集数据样本时间间隔log_interval)
@@ -47,8 +47,8 @@ model.learn(total_timesteps=total_timesteps, log_interval=log_interval)
 model.save('wyf-pleg')
 env = model.get_env()
 del model
-model = DDPG.load(r'wyf-pleg.zip')
-# model = PPO.load(r'wyf-pleg.zip')
+model = PPO.load(r'wyf-pleg.zip')
+# model = DDPG.load(r'wyf-pleg.zip')
 # 初始化环境(获取obs反馈)
 obs, state, dones = env.reset(), None, [False]
 # 循环训练
@@ -57,6 +57,6 @@ while True:
     # 环境演化一步
     obs, reward, done, info = env.step(action)
     # 绘制当前环境
-    env.render()
+    # env.render()
     if done:
         obs = env.reset()

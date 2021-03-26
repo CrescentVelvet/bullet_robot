@@ -143,7 +143,6 @@ class RobotEnv(gym.Env):
         reward = p.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
         # reward = p.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
         print('------reward : ', reward)
-        # print(0)
         return reward
 
     # 计算事件完成情况(bool)
@@ -206,15 +205,16 @@ class RobotEnv(gym.Env):
         return robot_urdf
 
     # 设置关节控制器
-    def _set_controler(self, action):
+    def _set_controler(self, input_action):
         # 最大力矩
         max_force = 500
         # 最大角速度
         max_velocity = 0.02
         # 控制模式
+        # control_mode = p.POSITION_CONTROL
         control_mode = p.VELOCITY_CONTROL
         # 控制参数
-        action = action
+        action = input_action
         # action = action * math.pi
         # print('action', action)
         p.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
