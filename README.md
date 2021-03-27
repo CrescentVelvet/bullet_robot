@@ -48,8 +48,24 @@ DDPG用来解决连续动作问题
 [PPO机器人演示](https://openai.com/blog/openai-baselines-ppo/)
 
 [pytorch的PPO思路](https://blog.csdn.net/melody_cjw/article/details/112851552)
+
+## baselines3最强pytorch下的PPO
+
+[简介](https://araffin.github.io/post/sb3/)
+[代码](https://github.com/DLR-RM/stable-baselines3)
+[文档](https://stable-baselines3.readthedocs.io/en/master/)
+[框架](https://github.com/DLR-RM/rl-baselines3-zoo)
+[教程](https://github.com/araffin/rl-tutorial-jnrr19)
+
 ## debug记录
 报错unindent does not match any outer indentation level：
 
 tab和空格缩进混用
 
+安装box2d失败：
+```
+sudo apt-get install swig
+pip install box2d
+pip install box2d-kengz
+
+```

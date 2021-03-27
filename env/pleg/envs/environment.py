@@ -36,7 +36,7 @@ class RobotEnv(gym.Env):
         self._seed()
     def _seed(self, seed=None):
         self.np_random, seed = gym.utils.seeding.np_random(seed)
-        return [seed]   
+        return [seed]
     def step(self, action): # 步骤执行函数       
         self._set_controler(action) # 设置关节控制器(action发送控制参数)        
         p.stepSimulation() # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分        
@@ -44,7 +44,7 @@ class RobotEnv(gym.Env):
         reward = self._compute_reward() # 计算动作奖励量(float)        
         done = self._compute_done() # 计算事件完成情况(bool)        
         self._envStepCounter += 1 # 时间步数
-        return np.array(self._observation), reward, done, {}    
+        return np.array(self._observation), reward, done, {}
     def reset(self): # 重置环境函数
         p.resetSimulation() # 开始仿真        
         p.setGravity(0, 0, -9.8) # 设置重力m/s^2        
