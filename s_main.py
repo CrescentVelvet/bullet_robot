@@ -8,7 +8,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from gym.envs.classic_control.pendulum import PendulumEnv
 import pleg.envs.environment
-env = DummyVecEnv([lambda: gym.make('HalfCheetahBulletEnv-v0')]) # 创建环境
+env = DummyVecEnv([lambda: gym.make('MyEnv-v0', render=True)]) # 创建环境，读取我的环境MyEnv-v0
 env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.0)
 model = PPO('MlpPolicy', env) # 建立模型
 model.learn(total_timesteps=2000) # 训练2000次
@@ -19,7 +19,15 @@ model.save(model_path) # 保存模型
 env_path = os.path.join(save_dir, 'vec_normalize.pkl') # 环境保存地址
 env.save(env_path) # 保存环境
 del model, env # 删除模型和环境
-loaded_model = PPO.load(model_path, 'ppo_halfcheetah') # 加载模型
-env = DummyVecEnv([lambda: gym.make("HalfCheetahBulletEnv-v0")]) # 加载环境
-env = VecNormalize.load(env_path, env) # 加载环境，环境标准化
-env.training = False
+loaded_model = PPO.load(model_path) # 加载模型
+env = DummyVecEnv([lambda: gym.make("MyEnv-v0")]) # 加载环境
+# env = DummyVecEnv([lambda: gym.make("HumanoidBulletEnv-v0")]) # 加载机器人环境
+# env = VecNormalize.load(env_path, env) # 加载环境，环境标准化
+# env.training = False # 更新
+# env.norm_reward = False # reward归一化
+obs, done = env.reset(), False
+# 循环训练
+while not done:
+    action = loaded_model.predict(obs)
+    print(action)
+    obs, reward, done, info = env.step(action)
