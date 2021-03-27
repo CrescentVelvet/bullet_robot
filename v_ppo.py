@@ -109,7 +109,6 @@ class PPO:
         mean = self.actor(obs).squeeze() # 使用actor网络在前向输出mean动作act
         dist = torch.distributions.multivariate_normal.MultivariateNormal(mean, self.cov_mat) # 使用act和std创建多元正态分布
         action = dist.sample() # 对接近均值的act进行采样,随机选取一个act
-        print('---', action)
         log_prob = dist.log_prob(action) # 计算该act在分布中的log概率
         return action.detach().numpy(), log_prob.detach() # 返回采样的act和该act在分布中的log概率
     def compute_rtgs(self, batch_rews): # 计算给定batch奖励rews的后续奖励rtgs,输入batch奖励rews,输出后续奖励rtgs(Q-value)

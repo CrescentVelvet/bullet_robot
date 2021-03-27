@@ -95,12 +95,12 @@ class RobotEnv(gym.Env):
         # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
         # reward = robot_pos[2]
         # reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]
-        reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
+        reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
         # reward = pybullet.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
         # print('------reward : ', reward)
         return reward    
     def _compute_done(self): # 计算事件完成情况(bool)
-        is_done = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - p.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
+        is_done = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
         # if self._envStepCounter >= 10000 or is_done >= 0.5:
         if self._envStepCounter >= 1000000:
             return True
@@ -158,62 +158,62 @@ class RobotEnv(gym.Env):
         control_mode = pybullet.VELOCITY_CONTROL # 控制模式        
         action = input_action # 控制参数
         # action = action * math.pi
-        # print('action', action)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        print('action', action)
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
                                 controlMode=control_mode,
                                 targetVelocity=action[0],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_hand_left'],
                                 controlMode=control_mode,
                                 targetVelocity=action[1],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[2],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_hand_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[3],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg_left'],
                                 controlMode=control_mode,
                                 targetVelocity=action[4],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg2_left'],
                                 controlMode=control_mode,
                                 targetVelocity=action[5],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_foot1_left'],
                                 controlMode=control_mode,
                                 targetVelocity=action[6],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[7],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_leg2_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[8],
                                 force=max_force,
                                 maxVelocity=max_velocity)
-        pybullet.setJointMotorControl2(bodyUniqueId=self.robot_urdf,
+        pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_foot1_right'],
                                 controlMode=control_mode,
                                 targetVelocity=action[9],
