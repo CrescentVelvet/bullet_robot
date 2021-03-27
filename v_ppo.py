@@ -1,4 +1,5 @@
 # 建立PPO模型
+import os
 import torch
 import datetime
 import numpy as np
@@ -6,9 +7,9 @@ from torch.optim import Adam
 import pleg.envs.environment
 from v_network import FeedForwardNN
 class PPO:
-    def __init__(self, env, **hyperparameters):
+    def __init__(self, env, outdir):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # GPU使用
-        self._init_hyperparameters(hyperparameters) # 使用默认的超参数初始化
+        self._init_hyperparameters() # 使用默认的超参数初始化
         self.env = env # 环境设置
         self.obs_dim = env.observation_space.shape[0] # 观测空间的大小
         self.act_dim = env.action_space.shape[0] # 动作空间的大小
@@ -19,8 +20,9 @@ class PPO:
         self.critic = FeedForwardNN(self.obs_dim, 1).to(self.device) # critic网络初始化
         self.actor_optim = Adam(self.actor.parameters(), lr=self.actor_lr) # 定义actor模型的Adam优化器
         self.critic_optim = Adam(self.critic.parameters(), lr=self.critic_lr) # 定义critic模型的Adam优化器
-        self.now = datetime.datetime.now().strftime("%D-%H-%M").replace('/','-') # 当前时间
-    def _init_hyperparameters(self, hyperparameters): # 定义默认的超参数
+        self.now = datetime.datetime.now().strftime("%D-%H-%M").replace('/','-') # 记录当前时间
+        self.outdir = outdir # 记录模型保存地址
+    def _init_hyperparameters(self): # 定义默认的超参数
         self.timesteps_per_batch = 4800 # 运行一个batch的步数,batch是一次批处理的数据集样本数
         self.max_timesteps_per_episode = 1600 # 运行一个episode的最大步数,episode是agent在环境中根据某个策略执行一系列action到结束的过程
         self.n_updates_per_iteration = 5 # 每次迭代更新actor/critic的次数
@@ -34,8 +36,6 @@ class PPO:
         self.epochs = 4
         self.entropy_beta = 0.1
         self.minibatch_size = 256
-        for param, val in hyperparameters.items(): # 将超参数的默认值修改为自定义值
-            exec('self.' + param + ' = ' + str(val))
         if self.seed != None: # 设置程序种子
             assert (type(self.seed) == int) # 首先检查程序种子是否有效(int)
             torch.manual_seed(self.seed) # 然后设置程序种子
@@ -120,4 +120,12 @@ class PPO:
         dist = torch.distributions.multivariate_normal.MultivariateNormal(mean, self.cov_mat) # 类似于get_action函数
         log_probs = dist.log_prob(batch_acts) # 使用actor网络计算log概率
         return V, log_probs # 返回V-value和log概率
-
+    def save(self, name): # 模型保存函数
+        torch.save({
+            'actor': self.actor.state_dict(),
+            'critic': self.critic.state_dict()
+        }, os.path.join(self.outdir, '{}train_{}.pth'.format(self.now, name)))
+    def load(self, path): # 模型读取函数
+        checkpoint = torch.load(path)
+        self.actor.load_state_dict(checkpoint['actor'])
+        self.critic.load_state_dict(checkpoint['critic'])
