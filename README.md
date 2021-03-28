@@ -69,3 +69,9 @@ pip install box2d
 pip install box2d-kengz
 
 ```
+
+train.py是最早的运行代码，大杂烩
+
+v_main.py是运行我自己写的PPO的代码
+
+s_main.py是运行baseline的PPO的代码

@@ -7,6 +7,8 @@ Description  :
 '''
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "2"
+# import torch
+# torch.cuda.set_device(0)
 import gym
 # import helper
 import numpy as np
@@ -71,6 +73,7 @@ obs, state, dones, done = env.reset(), None, [False], False
 # 循环训练
 while not done:
     action, state = model.predict(obs, state=state, mask=dones)
+    # print('action = ', action)
     # print('state = ', state)
     # print('dones = ', dones)
     # 环境演化一步
