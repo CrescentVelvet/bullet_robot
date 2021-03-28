@@ -6,28 +6,20 @@ import numpy as np
 import pybullet_envs
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
-from gym.envs.classic_control.pendulum import PendulumEnv
 import pleg.envs.environment
-env = DummyVecEnv([lambda: gym.make('MyEnv-v0', render=True)]) # 创建环境，读取我的环境MyEnv-v0
-env = VecNormalize(env, norm_obs=True, norm_reward=True, clip_obs=10.0)
-model = PPO('MlpPolicy', env) # 建立模型
-model.learn(total_timesteps=2000) # 训练2000次
-save_dir='/home/zjunlict-vision-1/Desktop/bullet_robot/model' # 保存地址
-os.makedirs(save_dir, exist_ok=True) # 没有model文件夹就新建一个
-model_path = os.path.join(save_dir, 'PPO_tutorial') # 模型保存地址
-model.save(model_path) # 保存模型
-env_path = os.path.join(save_dir, 'vec_normalize.pkl') # 环境保存地址
-env.save(env_path) # 保存环境
-del model, env # 删除模型和环境
-loaded_model = PPO.load(model_path) # 加载模型
-env = DummyVecEnv([lambda: gym.make("MyEnv-v0")]) # 加载环境
-# env = DummyVecEnv([lambda: gym.make("HumanoidBulletEnv-v0")]) # 加载机器人环境
-# env = VecNormalize.load(env_path, env) # 加载环境，环境标准化
-# env.training = False # 更新
-# env.norm_reward = False # reward归一化
-obs, done = env.reset(), False
+use_my_robot = 0
+if use_my_robot:
+    env = gym.make('MyEnv-v0', render=True) # 创建环境，读取我的环境MyEnv-v0
+else:
+    env = DummyVecEnv([lambda: gym.make('HumanoidBulletEnv-v0', render=True)]) # 创建环境
+model = PPO('MlpPolicy', env, verbose=1) # 建立模型
+model.learn(total_timesteps=10000, log_interval=10) # 训练2000次
+model.save('v-wyf-pleg') # 保存模型
+del model # 删除模型
+model = PPO.load(r'v-wyf-pleg.zip') # 加载模型
+obs, state, dones, done = env.reset(), None, [False], False # 重设环境
 # 循环训练
 while not done:
-    action = loaded_model.predict(obs)
-    print(action)
+    action = model.predict(obs, state=state, mask=dones)
+    print('action = ', action)
     obs, reward, done, info = env.step(action)
