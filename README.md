@@ -57,6 +57,11 @@ DDPG用来解决连续动作问题
 [框架](https://github.com/DLR-RM/rl-baselines3-zoo)
 [教程](https://github.com/araffin/rl-tutorial-jnrr19)
 
+查看baseline练的机器人走路
+```
+python -m pybullet_envs.examples.enjoy_TF_HumanoidBulletEnv_v0_2017may
+```
+
 ## debug记录
 报错unindent does not match any outer indentation level：
 
@@ -75,3 +80,23 @@ train.py是最早的运行代码，大杂烩
 v_main.py是运行我自己写的PPO的代码
 
 s_main.py是运行baseline的PPO的代码
+
+## 使用tensorboardX监视器
+```
+pip install tensorboardX
+```
+在命令行里输入
+```
+tensorboard --logdir=/home/zjunlict-vision-1/Desktop/bullet_robot/runs/
+```
+或者进入目录下
+```
+tensorboard --logdir=runs/
+```
+如果报错Not a TBLoader or TBPlugin subclass，重装一下
+```
+pip uninstall tensorboard
+pip uninstall tensorboard-plugin-wit
+pip install tensorboard
+```
+会生成网址http://localhost:6006/，进入即可查看，30s刷新一次

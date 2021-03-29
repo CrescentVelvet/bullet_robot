@@ -29,6 +29,8 @@ class RobotEnv(gym.Env):
         observation_high = np.array([self._observation_bound] * observation_dim)
         self.observation_space = gym.spaces.Box(np.float32(-observation_high), np.float32(observation_high))
         self.command_vel = np.zeros(action_dim) # 机器人关节速度指令
+        self.friction = np.zeros(len(self.command_vel)) # 摩擦力
+        self.acceleration = np.zeros(len(self.command_vel)) # 加速度
         if render: # 连接物理引擎
             self.physicsClient = pybullet.connect(pybullet.GUI) # 仿真可视化
         else:
@@ -71,9 +73,9 @@ class RobotEnv(gym.Env):
         obs = []
         for state in states:
             obs.append(state[0]) # 获取关节角度信息
-            obs.append(state[1]) # 获取关节角速度信息        
-        cube_pos, cube_orn = pybullet.getBasePositionAndOrientation(self.robot_urdf) # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]        
-        cube_euler = pybullet.getEulerFromQuaternion(cube_orn) # 将姿态四元数转换为欧拉角[yaw,pitch,roll]        
+            obs.append(state[1]) # 获取关节角速度信息
+        cube_pos, cube_orn = pybullet.getBasePositionAndOrientation(self.robot_urdf) # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+        cube_euler = pybullet.getEulerFromQuaternion(cube_orn) # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
         linear, angular = pybullet.getBaseVelocity(self.robot_urdf) # 返回世界坐标系中的速度[x,y,z]和角速度[yaw,pitch,roll]
         obs.append(cube_pos[0])
         obs.append(cube_pos[1])
@@ -87,33 +89,39 @@ class RobotEnv(gym.Env):
         obs.append(angular[0])
         obs.append(angular[1])
         obs.append(angular[2])
-        # print('------obs : ', cube_pos[0])
-        return obs    
+        return obs
     def _compute_reward(self): # 计算动作奖励量(float)
-        robot_pos, robot_orn = pybullet.getBasePositionAndOrientation(self.robot_urdf) # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]        
-        robot_euler = pybullet.getEulerFromQuaternion(robot_orn) # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
-        # 设置reward:头部最高,脚部最低,质心越高越好
-        # reward = robot_pos[2] * 10 + self._envStepCounter * self.time_step
-        # reward = robot_pos[2]
-        # reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]
-        reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
+        # robot_pos, robot_orn = pybullet.getBasePositionAndOrientation(self.robot_urdf) # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
+        robot_vel, robot_wvel = pybullet.getBaseVelocity(self.robot_urdf) # 返回世界坐标系中的速度[x,y,z]和角速度[wx,wy,wz]
+        reward = robot_vel[0] # 奖励 = 全身x速度
+        # reward = robot_pos[0] # 奖励 = 全身x坐标
+        # reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2] # 奖励 = 头部z坐标
+        # 奖励 = 头部z坐标*2 - 左脚z坐标 - 右脚z坐标
+        # reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
         # reward = pybullet.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
+        # 惩罚 = 各关节扭矩 * 角速度
+        punish = 0
+        for i in range(len(self.command_vel)):
+            punish += self.acceleration[i] * self.command_vel[i] * 0.01
         # print('------reward : ', reward)
-        return reward    
+        # print('------punish : ', punish)
+        return reward-punish
     def _compute_done(self): # 计算事件完成情况(bool)
-        is_done = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
+        # is_done = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
         # if self._envStepCounter >= 10000 or is_done >= 0.5:
-        if self._envStepCounter >= 1000000:
-            return True
+        is_done = False
+        if self._envStepCounter >= 100000:
+            is_done = True
+        return is_done
     def _render(self, mode='human', close=False): # 图形化显示
-        pass    
+        pass
     def _load_robot(self): # 加载机器人模型
         robot_urdf = pybullet.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                                 basePosition=self.robotPos,
                                 baseOrientation=self.robotOri,
                                 flags=pybullet.URDF_USE_SELF_COLLISION or pybullet.URDF_USE_INERTIA_FROM_FILE,
                                 useFixedBase=0,
-                                )        
+                                )
         for i in range(pybullet.getNumJoints(robot_urdf)): # 获取机器人关节信息
             info = pybullet.getJointInfo(robot_urdf, i)
             # print(info)
@@ -163,12 +171,10 @@ class RobotEnv(gym.Env):
         c_drag = 0.01 # 滑动阻力系数
         c_rolling = 0.2 # 滚动阻力系数
         c_throttle = 20 # 控制系数
-        friction = np.zeros(len(self.command_vel)) # 摩擦力初始化
-        acceleration = np.zeros(len(self.command_vel)) # 加速度初始化
         for i in range(len(self.command_vel)): # 遍历机器人关节速度指令
-            friction[i] = - self.command_vel[i] * (self.command_vel[i] * c_drag + c_rolling) # 根据速度计算摩擦力
-            acceleration[i] = action[i] * c_throttle + friction[i] # 根据摩擦力计算加速度
-            self.command_vel[i] = self.command_vel[i] + 1/30 * acceleration[i] # 根据加速度计算速度
+            self.friction[i] = - self.command_vel[i] * (self.command_vel[i] * c_drag + c_rolling) # 根据速度计算摩擦力
+            self.acceleration[i] = action[i] * c_throttle + self.friction[i] # 根据摩擦力计算加速度
+            self.command_vel[i] = self.command_vel[i] + 1/30 * self.acceleration[i] # 根据加速度计算速度
             self.command_vel[i] = max(min(self.command_vel[i], 1), -1) # 速度取上下边界(-1,1)
         pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
