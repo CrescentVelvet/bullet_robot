@@ -15,7 +15,7 @@ import numpy as np
 import pybullet_envs
 from stable_baselines3 import PPO
 # from stable_baselines3 import DDPG
-from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+# from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 # from gym.envs.classic_control.pendulum import PendulumEnv
 # from stable_baselines3.common.env_util import make_vec_env
 # from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
@@ -29,10 +29,11 @@ import pleg.envs.environment
 #           'tensorboard_log': './log/',
 #           'policy_kwargs': dict(net_arch=[256, 256, 256])}
 # 创建环境(名为MyEnv-v0,render绘制bullet仿真界面,unwrapped解除环境限制)
+env = gym.make('HumanoidBulletEnv-v0', render=True)
 # env = make_vec_env('MyEnv-v0', n_envs = 4)
-# env = gym.make('MyEnv-v0', render=True)
+# env = gym.make('MyEnv-v0', render=False)
 # env = DummyVecEnv([lambda: gym.make('MyEnv-v0', render=True)]) # 创建环境，读取我的环境MyEnv-v0
-env = DummyVecEnv([lambda: gym.make('HumanoidBulletEnv-v0', render=True)]) # 创建环境
+# env = DummyVecEnv([lambda: gym.make('HumanoidBulletEnv-v0', render=False)]) # 创建环境
 # env = env.unwrapped
 # env = Monitor(env, helper.ensure_dir('./monitor'), allow_early_resets=True) # 添加监视器
 # env = Reset(env)
@@ -42,7 +43,7 @@ env = DummyVecEnv([lambda: gym.make('HumanoidBulletEnv-v0', render=True)]) # 创
 # n_actions = env.action_space.shape[-1]
 # action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
 # 创建模型(DDPG/PPO算法,MlpPolicy类型)
-model = PPO("MlpPolicy", env, verbose=1)
+model = PPO("MlpPolicy", env)
 # model = DDPG("MlpPolicy", env, verbose=1)
 # model = DDPG("MlpPolicy", env, action_noise=action_noise, verbose=1)
 # model = DDPG('MlpPolicy', DummyVecEnv([lambda: env]), **params)
@@ -58,8 +59,8 @@ model.save('wyf-pleg')
 # env_path = os.path.join(save_dir, 'vec_normalize.pkl') # 环境保存地址
 # env.save(env_path) # 保存环境
 # env = model.get_env()
-del model
-model = PPO.load(r'wyf-pleg.zip')
+# del model
+# model = PPO.load(r'wyf-pleg.zip')
 # model = DDPG.load(r'wyf-pleg.zip')
 # if use_my_robot:
 #     loaded_env = DummyVecEnv([lambda: gym.make("MyEnv-v0")]) # 加载环境
@@ -71,7 +72,7 @@ model = PPO.load(r'wyf-pleg.zip')
 # 初始化环境(获取obs反馈)
 obs, state, dones, done = env.reset(), None, [False], False
 # 循环训练
-while not done:
+while True:
     action, state = model.predict(obs, state=state, mask=dones)
     # print('action = ', action)
     # print('state = ', state)
@@ -80,5 +81,7 @@ while not done:
     obs, reward, done, info = env.step(action)
     # 绘制当前环境
     # env.render()
-    # if done:
+    if done:
     #     obs = env.reset()
+        print('-----------done!')
+        break

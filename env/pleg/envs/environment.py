@@ -91,24 +91,24 @@ class RobotEnv(gym.Env):
         obs.append(angular[2])
         return obs
     def _compute_reward(self): # 计算动作奖励量(float)
-        # robot_pos, robot_orn = pybullet.getBasePositionAndOrientation(self.robot_urdf) # 返回世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
-        robot_vel, robot_wvel = pybullet.getBaseVelocity(self.robot_urdf) # 返回世界坐标系中的速度[x,y,z]和角速度[wx,wy,wz]
-        reward = robot_vel[0] # 奖励 = 全身x速度
-        # reward = robot_pos[0] # 奖励 = 全身x坐标
+        # cube_pos, cube_orn = pybullet.getBasePositionAndOrientation(self.robot_urdf)
+        linear, angular = pybullet.getBaseVelocity(self.robot_urdf)
+        reward = angular[0] # 奖励 = 整体x速度
+        # reward = cube_pos[0] # 奖励 = 整体x坐标
         # reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2] # 奖励 = 头部z坐标
         # 奖励 = 头部z坐标*2 - 左脚z坐标 - 右脚z坐标
         # reward = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
-        # reward = pybullet.getJointState(self.robot_urdf, self.jointNameToID_robot['joint_arm_left'])[0][2]
-        # 惩罚 = 各关节扭矩 * 角速度
-        punish = 0
+        falling = 0 # 防止倒下
+        if pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2] < 0.5:
+            falling = 0.5
+        punish = 0 # 惩罚 = 各关节扭矩 * 角速度
         for i in range(len(self.command_vel)):
             punish += self.acceleration[i] * self.command_vel[i] * 0.01
         # print('------reward : ', reward)
+        # print('------falling : ', falling)
         # print('------punish : ', punish)
-        return reward-punish
+        return reward-punish-falling
     def _compute_done(self): # 计算事件完成情况(bool)
-        # is_done = pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['body_head'])[4][2]*2 - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_left'])[4][2] - pybullet.getLinkState(self.robot_urdf, self.linkNameToID_robot['foot1_right'])[4][2]
-        # if self._envStepCounter >= 10000 or is_done >= 0.5:
         is_done = False
         if self._envStepCounter >= 100000:
             is_done = True
@@ -170,12 +170,13 @@ class RobotEnv(gym.Env):
         # print('action', action)
         c_drag = 0.01 # 滑动阻力系数
         c_rolling = 0.2 # 滚动阻力系数
-        c_throttle = 20 # 控制系数
+        c_throttle = 20 # 加速度控制系数
         for i in range(len(self.command_vel)): # 遍历机器人关节速度指令
             self.friction[i] = - self.command_vel[i] * (self.command_vel[i] * c_drag + c_rolling) # 根据速度计算摩擦力
             self.acceleration[i] = action[i] * c_throttle + self.friction[i] # 根据摩擦力计算加速度
             self.command_vel[i] = self.command_vel[i] + 1/30 * self.acceleration[i] # 根据加速度计算速度
-            self.command_vel[i] = max(min(self.command_vel[i], 1), -1) # 速度取上下边界(-1,1)
+            self.command_vel[i] = max(min(self.command_vel[i], 1), -1) # 速度取上下边界(-1,1)    
+        # print('------falling : ', action)
         pybullet.setJointMotorControl2(bodyIndex=self.robot_urdf,
                                 jointIndex=self.jointNameToID_robot['joint_arm_left'],
                                 controlMode=control_mode,
