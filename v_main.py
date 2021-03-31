@@ -10,11 +10,11 @@ v_tensor_board = tensorboardX.SummaryWriter(comment='_v_main') # 创建监视器
 env = gym.make('MyEnv-v0', render=False) # 构建环境
 env = env.unwrapped # 解除环境限制
 print('------环境构建完成---开始构建模型------')
-save_dir='/home/zjunlict-vision-1/Desktop/bullet_robot/model' # 设置模型保存地址
+save_dir='/home/zjunlict-vision-1/Desktop/bullet_robot/my_ppo/model' # 设置模型保存地址
 model = PPO(env, save_dir) # 建立PPO模型
 total_timesteps = 10000 # 循环设定总步数
 model.learn(total_timesteps=total_timesteps) # 模型训练
-model.save('v-wyf-pleg') # 保存模型
+model.save('my_ppo/v-wyf-pleg') # 保存模型
 print('------模型构建完成---开始仿真训练------')
 obs, state, dones = env.reset(), None, [False] # 重设环境
 while True: # 循环训练

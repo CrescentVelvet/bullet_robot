@@ -11,31 +11,19 @@ import numpy as np
 import pybullet as p
 import pybullet_data
 
-# 连接物理引擎
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
-# 设置重力
 p.setGravity(0, 0, -10)
-# 实时仿真
 useRealTimeSim = 0
 p.setRealTimeSimulation(useRealTimeSim)
-# 设置地面
-# plane = p.createCollisionShape(p.GEOM_PLANE)
-# p.createMultiBody(0, plane)
-# 加载默认地面
-planeId = p.loadURDF("plane.urdf")
-# 加载足球场地面
-# planeId = p.loadSDF("stadium.sdf")
-# 设置地面摩擦力
-p.changeDynamics(planeId,-1,lateralFriction = 0.6,spinningFriction = 0.3,rollingFriction = 0.0001)
-# 设置相机
+planeId = p.loadSDF("stadium.sdf")
 p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
                                 cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
 use_robot = 1                       # 显示机器人模型
 use_car = 0                         # 显示小车模型
 use_rozen = 1 - use_robot           # 显示我的模型
-use_camera = 0                      # 开启摄像头
+use_camera = 1                      # 开启摄像头
 draw_interia = 0                    # 绘制转动惯量
 draw_sphere  = 0                    # 绘制质心小球
 robotPos = [0, 0, 0.28]             # 机器人坐标
@@ -45,18 +33,15 @@ linkNameToID_robot = {}             # 机器人部件名
 
 # 仿真机器人函数
 def useRobot():
-    # 加载机器人模型(相对路径)(转动惯量URDF_USE_INERTIA_FROM_FILE,碰撞URDF_USE_SELF_COLLISION)
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition = robotPos,
                             baseOrientation = robotOri,
-                            # flags = p.URDF_USE_INERTIA_FROM_FILE,
                             flags = p.URDF_USE_SELF_COLLISION or p.URDF_USE_INERTIA_FROM_FILE,
                             useFixedBase = 0,
                             )
     # 获取机器人关节信息
     for i in range(p.getNumJoints(robot_urdf)):
         info = p.getJointInfo(robot_urdf, i)
-        # print(info)
         jointID = info[0]
         jointName = info[1].decode('UTF-8')
         jointType = info[2]
@@ -69,52 +54,14 @@ def useRobot():
                                 parentObjectUniqueId = robot_urdf,
                                 parentLinkIndex = i,
                                 textColorRGB = [1, 0, 0])
-    # 查看关节参数,state = (关节角度vec1,关节角速度vec1,关节力与力矩vec6,关节电机转矩vec1)
-    # joint_state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
-    # 查看部件参数,state = (质心坐标vec3,质心朝向vec4,,,部件坐标vec3,部件坐标vec4,部件速度vec3,部件角速度vec3)
-    # link_state = p.getLinkState(robot_urdf, linkNameToID_robot['arm_left'])
-    # print('\r', state[4][2], end='', flush=True)
-    # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
-    cube_pos, cube_orn = p.getBasePositionAndOrientation(robot_urdf)
-    # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
-    cube_euler = p.getEulerFromQuaternion(cube_orn)
-    # 显示debug信息
-    p.addUserDebugText(str(cube_orn),
-                        [0, 0, 0],
-                        textSize = 1,
-                        parentObjectUniqueId = robot_urdf,
-                        parentLinkIndex = -1,
-                        textColorRGB = [0.3, 0.3, 0.3])
-    # 绘制机器人模型部件link转动惯量
     if draw_interia:
         drawInertiaBox(robot_urdf, -1, [1, 0, 0])
         for i in range(p.getNumJoints(robot_urdf)):
             drawInertiaBox(robot_urdf, i, [0, 1, 0])
-    # 绘制机器人模型部件link质心小球
     if draw_sphere:
         drawLinkSphere(-1, p.getBasePositionAndOrientation(robot_urdf)[0][:3])
         for i in range(p.getNumJoints(robot_urdf)):
             drawLinkSphere(i, p.getLinkState(robot_urdf, i)[0][:3])
-    # 设置机器人直立的关节参数
-    # ini_body_head = 0
-    # ini_body_head2 = 0
-    # ini_arm_left = 1.7
-    # ini_hand_left = 0.2
-    # ini_arm_right = 0.2
-    # ini_hand_right = 0.2
-    # ini_body_hip = 0
-    # ini_body_hip_left = 0
-    # ini_body_hip2_left = 0
-    # ini_body_hip_right = 0
-    # ini_body_hip2_right = -0.7
-    # ini_leg_left = -1.7
-    # ini_leg2_left = 1
-    # ini_foot1_left = -0.2
-    # ini_foot2_left = 0
-    # ini_leg_right = 0.5
-    # ini_leg2_right = 1
-    # ini_foot1_right = -1
-    # ini_foot2_right = -1
     ini_body_head = 0
     ini_body_head2 = 0
     ini_arm_left = 0
@@ -156,11 +103,6 @@ def useRobot():
     # vel_foot2_right_slider   = p.addUserDebugParameter("vel_foot2_right", -10, 10, ini_foot2_right)
     reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
     while True:
-        # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
-        # cube_pos, cube_orn = p.getBasePositionAndOrientation(robot_urdf)
-        # 输出debug信息
-        # print('\r', cube_orn, end='', flush=True)
-        # 读取控制滑块数据
         pos_body_head   = p.readUserDebugParameter(pos_body_head_slider)
         pos_body_head2  = p.readUserDebugParameter(pos_body_head2_slider)
         vel_arm_left    = p.readUserDebugParameter(vel_arm_left_slider)
@@ -183,28 +125,9 @@ def useRobot():
         reset_all       = p.readUserDebugParameter(reset_all_slider)
         # 重置每一个关节的位置
         if reset_all < 0:
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_head'], ini_body_head)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_head2'], ini_body_head2)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_arm_left'], ini_arm_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_hand_left'], ini_hand_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_arm_right'], ini_arm_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_hand_right'], ini_hand_right)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip'], ini_body_hip)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_left'], ini_body_hip_left)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_left'], ini_body_hip2_left)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip_right'], ini_body_hip_right)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_body_hip2_right'], ini_body_hip2_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_left'], ini_leg_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_left'], ini_leg2_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot1_left'], ini_foot1_left)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot2_left'], ini_foot2_left)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg_right'], ini_leg_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_leg2_right'], ini_leg2_right)
-            p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot1_right'], ini_foot1_right)
-            # p.resetJointState(robot_urdf, jointNameToID_robot['joint_foot2_right'], ini_foot2_right)
-            # for joint_name in jointNameToID_robot:
-            #     print(joint_name)
-            #     p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
+            for joint_name in jointNameToID_robot:
+                print(joint_name)
+                p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
         # 设置关节控制器
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_body_head'],
@@ -374,18 +297,6 @@ def useCar():
             # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
             p.stepSimulation()
 
-# 仿真模型函数
-def useRozen():
-    rozen_urdf = p.loadURDF(r'dancer_urdf_model/model/rozen_urdf_model.URDF',
-                            basePosition = robotPos,
-                            baseOrientation = robotOri,
-                            flags = p.URDF_USE_INERTIA_FROM_FILE,
-                            useFixedBase = 0)
-    while True:
-        if useRealTimeSim == 0:
-            p.stepSimulation()
-            time.sleep(0.01)
-
 # 绘制转动惯量函数
 def drawInertiaBox(parentUid, parentLinkIndex, color):
     dyn = p.getDynamicsInfo(parentUid, parentLinkIndex)
@@ -511,7 +422,3 @@ if use_robot:
 # 仿真小车
 if use_car:
     useCar()
-
-# 仿真模型
-if use_rozen:
-    useRozen()
