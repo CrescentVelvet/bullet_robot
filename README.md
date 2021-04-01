@@ -61,7 +61,6 @@ DDPG用来解决连续动作问题
 ```
 python -m pybullet_envs.examples.enjoy_TF_HumanoidBulletEnv_v0_2017may
 ```
-
 ## debug记录
 报错unindent does not match any outer indentation level：
 
@@ -74,13 +73,6 @@ pip install box2d
 pip install box2d-kengz
 
 ```
-
-train.py是最早的运行代码，大杂烩
-
-v_main.py是运行我自己写的PPO的代码
-
-s_main.py是运行baseline的PPO的代码
-
 ## 使用tensorboardX监视器
 ```
 pip install tensorboardX
@@ -100,3 +92,25 @@ pip uninstall tensorboard-plugin-wit
 pip install tensorboard
 ```
 会生成网址http://localhost:6006/，进入即可查看，30s刷新一次
+## 文件
+```
+modelset.py
+```
+显示bullet模型信息
+```
+train.py
+```
+强化学习代码，大杂烩
+```
+v_main.py
+```
+运行自己写的v_ppo代码
+```
+s_main.py
+```
+运行baselines3库PPO代码
+```
+d_motion.py
+```
+仿真模型后躺爬起站立
+

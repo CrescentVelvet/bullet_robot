@@ -13,21 +13,20 @@ import pybullet_data
 
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
-p.setGravity(0, 0, -10)
+p.setGravity(0, 0, -100)
 useRealTimeSim = 0
 p.setRealTimeSimulation(useRealTimeSim)
 planeId = p.loadSDF("stadium.sdf")
-p.resetDebugVisualizerCamera(cameraDistance=3.0, cameraYaw=50.0, cameraPitch=-23.80,
-                                cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
+p.changeDynamics(planeId[0], -1, lateralFriction = 0.8, spinningFriction = 0.3, rollingFriction = 0.0001)
+p.resetDebugVisualizerCamera(cameraDistance=4.0, cameraYaw=75.0, cameraPitch=-25.0, cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
 use_robot = 1                       # 显示机器人模型
-use_car = 0                         # 显示小车模型
-use_rozen = 1 - use_robot           # 显示我的模型
 use_camera = 1                      # 开启摄像头
+draw_message = 0                    # 显示关节名称
 draw_interia = 0                    # 绘制转动惯量
 draw_sphere  = 0                    # 绘制质心小球
 robotPos = [0, 0, 0.28]             # 机器人坐标
-robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向
+robotOri = [-0.4, 0.9, 0.0, 0.0]    # 机器人方向
 jointNameToID_robot = {}            # 机器人关节名
 linkNameToID_robot = {}             # 机器人部件名
 
@@ -36,6 +35,7 @@ def useRobot():
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition = robotPos,
                             baseOrientation = robotOri,
+                            # flags = p.URDF_USE_INERTIA_FROM_FILE,
                             flags = p.URDF_USE_SELF_COLLISION or p.URDF_USE_INERTIA_FROM_FILE,
                             useFixedBase = 0,
                             )
@@ -48,254 +48,154 @@ def useRobot():
         if jointType == p.JOINT_REVOLUTE:
             jointNameToID_robot[jointName] = info[0]
             linkNameToID_robot[info[12].decode('UTF-8')] = info[0]
-            # 显示关节名称
-            p.addUserDebugText(str(jointName),
-                                [0, 0, 0],
-                                parentObjectUniqueId = robot_urdf,
-                                parentLinkIndex = i,
-                                textColorRGB = [1, 0, 0])
-    if draw_interia:
+            if draw_message: # 显示关节名称
+                p.addUserDebugText(str(jointName), [0, 0, 0],
+                                    parentObjectUniqueId = robot_urdf,
+                                    parentLinkIndex = i,
+                                    textColorRGB = [1, 0, 0])
+    if draw_interia: # 绘制机器人模型部件link转动惯量
         drawInertiaBox(robot_urdf, -1, [1, 0, 0])
         for i in range(p.getNumJoints(robot_urdf)):
             drawInertiaBox(robot_urdf, i, [0, 1, 0])
-    if draw_sphere:
+    if draw_sphere: # 绘制机器人模型部件link质心小球
         drawLinkSphere(-1, p.getBasePositionAndOrientation(robot_urdf)[0][:3])
         for i in range(p.getNumJoints(robot_urdf)):
             drawLinkSphere(i, p.getLinkState(robot_urdf, i)[0][:3])
-    ini_body_head = 0
-    ini_body_head2 = 0
-    ini_arm_left = 0
-    ini_hand_left = 0
-    ini_arm_right = 0
-    ini_hand_right = 0
-    # ini_body_hip = 0
-    # ini_body_hip_left = 0
-    # ini_body_hip2_left = 0
-    # ini_body_hip_right = 0
-    # ini_body_hip2_right = 0
-    ini_leg_left = 0
-    ini_leg2_left = 0
-    ini_foot1_left = 0
-    # ini_foot2_left = 0
-    ini_leg_right = 0
-    ini_leg2_right = 0
-    ini_foot1_right = 0
-    # ini_foot2_right = 0
-    # 设置控制滑块，参数分别是最小值，最大值，当前值
-    pos_body_head_slider    = p.addUserDebugParameter("pos_body_head", -10, 10, ini_body_head)
-    pos_body_head2_slider   = p.addUserDebugParameter("pos_body_head2", -10, 10, ini_body_head2)
-    vel_arm_left_slider     = p.addUserDebugParameter("vel_arm_left", -10, 10, ini_arm_left)
-    vel_hand_left_slider    = p.addUserDebugParameter("vel_hand_left", -10, 10, ini_hand_left)
-    vel_arm_right_slider    = p.addUserDebugParameter("vel_arm_right", -10, 10, ini_arm_right)
-    vel_hand_right_slider   = p.addUserDebugParameter("vel_hand_right", -10, 10, ini_hand_right)
-    # vel_body_hip_slider     = p.addUserDebugParameter("vel_body_hip", -10, 10, ini_body_hip)
-    # vel_body_hip_left_slider    = p.addUserDebugParameter("vel_body_hip_left", -10, 10, ini_body_hip_left)
-    # vel_body_hip2_left_slider   = p.addUserDebugParameter("vel_body_hip2_left", -10, 10, ini_body_hip2_left)
-    # vel_body_hip_right_slider   = p.addUserDebugParameter("vel_body_hip_right", -10, 10, ini_body_hip_right)
-    # vel_body_hip2_right_slider  = p.addUserDebugParameter("vel_body_hip2_right", -10, 10, ini_body_hip2_right)
-    vel_leg_left_slider     = p.addUserDebugParameter("vel_leg_left", -10, 10, ini_leg_left)
-    vel_leg2_left_slider    = p.addUserDebugParameter("vel_leg2_left", -10, 10, ini_leg2_left)
-    vel_foot1_left_slider    = p.addUserDebugParameter("vel_foot1_left", -10, 10, ini_foot1_left)
-    # vel_foot2_left_slider    = p.addUserDebugParameter("vel_foot2_left", -10, 10, ini_foot2_left)
-    vel_leg_right_slider    = p.addUserDebugParameter("vel_leg_right", -10, 10, ini_leg_right)
-    vel_leg2_right_slider   = p.addUserDebugParameter("vel_leg2_right", -10, 10, ini_leg2_right)
-    vel_foot1_right_slider   = p.addUserDebugParameter("vel_foot1_right", -10, 10, ini_foot1_right)
-    # vel_foot2_right_slider   = p.addUserDebugParameter("vel_foot2_right", -10, 10, ini_foot2_right)
-    reset_all_slider        = p.addUserDebugParameter("reset_all", -10, 10, 0)
+    pos_joint_robot = np.zeros(16) # 关节角度控制信息
+    f = open("/home/zjunlict-vision-1/Desktop/bullet_robot/motion/back_climb.txt","r") # 读取数据
+    init_flag = 1 # 竖直躺平sleep2s
+    line_string = f.readline()
     while True:
-        pos_body_head   = p.readUserDebugParameter(pos_body_head_slider)
-        pos_body_head2  = p.readUserDebugParameter(pos_body_head2_slider)
-        vel_arm_left    = p.readUserDebugParameter(vel_arm_left_slider)
-        vel_hand_left   = p.readUserDebugParameter(vel_hand_left_slider)
-        vel_arm_right   = p.readUserDebugParameter(vel_arm_right_slider)
-        vel_hand_right  = p.readUserDebugParameter(vel_hand_right_slider)
-        # vel_body_hip    = p.readUserDebugParameter(vel_body_hip_slider)
-        # vel_body_hip_left   = p.readUserDebugParameter(vel_body_hip_left_slider)
-        # vel_body_hip2_left  = p.readUserDebugParameter(vel_body_hip2_left_slider)
-        # vel_body_hip_right  = p.readUserDebugParameter(vel_body_hip_right_slider)
-        # vel_body_hip2_right = p.readUserDebugParameter(vel_body_hip2_right_slider)
-        vel_leg_left    = p.readUserDebugParameter(vel_leg_left_slider)
-        vel_leg2_left   = p.readUserDebugParameter(vel_leg2_left_slider)
-        vel_foot1_left   = p.readUserDebugParameter(vel_foot1_left_slider)
-        # vel_foot2_left   = p.readUserDebugParameter(vel_foot2_left_slider)
-        vel_leg_right   = p.readUserDebugParameter(vel_leg_right_slider)
-        vel_leg2_right  = p.readUserDebugParameter(vel_leg2_right_slider)
-        vel_foot1_right  = p.readUserDebugParameter(vel_foot1_right_slider)
-        # vel_foot2_right  = p.readUserDebugParameter(vel_foot2_right_slider)
-        reset_all       = p.readUserDebugParameter(reset_all_slider)
-        # 重置每一个关节的位置
-        if reset_all < 0:
-            for joint_name in jointNameToID_robot:
-                print(joint_name)
-                p.resetJointState(robot_urdf, jointNameToID_robot[joint_name], 0)
+        if line_string:
+            line_str = line_string.split(' ')
+            while '' in line_str:
+                line_str.remove('')
+            line_str.pop(-1) # 删除时间戳
+            line_data = list(map(float,line_str))
+            for index in range(len(line_data)): # 角度制转换弧度制
+                line_data[index] = math.radians(line_data[index])
+            pos_joint_robot[0]  = line_data[0] # body_hip_right
+            pos_joint_robot[1]  = line_data[1] # body_hip2_right
+            pos_joint_robot[2]  = -line_data[2] # leg_right
+            pos_joint_robot[3]  = line_data[3] # leg2_right
+            pos_joint_robot[4]  = -line_data[4] # foot1_right
+            pos_joint_robot[5]  = line_data[5] # foot2_right
+            pos_joint_robot[6]  = line_data[6] # body_hip_left
+            pos_joint_robot[7]  = line_data[7] # body_hip2_left
+            pos_joint_robot[8]  = -line_data[8] # leg_left
+            pos_joint_robot[9]  = line_data[9] # leg2_left
+            pos_joint_robot[10] = -line_data[10] # foot1_left
+            pos_joint_robot[11] = line_data[11] # foot2_left
+            pos_joint_robot[12] = -line_data[12] # arm_right
+            pos_joint_robot[13] = -line_data[13] # hand_right
+            pos_joint_robot[14] = -line_data[14] # arm_left
+            pos_joint_robot[15] = -line_data[15] # hand_left
+            if init_flag: # 竖直躺平sleep2s
+                time.sleep(2)
+                init_flag = 0
+            line_string = f.readline()
         # 设置关节控制器
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_head'],
+                            jointIndex=jointNameToID_robot['joint_body_hip_right'],
                             controlMode=p.POSITION_CONTROL,
-                            targetPosition=pos_body_head,
+                            targetPosition=pos_joint_robot[0],
                             force=10
                             )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_body_head2'],
+                            jointIndex=jointNameToID_robot['joint_body_hip2_right'],
                             controlMode=p.POSITION_CONTROL,
-                            targetPosition=pos_body_head2,
+                            targetPosition=pos_joint_robot[1],
                             force=10
                             )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_arm_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_arm_left,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_hand_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_hand_left,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_arm_right'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_arm_right,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_hand_right'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_hand_right,
-                            force=10
-                            )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_body_hip'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_body_hip,
-        #                     force=10
-        #                     )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_body_hip_left'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_body_hip_left,
-        #                     force=10
-        #                     )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_body_hip2_left'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_body_hip2_left,
-        #                     force=10
-        #                     )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_body_hip_right'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_body_hip_right,
-        #                     force=10
-        #                     )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_body_hip2_right'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_body_hip2_right,
-        #                     force=10
-        #                     )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_leg_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_leg_left,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_leg2_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_leg2_left,
-                            force=10
-                            )
-        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-                            jointIndex=jointNameToID_robot['joint_foot1_left'],
-                            controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_foot1_left,
-                            force=10
-                            )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_foot2_left'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_foot2_left,
-        #                     force=10
-        #                     )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_leg_right'],
                             controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_leg_right,
+                            targetPosition=pos_joint_robot[2],
                             force=10
                             )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_leg2_right'],
                             controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_leg2_right,
+                            targetPosition=pos_joint_robot[3],
                             force=10
                             )
         p.setJointMotorControl2(bodyUniqueId=robot_urdf,
                             jointIndex=jointNameToID_robot['joint_foot1_right'],
                             controlMode=p.POSITION_CONTROL,
-                            targetPosition=vel_foot1_right,
+                            targetPosition=pos_joint_robot[4],
                             force=10
                             )
-        # p.setJointMotorControl2(bodyUniqueId=robot_urdf,
-        #                     jointIndex=jointNameToID_robot['joint_foot2_right'],
-        #                     controlMode=p.POSITION_CONTROL,
-        #                     targetPosition=vel_foot2_right,
-        #                     force=10
-        #                     )
-
-        # 非实时仿真
-        if useRealTimeSim == 0:
-            # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
-            p.stepSimulation()
-            # 开启摄像头
-            if use_camera:
-                useCamera(robot_urdf)
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_foot2_right'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[5],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_body_hip_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[6],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_body_hip2_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[7],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_leg_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[8],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_leg2_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[9],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_foot1_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[10],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_foot2_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[11],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_arm_right'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[12],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_hand_right'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[13],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_arm_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[14],
+                            force=10
+                            )
+        p.setJointMotorControl2(bodyUniqueId=robot_urdf,
+                            jointIndex=jointNameToID_robot['joint_hand_left'],
+                            controlMode=p.POSITION_CONTROL,
+                            targetPosition=pos_joint_robot[15],
+                            force=10
+                            )
+        if useRealTimeSim == 0: # 非实时仿真
+            p.stepSimulation() # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
+            # if use_camera: # 开启摄像头
+                # useCamera(robot_urdf)
             time.sleep(0.01)
-
-# 仿真小车函数
-def useCar():
-    # 加载默认小车(相对路径)
-    car = p.loadURDF("racecar/racecar.urdf")
-    # 设置小车从动轮
-    inactive_wheels = [3, 5, 7]
-    for wheel in inactive_wheels:
-        p.setJointMotorControl2(car,
-                                wheel,
-                                p.VELOCITY_CONTROL,
-                                targetVelocity=0,
-                                force=0)
-    # 设置小车主动轮
-    wheels = [2]
-    # 设置小车转向轮
-    steering = [4, 6]
-    # 自定义参数滑块，分别为速度，转向角度，驱动力参数
-    targetVelocitySlider = p.addUserDebugParameter("wheelVelocity", -10, 10, 0)
-    steeringSlider = p.addUserDebugParameter("steering", -0.5, 0.5, 0)
-    maxForceSlider = p.addUserDebugParameter("maxForce", 0, 10, 10)
-    # 开始仿真
-    while 1:
-        # 读取速度，转向角度，驱动力参数
-        maxForce = p.readUserDebugParameter(maxForceSlider)
-        targetVelocity = p.readUserDebugParameter(targetVelocitySlider)
-        steeringAngle = p.readUserDebugParameter(steeringSlider)
-        # 根据上面读取到的值对小车主动轮进行设置
-        for wheel in wheels:
-            p.setJointMotorControl2(car,
-                                    wheel,
-                                    p.VELOCITY_CONTROL,
-                                    targetVelocity=targetVelocity,
-                                    force=maxForce)
-        # 根据上面读取到的值对小车转向轮进行设置
-        for steer in steering:
-            p.setJointMotorControl2(car,
-                                    steer,
-                                    p.POSITION_CONTROL,
-                                    targetPosition=steeringAngle)
-        # 非实时仿真
-        if useRealTimeSim == 0:
-            # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
-            p.stepSimulation()
 
 # 绘制转动惯量函数
 def drawInertiaBox(parentUid, parentLinkIndex, color):
@@ -418,7 +318,3 @@ def useCamera(id):
 # 仿真机器人
 if use_robot:
     useRobot()
-
-# 仿真小车
-if use_car:
-    useCar()

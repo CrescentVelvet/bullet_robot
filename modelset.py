@@ -36,10 +36,11 @@ use_robot = 1                       # 显示机器人模型
 use_car = 0                         # 显示小车模型
 use_rozen = 1 - use_robot           # 显示我的模型
 use_camera = 0                      # 开启摄像头
-draw_interia = 0                    # 绘制转动惯量
+draw_interia = 1                    # 绘制转动惯量
 draw_sphere  = 0                    # 绘制质心小球
 robotPos = [0, 0, 0.28]             # 机器人坐标
-robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向
+robotOri = [0.4, -0.6, 0.6, -0.4]   # 机器人方向(站立)
+# robotOri = [-0.4, 0.9, 0.0, 0.0]    # 机器人方向(后躺)
 jointNameToID_robot = {}            # 机器人关节名
 linkNameToID_robot = {}             # 机器人部件名
 
@@ -69,11 +70,6 @@ def useRobot():
                                 parentObjectUniqueId = robot_urdf,
                                 parentLinkIndex = i,
                                 textColorRGB = [1, 0, 0])
-    # 查看关节参数,state = (关节角度vec1,关节角速度vec1,关节力与力矩vec6,关节电机转矩vec1)
-    # joint_state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
-    # 查看部件参数,state = (质心坐标vec3,质心朝向vec4,,,部件坐标vec3,部件坐标vec4,部件速度vec3,部件角速度vec3)
-    # link_state = p.getLinkState(robot_urdf, linkNameToID_robot['arm_left'])
-    # print('\r', state[4][2], end='', flush=True)
     # 查看世界坐标系中的位置[x,y,z]和姿态[x,y,z,w]
     cube_pos, cube_orn = p.getBasePositionAndOrientation(robot_urdf)
     # 将姿态四元数转换为欧拉角[yaw,pitch,roll]
@@ -320,11 +316,17 @@ def useRobot():
         #                     targetPosition=vel_foot2_right,
         #                     force=10
         #                     )
-
         # 非实时仿真
         if useRealTimeSim == 0:
             # 在单个正向动力学模拟步骤中执行所有操作，例如碰撞检测，约束求解和积分
             p.stepSimulation()
+            # 查看机器人位姿,state = 
+            # robot_state = p.getBasePositionAndOrientation(robot_urdf)
+            # 查看关节参数,state = (关节角度vec1,关节角速度vec1,关节力与力矩vec6,关节电机转矩vec1)
+            # joint_state = p.getJointState(robot_urdf, jointNameToID_robot['joint_arm_left'])
+            # 查看部件参数,state = (质心坐标vec3,质心朝向vec4,,,部件坐标vec3,部件坐标vec4,部件速度vec3,部件角速度vec3)
+            # link_state = p.getLinkState(robot_urdf, linkNameToID_robot['arm_left'])
+            # print('\r', ?_state[4][2], end='', flush=True)
             # 开启摄像头
             if use_camera:
                 useCamera(robot_urdf)
