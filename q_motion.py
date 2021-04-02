@@ -30,6 +30,29 @@ init_robot_pos = [0, 0, 0.28] # 机器人坐标
 init_robot_ori = [-0.4, 0.9, 0.0, 0.0] # 机器人方向
 joint_name_robot = {} # 机器人关节名
 link_name_robot = {} # 机器人部件名
+gait_tick_num = 0
+gait_x0 = 0
+gait_xt = 0
+gait_vx = 0
+gait_com_h = 0
+gait_Tc = 0
+gait_tao = 0
+gait_y00 = 0
+gait_ytt = 0
+gait_y0 = 0
+gait_yt = 0
+gait_m = 0
+gait_vy = 0
+gait_x = 0
+gait_y = 0
+akZ = []
+gait_comYaw = []
+gait_comY = []
+gait_accX = []
+gait_accY = []
+gait_akX = []
+gait_akY = []
+gait_akYaw = []
 def useRobot(): # 仿真机器人函数
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition = init_robot_pos,
@@ -62,11 +85,12 @@ def useRobot(): # 仿真机器人函数
     f = open("/home/zjunlict-vision-1/Desktop/bullet_robot/my_motion/back_climb.txt","r") # 读取后躺爬起数据
     init_flag = 1 # 竖直躺平sleep2s
     endi_flag = 1 # 竖直站立sleep2s
+    gait_flag = 0 # 步态函数运行间隔帧数
     line_string = f.readline()
     # 步态参数初始化
     now_gait = q_param.ElementGait(x=0, y=0, yaw=0, is_right=0, is_left=0) # 单个步态
-    hang_foot = [0, q_param.ParamGait.ANKLE_DIS, 0]
-    com_pos = [0, q_param.ParamGait.ANKLE_DIS/2.0, 0]
+    hang_foot = [0, q_param.PendulumWalkParam.ANKLE_DIS, 0]
+    com_pos = [0, q_param.PendulumWalkParam.ANKLE_DIS/2.0, 0]
     x0 = com_pos[0]*math.cos(hang_foot[2]) - hang_foot[0]*math.cos(hang_foot[2]) + com_pos[1]*math.sin(hang_foot[2]) - hang_foot[1]*math.sin(hang_foot[2])
     print(x0)
     while True:
@@ -104,7 +128,10 @@ def useRobot(): # 仿真机器人函数
                 endi_flag = 0
                 f.close()
         if not endi_flag: # 开始向前行走
-            pos_joint_robot = waikForward(pos_joint_robot, now_gait)
+            if gait_flag > 10: # 每隔10帧执行一次步态函数
+                pos_joint_robot = waikForward(pos_joint_robot, now_gait)
+                gait_flag = 0
+            gait_flag += 1
         setControl(robot_urdf, joint_name_robot, pos_joint_robot) # 设置关节控制器
         if useRealTimeSim == 0: # 非实时仿真
             p.stepSimulation() # 在单个正向动力学模拟步骤中执行所有操作,例如碰撞检测,约束求解和积分
@@ -322,9 +349,38 @@ def setControl(robot_name, joint_name, joint_pos): # 设置关节控制器函数
                             )
 def waikForward(joint_pos, gait): # 向前行走函数
     new_joint_pos = np.zeros(len(joint_pos))
+    giveATick()
     for i in range(len(joint_pos)): # 改变关节角度
-        new_joint_pos[i] = joint_pos[i] + 0.001
+        new_joint_pos[i] = joint_pos[i] + 0.1
     return new_joint_pos
+def giveAStep(dx, dy, d_yaw):
+    # step函数，用于生成下一步的动作数据
+    # @param dx 下一步质心的x变化，相对于上半身，单位是cm
+    # @param dy 下一步执行的y变化，相对于上半身，单位是cm
+    # @param d_yaw 下一步执行的yaw变化，相对于上半身，角度制
+    # @return 
+    pass
+
+def giveATick():
+    # tick函数，用于生成下一步的动作数据
+    # @param dx 下一步质心的x变化，相对于上半身，单位是cm
+    # @param dy 下一步执行的y变化，相对于上半身，单位是cm
+    # @param d_yaw 下一步执行的yaw变化，相对于上半身，角度制
+    # @return 
+    tmptick =  q_param.MotionTick()
+    gait_x = gait_x0 * math.cosh(0.01 * gait_tick_num / gait_Tc) + gait_Tc * gait_vx * math.sinh(0.01 * (tick_num) / Tc)
+    gait_y = gait_y0 * math.cosh(0.01 * gait_tick_num / gait_Tc) + gait_Tc * gait_vy * math.sinh(0.01 * (tick_num) / Tc)
+    tmptick.upbody_pose.append(0)
+    tmptick.upbody_pose.append(0)
+    tmptick.upbody_pose.append(gait_comYaw[gait_tick_num])
+    tmptick.whole_com.append(gait_accX[gait_tick_num] + gait_x + parameters.pendulum_walk_param.COM_X_OFFSET) # (x * 100 +1.5)
+    tmptick.whole_com.append(gait_y - gait_y0 + gait_comY[gait_tick_num] + gait_accY[gait_tick_num])
+    tmptick.whole_com.append(parameters.pendulum_walk_param.COM_HEIGHT) # 0.308637
+
+def giveAStepTick():
+    pass
+
+
 
 # 机器人仿真
 if use_robot:
