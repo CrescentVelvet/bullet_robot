@@ -15,7 +15,7 @@ import pybullet_data
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 # 设置重力
-p.setGravity(0, 0, -10)
+p.setGravity(0, 0, -98)
 # 实时仿真
 useRealTimeSim = 0
 p.setRealTimeSimulation(useRealTimeSim)

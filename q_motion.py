@@ -10,6 +10,7 @@ import math
 import numpy as np
 import pybullet as p
 import pybullet_data
+import q_param
 
 physicsClient = p.connect(p.GUI)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -58,10 +59,16 @@ def useRobot(): # 仿真机器人函数
         for i in range(p.getNumJoints(robot_urdf)):
             drawLinkSphere(i, p.getLinkState(robot_urdf, i)[0][:3])
     pos_joint_robot = np.zeros(16) # 关节角度控制信息
-    f = open("/home/zjunlict-vision-1/Desktop/bullet_robot/my_motion/back_climb.txt","r") # 读取数据
+    f = open("/home/zjunlict-vision-1/Desktop/bullet_robot/my_motion/back_climb.txt","r") # 读取后躺爬起数据
     init_flag = 1 # 竖直躺平sleep2s
     endi_flag = 1 # 竖直站立sleep2s
     line_string = f.readline()
+    # 步态参数初始化
+    now_gait = q_param.ElementGait(x=0, y=0, yaw=0, is_right=0, is_left=0) # 单个步态
+    hang_foot = [0, q_param.ParamGait.ANKLE_DIS, 0]
+    com_pos = [0, q_param.ParamGait.ANKLE_DIS/2.0, 0]
+    x0 = com_pos[0]*math.cos(hang_foot[2]) - hang_foot[0]*math.cos(hang_foot[2]) + com_pos[1]*math.sin(hang_foot[2]) - hang_foot[1]*math.sin(hang_foot[2])
+    print(x0)
     while True:
         if line_string: # 从后躺状态爬起站立
             line_str = line_string.split(' ')
@@ -96,6 +103,8 @@ def useRobot(): # 仿真机器人函数
                 time.sleep(2)
                 endi_flag = 0
                 f.close()
+        if not endi_flag: # 开始向前行走
+            pos_joint_robot = waikForward(pos_joint_robot, now_gait)
         setControl(robot_urdf, joint_name_robot, pos_joint_robot) # 设置关节控制器
         if useRealTimeSim == 0: # 非实时仿真
             p.stepSimulation() # 在单个正向动力学模拟步骤中执行所有操作,例如碰撞检测,约束求解和积分
@@ -311,6 +320,12 @@ def setControl(robot_name, joint_name, joint_pos): # 设置关节控制器函数
                             targetPosition=joint_pos[15],
                             force=10
                             )
+def waikForward(joint_pos, gait): # 向前行走函数
+    new_joint_pos = np.zeros(len(joint_pos))
+    for i in range(len(joint_pos)): # 改变关节角度
+        new_joint_pos[i] = joint_pos[i] + 0.001
+    return new_joint_pos
+
 # 机器人仿真
 if use_robot:
     useRobot()

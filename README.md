@@ -92,7 +92,7 @@ pip uninstall tensorboard-plugin-wit
 pip install tensorboard
 ```
 会生成网址http://localhost:6006/，进入即可查看，30s刷新一次
-## 文件
+## 文件说明
 ```
 modelset.py
 ```
@@ -113,4 +113,9 @@ s_main.py
 d_motion.py
 ```
 仿真模型后躺爬起站立
+
+## 效果图片
+<img width=850 src="https://img-blog.csdnimg.cn/20210401215002255.png" alt="模型爬起站立"/>
+
+模型爬起站立
 

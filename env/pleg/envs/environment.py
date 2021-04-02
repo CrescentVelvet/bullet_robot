@@ -50,7 +50,7 @@ class RobotEnv(gym.Env):
         return np.array(self._observation), reward, done, {}
     def reset(self): # 重置环境函数
         p.resetSimulation() # 开始仿真        
-        p.setGravity(0, 0, -9.8) # 设置重力m/s^2        
+        p.setGravity(0, 0, -98) # 设置重力-98m/s^2        
         p.setTimeStep(self.time_step) # 设置单步时间sec        
         planeId = p.loadURDF("plane.urdf") # 加载默认地面        
         # planeId = p.loadSDF("stadium.sdf") # 加载足球场地面        
