@@ -1,9 +1,103 @@
 import math
+import numpy as np
+
+class AA: # 垃圾命名的变量
+    # 以下参数的含义参见仿人机器人的书和MATLAB程序pendulum_walk.m
+    tick_num = 0
+    x0 = 0
+    xt = 0
+    vx = 0
+    com_h = 0
+    Tc = 1
+    tao = 0
+    # 这里固定y0为3cm,和理论不符，实际把这个轨迹进行了平移到了6.5（ANKLE_DIS/2）处,真实的相对于的支撑脚的y方向起点是y00
+    y00 = 0
+    ytt = 0
+    y0 = 0
+    yt = 0
+    m = 0
+    vy = 0
+    x = 0
+    y = 0
+    # 行走插值序列
+    comYaw = []
+    comY = []
+    accX = []
+    accY = []
+    akX = []
+    akY = []
+    akZ = []
+    akYaw = []
+
+class threeInterPolation:
+    def __init__(self):
+        # 默认的构造函数
+        self.x_array_ = []
+        self.y_array_ = []
+        self.s_angle_ = []
+        self.time_interval_ = 0.0
+        self.is_order = 0 # x_array序列是否合格
+        self.piece_num_ = 0
+        self.poly_ = []
+        self.x_samples_ = []
+        self.y_samples_ = []
+    def __init__(self, x_array, y_array, s_angle):
+        # 标准的构造函数
+        # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
+        # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
+        # @param s_angle  样本点的倾斜角度，dmotion工程中是肢端坐标值的变化速度
+        self.x_array_ = x_array
+        self.y_array_ = y_array
+        self.s_angle_ = s_angle
+        self.time_interval_ = 10.0 # 默认的发值时间间隔
+        if isInOrder(self.x_array_):
+            self.piece_num_ = int(len(self.x_array_) - 1)
+            
+        self.poly_ = []
+        self.x_samples_ = []
+        self.y_samples_ = []
+    def isInOrder(x_ar):
+        # 判定输入的x_array序列是否合格
+        # @param x_ar 输入的x_array序列
+        # return 返回是否合格的bool值
+        for i in range(len(x_ar) - 1):
+            if x_ar[i] > x_ar[i + 1]: # 该帧时间序列倒置，不合格
+                self.is_order = 0
+                return 0
+            elif x_ar[i] == x_ar[i + 1]: # 该帧时间序列相等，去除该帧
+                self.x_array_.pop(i)
+                self.y_array_.pop(i)
+                self.s_angle_.pop(i)
+            else:
+                pass
+        self.is_order = 1
+        return 1
+    def oneCalculate():
+        # 计算分段多项式
+        for i in range(self.piece_num_):
+            self.poly_.append(onePiece(self.x_array_[i], y_array_[i], s_angle_[i], x_array_[i + 1], y_array_[i + 1], s_angle_[i + 1]))
+    def onePiece(x_r, y_r, s_r, x_l, y_l, s_l):
+        # 计算单独一个piece
+        # @param x_r
+        # @param y_r
+        # @param s_r
+        # @param x_l
+        # @param y_l
+        # @param s_l
+        # return coef_tmp 返回
+        B = np.array([y_r, s_r, y_l, s_l])
+        A1 = np.array([math.pow(x_r, 3), math.pow(x_r, 2), x_r, 1])
+        A2 = np.array([3 * math.pow(x_r, 2), 2 * x_r, 1, 0])
+        A3 = np.array([math.pow(x_l, 3), math.pow(x_l, 2), x_l, 1])
+        A4 = np.array([3 * math.pow(x_l, 2), 2 * x_l, 1, 0])
+        A = np.array([A1, A2, A3, A4])
+        coef_tmp = # LU三角分解
+        return coef_tmp
 
 class PendulumWalkParam: # 步态参数
     ANKLE_DIS = 15.0 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm
     TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
-    TICK_NUM = 30.0 # 每个步态周期发35个值
+    TICK_NUM = 30 # 每个步态周期发35个值
     COM_H = 37.0 # 机器人倒立摆长度37cm
     ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比，乘以系数的数字作为质心的位置移动，插值后在本次中叠加在倒立摆x轨迹上
     ACC_COEF_Y = 0.3
@@ -11,12 +105,15 @@ class PendulumWalkParam: # 步态参数
     Y_HALF_AMPLITUDE = 3.0 # y方向倒立摆起点坐标长度
     COM_X_OFFSET = 1 # 在理想重心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
+    foot_z_t = [] # 表示抬脚高度曲线的三个向量
+    foot_z_p = []
+    foot_z_s = []
 
 class MotionTick: # 发值瞬间的机器人参数
     def __init__(self):
-        upbody_pose = [] # 双足位置与角度
-        whole_com = [] # 全身重心位置
-        upbody_pose = [] # 上半身角度
+        self.upbody_pose = [] # 双足位置与角度
+        self.whole_com = [] # 全身重心位置
+        self.upbody_pose = [] # 上半身角度
 
 class UpbodyMode: # 上半身状态
     upbody_still = 1 # 上半身rpy(0,0,0)
