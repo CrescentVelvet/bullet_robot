@@ -30,6 +30,16 @@ class AA: # 垃圾命名的变量
     akZ = []
     akYaw = []
 
+class BB: # 步态参数初始化    
+    com_ac_x = 0
+    com_ac_y = 0
+    support_is_right = 0
+    hang_foot = [0, PendulumWalkParam.ANKLE_DIS, 0]
+    com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
+    com_x_changed = 0
+    com_y_changed = 0
+    now_gait = ElementGait(x=0, y=0, yaw=0, is_right=0, is_left=0) # 单个步态
+
 class threeInterPolation:
     def __init__(self): # 默认构造函数
         # 默认构造函数

@@ -31,16 +31,6 @@ init_robot_ori = [-0.4, 0.9, 0.0, 0.0] # 机器人方向
 joint_name_robot = {} # 机器人关节名
 link_name_robot = {} # 机器人部件名
 
-# 步态参数初始化
-com_ac_x = 0
-com_ac_y = 0
-support_is_right = 0
-hang_foot = [0, q_param.PendulumWalkParam.ANKLE_DIS, 0]
-com_pos = [0, q_param.PendulumWalkParam.ANKLE_DIS/2.0, 0]
-com_x_changed = 0
-com_y_changed = 0
-now_gait = q_param.ElementGait(x=0, y=0, yaw=0, is_right=0, is_left=0) # 单个步态
-
 def useRobot(): # 仿真机器人函数
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition = init_robot_pos,
@@ -76,29 +66,30 @@ def useRobot(): # 仿真机器人函数
     gait_flag = 0 # 步态函数运行间隔帧数
     line_string = f.readline()
     while True:
-        if line_string: # 从后躺状态爬起站立
-            line_str = line_string.split(' ')
-            while '' in line_str:
-                line_str.remove('')
-            line_str.pop(-1) # 删除时间戳
-            line_data = list(map(float,line_str))
-            for index in range(len(line_data)): # 角度制转换弧度制
-                line_data[index] = math.radians(line_data[index])
-            pos_joint_robot = transControl(line_data) # 转换bullet仿真和motion控制中的关节控制正负区别
-            if init_flag: # 爬起开始前,竖直躺平sleep2s
-                time.sleep(2)
-                init_flag = 0
-            line_string = f.readline()
-        else:
-            if endi_flag: # 爬起结束后,竖直站立sleep2s
-                time.sleep(2)
-                endi_flag = 0
-                f.close()
-        if not endi_flag: # 开始向前行走
-            if gait_flag > 10: # 每隔10帧执行一次步态函数
-                pos_joint_robot = waikForward(pos_joint_robot, now_gait)
-                gait_flag = 0
-            gait_flag += 1
+        waikForward(pos_joint_robot, q_param.BB.now_gait)
+        # if line_string: # 从后躺状态爬起站立
+        #     line_str = line_string.split(' ')
+        #     while '' in line_str:
+        #         line_str.remove('')
+        #     line_str.pop(-1) # 删除时间戳
+        #     line_data = list(map(float,line_str))
+        #     for index in range(len(line_data)): # 角度制转换弧度制
+        #         line_data[index] = math.radians(line_data[index])
+        #     pos_joint_robot = transControl(line_data) # 转换bullet仿真和motion控制中的关节控制正负区别
+        #     if init_flag: # 爬起开始前,竖直躺平sleep2s
+        #         time.sleep(2)
+        #         init_flag = 0
+        #     line_string = f.readline()
+        # else:
+        #     if endi_flag: # 爬起结束后,竖直站立sleep2s
+        #         time.sleep(2)
+        #         endi_flag = 0
+        #         f.close()
+        # if not endi_flag: # 开始向前行走
+        #     if gait_flag > 10: # 每隔10帧执行一次步态函数
+        #         pos_joint_robot = waikForward(pos_joint_robot, q_param.BB.now_gait)
+        #         gait_flag = 0
+        #     gait_flag += 1
         setControl(robot_urdf, joint_name_robot, pos_joint_robot) # 设置关节控制器
         if useRealTimeSim == 0: # 非实时仿真
             p.stepSimulation() # 在单个正向动力学模拟步骤中执行所有操作,例如碰撞检测,约束求解和积分
@@ -350,8 +341,9 @@ def giveAStep(dx, dy, d_yaw): # 下一步动作数据函数
     # @param dy 下一步执行的y变化，相对于上半身，单位是cm
     # @param d_yaw 下一步执行的yaw变化，相对于上半身，角度制
     # @return 
-    q_param.AA.x0 = com_pos[0] * math.cos(hang_foot[2]) - hang_foot[0] * math.cos(hang_foot[2]) + com_pos[1] * math.sin(hang_foot[2]) - hang_foot[1] * math.sin(hang_foot[2])
-    q_param.AA.xt = (dx - ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0) ) * math.sin(math.radians(d_yaw))) / 2.0
+    print(q_param.BB.com_pos)
+    q_param.AA.x0 = q_param.BB.com_pos[0] * math.cos(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[0] * math.cos(q_param.BB.hang_foot[2]) + q_param.BB.com_pos[1] * math.sin(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.sin(q_param.BB.hang_foot[2])
+    q_param.AA.xt = (dx - ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0) ) * math.sin(math.radians(d_yaw))) / 2.0
     q_param.AA.tao = q_param.PendulumWalkParam.TAO
     # 算出摆的周期常数，这里的com_h暂时是由机器人crouch姿态下倒挂着摆动测量得出的
     q_param.AA.com_h = q_param.PendulumWalkParam.COM_H
@@ -359,11 +351,11 @@ def giveAStep(dx, dy, d_yaw): # 下一步动作数据函数
     # 算出来这个步态单元的初速度vx
     q_param.AA.vx = (q_param.AA.xt - q_param.AA.x0 * math.cosh(q_param.AA.tao / q_param.AA.Tc)) / (q_param.AA.Tc * math.sinh(q_param.AA.tao / q_param.AA.Tc))
     # y方向的研究
-    q_param.AA.y00 = com_pos[1] * math.cos(hang_foot[2]) - hang_foot[1] * math.cos(hang_foot[2]) - com_pos[0] * math.sin(hang_foot[2]) + hang_foot[0] * math.sin(hang_foot[2])
-    q_param.AA.ytt = (dy + ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0) ) + ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0)) * math.cos(math.radians(d_yaw)) ) / 2
+    q_param.AA.y00 = q_param.BB.com_pos[1] * math.cos(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.cos(q_param.BB.hang_foot[2]) - q_param.BB.com_pos[0] * math.sin(q_param.BB.hang_foot[2]) + q_param.BB.hang_foot[0] * math.sin(q_param.BB.hang_foot[2])
+    q_param.AA.ytt = (dy + ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0) ) + ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0)) * math.cos(math.radians(d_yaw)) ) / 2
     # 这里实际计算质心轨迹的是y0和yt，防止∆y太大
-    q_param.AA.y0 = (q_param.PendulumWalkParam.Y_HALF_AMPLITUDE) if support_is_right else (-q_param.PendulumWalkParam.Y_HALF_AMPLITUDE)
-    q_param.AA.yt = (q_param.PendulumWalkParam.Y_HALF_AMPLITUDE) if support_is_right else (-q_param.PendulumWalkParam.Y_HALF_AMPLITUDE)
+    q_param.AA.y0 = (q_param.PendulumWalkParam.Y_HALF_AMPLITUDE) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.Y_HALF_AMPLITUDE)
+    q_param.AA.yt = (q_param.PendulumWalkParam.Y_HALF_AMPLITUDE) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.Y_HALF_AMPLITUDE)
     # 计算过程中换元得到的一个临时变量m
     q_param.AA.m = math.exp(q_param.AA.tao / q_param.AA.Tc)
     # 步行单元的周期定了后y方向的最大速度是确定的
@@ -376,8 +368,8 @@ def giveAStep(dx, dy, d_yaw): # 下一步动作数据函数
     akZ = ankle_z.getPoints()
     # 线性规划上半身yaw
     comYaw_t = [0, q_param.PendulumWalkParam.TAO]
-    comYaw_p = [math.degrees(com_pos[2] - hang_foot[2]), d_yaw / 2.0]
-    slope_comYaw = (d_yaw / 2.0 - math.degrees(com_pos[2] - hang_foot[2])) / q_param.PendulumWalkParam.TAO
+    comYaw_p = [math.degrees(q_param.BB.com_pos[2] - q_param.BB.hang_foot[2]), d_yaw / 2.0]
+    slope_comYaw = (d_yaw / 2.0 - math.degrees(q_param.BB.com_pos[2] - q_param.BB.hang_foot[2])) / q_param.PendulumWalkParam.TAO
     comYaw_s = [slope_comYaw, slope_comYaw]
     com_yaw = q_param.threeInterPolation(comYaw_t, comYaw_p, comYaw_s)
     comYaw = com_yaw.getPoints()
@@ -389,23 +381,23 @@ def giveAStep(dx, dy, d_yaw): # 下一步动作数据函数
     com_y = q_param.threeInterPolation(comY_t, comY_p, comY_s)
     comY = com_y.getPoints()
     # 线性规划质心加速度x偏移
-    ac_x = (dx - com_x_changed) * q_param.PendulumWalkParam.ACC_COEF_X
+    ac_x = (dx - q_param.BB.com_x_changed) * q_param.PendulumWalkParam.ACC_COEF_X
     accX_t = [0, q_param.PendulumWalkParam.TAO]
-    accX_p = [com_ac_x, ac_x]
-    slope_accX = (ac_x - com_ac_x) / q_param.PendulumWalkParam.TAO
+    accX_p = [q_param.BB.com_ac_x, ac_x]
+    slope_accX = (ac_x - q_param.BB.com_ac_x) / q_param.PendulumWalkParam.TAO
     accX_s = [slope_accX, slope_accX]
     acc_x = q_param.threeInterPolation(accX_t, accX_p, accX_s)
     accX = acc_x.getPoints()
     # 线性规划质心加速度y偏移
-    ac_y = (dy - com_y_changed) * q_param.PendulumWalkParam.ACC_COEF_Y
+    ac_y = (dy - q_param.BB.com_y_changed) * q_param.PendulumWalkParam.ACC_COEF_Y
     accY_t = [0, q_param.PendulumWalkParam.TAO]
-    accY_p = [com_ac_y, ac_y]
-    slope_accY = (ac_y - com_ac_y) / q_param.PendulumWalkParam.TAO
+    accY_p = [q_param.BB.com_ac_y, ac_y]
+    slope_accY = (ac_y - q_param.BB.com_ac_y) / q_param.PendulumWalkParam.TAO
     accY_s = [slope_accY, slope_accY]
     acc_y = q_param.threeInterPolation(accY_t, accY_p, accY_s)
     accY = acc_y.getPoints()
     # 线性规划脚踝的x方向起点终点的插值
-    ak_x_0 = -hang_foot[0] * math.cos(hang_foot[2]) - hang_foot[1] * math.sin(hang_foot[2])
+    ak_x_0 = -q_param.BB.hang_foot[0] * math.cos(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.sin(q_param.BB.hang_foot[2])
     ak_x_t = 2 * xt
     akX_t = [0, q_param.PendulumWalkParam.TAO]
     akX_p = [ak_x_0, ak_x_t]
@@ -414,7 +406,7 @@ def giveAStep(dx, dy, d_yaw): # 下一步动作数据函数
     ak_x = q_param.threeInterPolation(akX_t, akX_p, akX_s)
     akX = ak_x.getPoints()
     # 线性规划脚踝的y方向起点终点的插值
-    ak_y_0 = hang_foot[0] * math.sin(hang_foot[2]) - hang_foot[1] * math.cos(hang_foot[2])
+    ak_y_0 = q_param.BB.hang_foot[0] * math.sin(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.cos(q_param.BB.hang_foot[2])
     ak_y_t = 2 * ytt
     akY_t = [0, q_param.PendulumWalkParam.TAO]
     akY_p = [ak_y_0, ak_y_t]
@@ -424,25 +416,25 @@ def giveAStep(dx, dy, d_yaw): # 下一步动作数据函数
     akY = ak_y.getPoints()
     # 线性规划脚踝的yaw起点终点的插值
     akYaw_t = [0, q_param.PendulumWalkParam.TAO]
-    akYaw_p = [math.degrees(-hang_foot[2]), d_yaw]
+    akYaw_p = [math.degrees(-q_param.BB.hang_foot[2]), d_yaw]
     slope_akYaw = (akYaw_p[1] - akYaw_p[0]) / q_param.PendulumWalkParam.TAO / 2
     akYaw_s = [slope_akYaw, slope_akYaw]
     ak_yaw = q_param.threeInterPolation(akYaw_t, akYaw_p, akYaw_s)
     akYaw = ak_yaw.getPoints()
     # 为下一步的数据做准备
-    support_is_right = 1 - support_is_right
-    com_x_changed = dx
-    com_y_changed = dy
-    com_pos = []
-    com_pos.append(xt)
-    com_pos.append(ytt)
-    com_pos.append(math.radians(d_yaw) / 2.0)
-    hang_foot = []
-    hang_foot.append(ak_x_t)
-    hang_foot.append(ak_y_t)
-    hang_foot.append(2.0 * com_pos[2]) # 这里使得落脚点的yaw和质心一致了
-    com_ac_x = ac_x
-    com_ac_y = ac_y
+    q_param.BB.support_is_right = 1 - q_param.BB.support_is_right
+    q_param.BB.com_x_changed = dx
+    q_param.BB.com_y_changed = dy
+    q_param.BB.com_pos = []
+    q_param.BB.com_pos.append(xt)
+    q_param.BB.com_pos.append(ytt)
+    q_param.BB.com_pos.append(math.radians(d_yaw) / 2.0)
+    q_param.BB.hang_foot = []
+    q_param.BB.hang_foot.append(ak_x_t)
+    q_param.BB.hang_foot.append(ak_y_t)
+    q_param.BB.hang_foot.append(2.0 * q_param.BB.com_pos[2]) # 这里使得落脚点的yaw和质心一致了
+    q_param.BB.com_ac_x = ac_x
+    q_param.BB.com_ac_y = ac_y
     tick_num = 0
 
 def giveATick(): # 下一帧动作数据函数

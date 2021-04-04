@@ -137,5 +137,18 @@ python
 gcc ./d_test.c -o ./d_test.out
 ./d_test.out
 ```
+### dancer_motion代码阅读
+walk_test.cpp里225行调用PendulumWalk.cpp里的步态函数GiveAStepTick
 
+GiveAStepTick调用GiveAStep函数和GiveATick函数
+
+GiveAStep调用OneFootLanding.cpp里的单步函数GetOneStep
+
+GiveAStep调用ThreeInterpolation.cpp里的三次插值曲线函数GetPoints和EvalHere和Calculate
+
+EvalHere调用Polynomial.hpp里的计算多项式函数compute
+
+compute调用PolynomialInternal.hpp里的迭代函数compute
+
+Calculate调用Eigen库的矩阵LU分解函数lu().solve
 
