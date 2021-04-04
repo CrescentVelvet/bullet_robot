@@ -5,6 +5,8 @@
 /log/
 /logs/
 /runs/
+/.vscode/
+/Eigen/
 env/__pycache__/*
 env/pleg/__pycache__/*
 env/pleg/envs/__pycache__/*
@@ -24,3 +26,4 @@ v_argument.py
 v_test.py
 wrappers.py
 modelvec_normalize.pkl
+d_test.out

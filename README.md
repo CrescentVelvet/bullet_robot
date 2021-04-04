@@ -120,16 +120,21 @@ d_motion.py
 模型爬起站立
 
 ## motion代码
-python中的小括号( )：代表tuple元组数据类型，元组是一种不可变序列
+python
 
-python中的中括号[ ]，代表list列表数据类型
+小括号( )：代表tuple元组数据类型，元组是一种不可变序列
 
-python大括号{ }花括号：代表dict字典数据类型，字典是由键对值组组成
+中括号[ ]，代表list列表数据类型
 
+大括号{ }花括号：代表dict字典数据类型，字典是由键对值组组成
+
+角度转弧度：math.radians---Deg2Rad
+
+弧度转角度：math.degrees---Rad2Deg
 
 把/usr/include/eigen3/Eigen文件夹复制到bullet_robot下，编译c文件：
 ```
-gcc ./d_test.c
+gcc ./d_test.c -o ./d_test.out
 ./d_test.out
 ```
 
