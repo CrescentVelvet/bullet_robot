@@ -66,30 +66,24 @@ def useRobot(): # 仿真机器人函数
     gait_flag = 0 # 步态函数运行间隔帧数
     line_string = f.readline()
     while True:
-        waikForward(pos_joint_robot, q_param.BB.now_gait)
-        # if line_string: # 从后躺状态爬起站立
-        #     line_str = line_string.split(' ')
-        #     while '' in line_str:
-        #         line_str.remove('')
-        #     line_str.pop(-1) # 删除时间戳
-        #     line_data = list(map(float,line_str))
-        #     for index in range(len(line_data)): # 角度制转换弧度制
-        #         line_data[index] = math.radians(line_data[index])
-        #     pos_joint_robot = transControl(line_data) # 转换bullet仿真和motion控制中的关节控制正负区别
-        #     if init_flag: # 爬起开始前,竖直躺平sleep2s
-        #         time.sleep(2)
-        #         init_flag = 0
-        #     line_string = f.readline()
-        # else:
-        #     if endi_flag: # 爬起结束后,竖直站立sleep2s
-        #         time.sleep(2)
-        #         endi_flag = 0
-        #         f.close()
-        # if not endi_flag: # 开始向前行走
-        #     if gait_flag > 10: # 每隔10帧执行一次步态函数
-        #         pos_joint_robot = waikForward(pos_joint_robot, q_param.BB.now_gait)
-        #         gait_flag = 0
-        #     gait_flag += 1
+        # waikForward(pos_joint_robot, q_param.BB.now_gait)
+        if line_string: # 从后躺状态爬起站立
+            line_data = climbUp(line_string) # 分析motion爬起数据得到关节控制信号
+            pos_joint_robot = transControl(line_data) # 转换bullet仿真和motion控制中的关节控制信号正负区别
+            if init_flag: # 爬起开始前,竖直躺平sleep2s
+                time.sleep(2)
+                init_flag = 0
+            line_string = f.readline()
+        else:
+            if endi_flag: # 爬起结束后,竖直站立sleep2s
+                time.sleep(2)
+                endi_flag = 0
+                f.close()
+        if not endi_flag: # 开始向前行走
+            if gait_flag > 10: # 每隔10帧执行一次步态函数
+                # pos_joint_robot = waikForward(pos_joint_robot, q_param.BB.now_gait)
+                gait_flag = 0
+            gait_flag += 1
         setControl(robot_urdf, joint_name_robot, pos_joint_robot) # 设置关节控制器
         if useRealTimeSim == 0: # 非实时仿真
             p.stepSimulation() # 在单个正向动力学模拟步骤中执行所有操作,例如碰撞检测,约束求解和积分
@@ -329,6 +323,18 @@ def transControl(line_data, joint_num = 16): # 关节控制正负转换函数
         pos_joint[14] = -line_data[14] # arm_left
         pos_joint[15] = -line_data[15] # hand_left
     return pos_joint
+def climbUp(line_string): # 平躺爬起函数
+    # 平躺爬起函数，用于分析爬起数据得到关节控制信号
+    # @param line_string 输入读取当前行数据
+    # @return line_data 返回关节控制信号
+    line_str = line_string.split(' ')
+    while '' in line_str:
+        line_str.remove('')
+    line_str.pop(-1) # 删除时间戳
+    line_data = list(map(float,line_str))
+    for index in range(len(line_data)): # 角度制转换弧度制
+        line_data[index] = math.radians(line_data[index])
+    return line_data
 def waikForward(joint_pos, gait): # 向前行走函数
     new_joint_pos = np.zeros(len(joint_pos))
     # for i in range(len(joint_pos)): # 改变关节角度

@@ -29,7 +29,33 @@ class AA: # 垃圾命名的变量
     akY = []
     akZ = []
     akYaw = []
-
+class PendulumWalkParam: # 步态参数
+    ANKLE_DIS = 15.0 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm
+    TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
+    TICK_NUM = 30 # 每个步态周期发35个值
+    COM_H = 37.0 # 机器人倒立摆长度37cm
+    ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比，乘以系数的数字作为质心的位置移动，插值后在本次中叠加在倒立摆x轨迹上
+    ACC_COEF_Y = 0.3
+    COM_HEIGHT = 27 # 默认规划重心高度
+    Y_HALF_AMPLITUDE = 3.0 # y方向倒立摆起点坐标长度
+    COM_X_OFFSET = 1 # 在理想重心规划基础上视走路情况而定的x方向偏移
+    TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
+    foot_z_t = [] # 表示抬脚高度曲线的三个向量
+    foot_z_p = []
+    foot_z_s = []
+class ElementGait: # 单个步态类
+    def __init__(self):
+        self.X = 0 # 该步的x方向位移
+        self.Y = 0 # 该步的y方向位移
+        self.YAW = 0 # 该步的旋转角度
+        self.IS_RIGHT = 1 # 该步由右脚迈出
+        self.IS_LEFT = 0 # 该步由左脚迈出
+    def __init__(self, x, y, yaw, is_right, is_left):
+        self.X = x
+        self.Y = y
+        self.YAW = yaw
+        self.IS_RIGHT = is_right
+        self.IS_LEFT = is_left
 class BB: # 步态参数初始化    
     com_ac_x = 0
     com_ac_y = 0
@@ -49,24 +75,6 @@ class threeInterPolation:
         self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL # 默认的发值时间间隔
         self.is_order = 0 # x_array序列是否合格
         self.piece_num_ = 0
-        self.poly_ = []
-        self.x_samples_ = []
-        self.y_samples_ = []
-    def __init__(self, x_array, y_array, s_angle): # 标准构造函数
-        # 标准构造函数
-        # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
-        # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
-        # @param s_angle  样本点的倾斜角度，dmotion工程中是肢端坐标值的变化速度
-        self.x_array_ = x_array
-        self.y_array_ = y_array
-        self.s_angle_ = s_angle
-        self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL
-        if isInOrder(self.x_array_):
-            self.piece_num_ = int(len(self.x_array_) - 1)
-            threeInterPolation.oneCalculate()
-            threeInterPolation.CalculatePoints(self.time_interval_)
-        else:
-            print('error : The x_array is not available!')            
         self.poly_ = []
         self.x_samples_ = []
         self.y_samples_ = []
@@ -95,16 +103,34 @@ class threeInterPolation:
             self.s_angle_.append(ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
         else:
             self.s_angle_.append(0.0)
-        if isInOrder(self.x_array_):
+        if self.isInOrder(self.x_array_):
             self.piece_num_ = int(len(self.x_array_) - 1)
-            threeInterPolation.oneCalculate()
-            threeInterPolation.CalculatePoints(self.time_interval_)
+            self.oneCalculate()
+            self.CalculatePoints(self.time_interval_)
         else:
             print('error : The x_array is not available!')            
         self.poly_ = []
         self.x_samples_ = []
         self.y_samples_ = []
-    def isInOrder(x_ar): # 检测x_array合格函数
+    def __init__(self, x_array, y_array, s_angle): # 标准构造函数
+        # 标准构造函数
+        # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
+        # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
+        # @param s_angle  样本点的倾斜角度，dmotion工程中是肢端坐标值的变化速度
+        self.x_array_ = x_array
+        self.y_array_ = y_array
+        self.s_angle_ = s_angle
+        self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL
+        if self.isInOrder(self.x_array_):
+            self.piece_num_ = int(len(self.x_array_) - 1)
+            self.oneCalculate()
+            self.CalculatePoints(self.time_interval_)
+        else:
+            print('error : The x_array is not available!')            
+        self.poly_ = []
+        self.x_samples_ = []
+        self.y_samples_ = []
+    def isInOrder(self, x_ar): # 检测x_array合格函数
         # 判定输入的x_array序列是否合格
         # @param x_ar 输入的x_array序列
         # return 返回是否合格的bool值
@@ -120,12 +146,12 @@ class threeInterPolation:
                 pass
         self.is_order = 1
         return 1
-    def oneCalculate(): # 计算poly_多项式函数
+    def oneCalculate(self): # 计算poly_多项式函数
         # 计算分段多项式，无返回值
         self.poly_ = []
         for i in range(self.piece_num_):
-            self.poly_.append(threeInterPolation.onePiece(self.x_array_[i], y_array_[i], s_angle_[i], x_array_[i + 1], y_array_[i + 1], s_angle_[i + 1]))
-    def CalculatePoints(t0_in): # 计算三次曲线值函数
+            self.poly_.append(self.onePiece(self.x_array_[i], y_array_[i], s_angle_[i], x_array_[i + 1], y_array_[i + 1], s_angle_[i + 1]))
+    def CalculatePoints(self, t0_in): # 计算三次曲线值函数
         # 用于获得固定时间间隔的分段三次曲线的值，无返回值
         # @param t0_in 时间序列的间隔，单位为ns
         self.x_samples_ = []
@@ -135,12 +161,12 @@ class threeInterPolation:
         self.time_interval_ = t0
         while (self.x_array_[self.piece_num_] - t_tmp) > 0.000001:
             self.x_samples_.append(t_tmp)
-            self.y_samples_.append(threeInterPolation.EvalHere(self.t_tmp))
+            self.y_samples_.append(self.EvalHere(self.t_tmp))
             t_tmp += t0
         if (self.x_array_[self.piece_num_] - t_tmp + t0) > 0.000001:
             self.x_samples_.append(self.x_array_[self.piece_num_])
-            self.y_samples_.append(threeInterPolation.EvalHere(self.x_array_[self.piece_num_]))
-    def onePiece(x_r, y_r, s_r, x_l, y_l, s_l): # 计算单个piece函数
+            self.y_samples_.append(self.EvalHere(self.x_array_[self.piece_num_]))
+    def onePiece(self, x_r, y_r, s_r, x_l, y_l, s_l): # 计算单个piece函数
         # 计算单独一个piece
         # @param x_r
         # @param y_r
@@ -158,15 +184,15 @@ class threeInterPolation:
         coef_tmp = np.linalg.solve(A, B) # LU三角分解
         # coef_tmp = scipy.sparse.linalg.spilu(A).solve(B) # LU三角分解
         return coef_tmp
-    def getPoints(): # 获取坐标函数
+    def getPoints(self): # 获取坐标函数
         # 在CalculatePoints之后获得计算出来的点的坐标值
         # return 返回这些坐标点的vector
         return self.y_samples_
-    def getTimes(): # 获取时间函数
+    def getTimes(self): # 获取时间函数
         # 在CalculatePoints之后获得计算出来的时间点，作为舵机发值的时间戳
         # return 返回这些时间点的vector
         return self.x_samples_
-    def EvalHere(point_x0): # 计算插值曲线函数
+    def EvalHere(self, point_x0): # 计算插值曲线函数
         # 获得分段三次插值曲线某一点的值
         # @param point_x0 输入欲获得坐标点的横坐标
         # @return result_x0 返回point_x0代入多项式poly_求得的坐标值
@@ -185,21 +211,6 @@ class threeInterPolation:
 class ThreeInterpolationParam: # 三次曲线参数
     DEFAULT_POINT_INTERVAL = 10.0 # 默认的发值时间间隔
     DEFAULT_BOUNDARY_SLOPE = 1.0
-
-class PendulumWalkParam: # 步态参数
-    ANKLE_DIS = 15.0 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm
-    TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
-    TICK_NUM = 30 # 每个步态周期发35个值
-    COM_H = 37.0 # 机器人倒立摆长度37cm
-    ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比，乘以系数的数字作为质心的位置移动，插值后在本次中叠加在倒立摆x轨迹上
-    ACC_COEF_Y = 0.3
-    COM_HEIGHT = 27 # 默认规划重心高度
-    Y_HALF_AMPLITUDE = 3.0 # y方向倒立摆起点坐标长度
-    COM_X_OFFSET = 1 # 在理想重心规划基础上视走路情况而定的x方向偏移
-    TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
-    foot_z_t = [] # 表示抬脚高度曲线的三个向量
-    foot_z_p = []
-    foot_z_s = []
 
 class MotionTick: # 发值瞬间机器人参数类
     def __init__(self):
@@ -226,22 +237,8 @@ class OneFootLandingParam: # OneFootLanding参数
     UPBODY_MASS = 3158
     FOOT_MASS = 877
 
-class ElementGait: # 单个步态类
-    def __init__(self):
-        self.X = 0 # 该步的x方向位移
-        self.Y = 0 # 该步的y方向位移
-        self.YAW = 0 # 该步的旋转角度
-        self.IS_RIGHT = 1 # 该步由右脚迈出
-        self.IS_LEFT = 0 # 该步由左脚迈出
-    def __init__(self, x, y, yaw, is_right, is_left):
-        self.X = x
-        self.Y = y
-        self.YAW = yaw
-        self.IS_RIGHT = is_right
-        self.IS_LEFT = is_left
-
-class OneFootLanding: # 单步计算函数
-    def GetOneStep(hang_foot, whole_body_com, upbody_pose):
+class OneFootLanding: # 单步计算类
+    def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单步计算函数
         # 单步计算函数，用于计算接下来一步中各个舵机的值
         # @param hang_foot 输入双足位置与角度
         # @param whole_body_com 输入全身重心位置
@@ -440,7 +437,7 @@ class OneFootLanding: # 单步计算函数
             one_foot_result.append(landing_invkin)
         # print(one_foot_result)
         return one_foot_result
-    def unit_arrow(arrow):
+    def unit_arrow(arrow): # 向量归一化函数
         # 向量归一化函数，将向量的长度归一
         # @param arrow 输入任意维度的向量
         # @return 输出长度为一的向量
@@ -451,7 +448,7 @@ class OneFootLanding: # 单步计算函数
         for j in range(len(arrow)):
             arrow[j] = arrow[j] / len_arrow
         return arrow
-    def gait_atan(opposite, neighbor):
+    def gait_atan(opposite, neighbor): # 双变量反正切函数
         # 双变量反正切函数,用于准确求取一个角度,值域是[-pi,pi)
         # @param opposite 对边长度（直角边）
         # @param neighbor 临边长度 (直角边)

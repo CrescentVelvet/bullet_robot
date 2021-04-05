@@ -8,3 +8,16 @@ print(coef_tmp1)
 print(coef_tmp2)
 # [ 3.83333333,  4.77777778, -2.01111111, -0.68888889]
 # [ 3.83333333,  4.77777778, -2.01111111, -0.68888889]
+
+# class A:
+#     def __init__(self):
+#         self.c = 0
+#         self.d = 0
+#     def __init__(self, a, b):
+#         self.c = a
+#         self.d = b
+#         self.ppp()
+#     def ppp(self):
+#         print(111)
+# aaa = A(3,4)
+# print(aaa.c, aaa.d)
