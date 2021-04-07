@@ -40,9 +40,10 @@ class PendulumWalkParam: # 步态参数
     Y_HALF_AMPLITUDE = 3.0 # y方向倒立摆起点坐标长度
     COM_X_OFFSET = 1 # 在理想重心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
-    foot_z_t = [] # 表示抬脚高度曲线的三个向量
-    foot_z_p = []
-    foot_z_s = []
+    # 抬脚曲线参数，调参得出的，不会改变
+    foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
+    foot_z_p = [0.1, 0.06215, 4.67307, 0.1] # 抬脚高度曲线的z轴向量
+    foot_z_s = [-3.0, 0, 0, 3.0] # 抬脚高度曲线的tp曲线斜率向量
 class ElementGait: # 单个步态类
     def __init__(self):
         self.X = 0 # 该步的x方向位移
@@ -64,7 +65,7 @@ class BB: # 步态参数初始化
     com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
     com_x_changed = 0
     com_y_changed = 0
-    now_gait = ElementGait(x=0, y=0, yaw=0, is_right=0, is_left=0) # 单个步态
+    now_gait = ElementGait(x=10, y=1, yaw=1, is_right=1, is_left=0) # 单个步态
 
 class threeInterPolation:
     def __init__(self): # 默认构造函数
@@ -126,10 +127,7 @@ class threeInterPolation:
             self.oneCalculate()
             self.CalculatePoints(self.time_interval_)
         else:
-            print('error : The x_array is not available!')            
-        self.poly_ = []
-        self.x_samples_ = []
-        self.y_samples_ = []
+            print('error : The x_array is not available!')
     def isInOrder(self, x_ar): # 检测x_array合格函数
         # 判定输入的x_array序列是否合格
         # @param x_ar 输入的x_array序列
@@ -150,7 +148,7 @@ class threeInterPolation:
         # 计算分段多项式，无返回值
         self.poly_ = []
         for i in range(self.piece_num_):
-            self.poly_.append(self.onePiece(self.x_array_[i], y_array_[i], s_angle_[i], x_array_[i + 1], y_array_[i + 1], s_angle_[i + 1]))
+            self.poly_.append(self.onePiece(self.x_array_[i], self.y_array_[i], self.s_angle_[i], self.x_array_[i + 1], self.y_array_[i + 1], self.s_angle_[i + 1]))
     def CalculatePoints(self, t0_in): # 计算三次曲线值函数
         # 用于获得固定时间间隔的分段三次曲线的值，无返回值
         # @param t0_in 时间序列的间隔，单位为ns
@@ -161,7 +159,7 @@ class threeInterPolation:
         self.time_interval_ = t0
         while (self.x_array_[self.piece_num_] - t_tmp) > 0.000001:
             self.x_samples_.append(t_tmp)
-            self.y_samples_.append(self.EvalHere(self.t_tmp))
+            self.y_samples_.append(self.EvalHere(t_tmp))
             t_tmp += t0
         if (self.x_array_[self.piece_num_] - t_tmp + t0) > 0.000001:
             self.x_samples_.append(self.x_array_[self.piece_num_])
@@ -197,7 +195,7 @@ class threeInterPolation:
         # @param point_x0 输入欲获得坐标点的横坐标
         # @return result_x0 返回point_x0代入多项式poly_求得的坐标值
         for i in range(self.piece_num_):
-            if point_x0 >= self.x_array_[i] and point_x0 <= x_array_[i + 1]:
+            if point_x0 >= self.x_array_[i] and point_x0 <= self.x_array_[i + 1]:
                 break
         if i == self.piece_num_:
             print('error : x is beyond the domain of definition!')
@@ -214,7 +212,7 @@ class ThreeInterpolationParam: # 三次曲线参数
 
 class MotionTick: # 发值瞬间机器人参数类
     def __init__(self):
-        self.upbody_pose = [] # 双足位置与角度
+        self.hang_foot = [] # 双足位置与角度
         self.whole_com = [] # 全身重心位置
         self.upbody_pose = [] # 上半身角度
 
@@ -435,7 +433,6 @@ class OneFootLanding: # 单步计算类
         else: # 左脚立足
             one_foot_result.append(hanging_invkin)
             one_foot_result.append(landing_invkin)
-        # print(one_foot_result)
         return one_foot_result
     def unit_arrow(arrow): # 向量归一化函数
         # 向量归一化函数，将向量的长度归一
