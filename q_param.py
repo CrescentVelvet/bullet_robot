@@ -30,15 +30,15 @@ class AA: # 垃圾命名的变量
     akZ = []
     akYaw = []
 class PendulumWalkParam: # 步态参数
-    ANKLE_DIS = 15.0 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm
+    ANKLE_DIS = 15.8 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm
     TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
     TICK_NUM = 30 # 每个步态周期发35个值
     COM_H = 37.0 # 机器人倒立摆长度37cm
     ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比，乘以系数的数字作为质心的位置移动，插值后在本次中叠加在倒立摆x轨迹上
     ACC_COEF_Y = 0.3
-    COM_HEIGHT = 27 # 默认规划重心高度
+    COM_HEIGHT = 28 # 默认规划重心高度
     Y_HALF_AMPLITUDE = 3.0 # y方向倒立摆起点坐标长度
-    COM_X_OFFSET = 1 # 在理想重心规划基础上视走路情况而定的x方向偏移
+    COM_X_OFFSET = 1.3 # 在理想重心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
     # 抬脚曲线参数，调参得出的，不会改变
     foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
@@ -50,13 +50,11 @@ class ElementGait: # 单个步态类
         self.Y = 0 # 该步的y方向位移
         self.YAW = 0 # 该步的旋转角度
         self.IS_RIGHT = 1 # 该步由右脚迈出
-        self.IS_LEFT = 0 # 该步由左脚迈出
-    def __init__(self, x, y, yaw, is_right, is_left):
+    def __init__(self, x, y, yaw, is_right):
         self.X = x
         self.Y = y
         self.YAW = yaw
         self.IS_RIGHT = is_right
-        self.IS_LEFT = is_left
 class BB: # 步态参数初始化    
     com_ac_x = 0
     com_ac_y = 0
@@ -65,7 +63,12 @@ class BB: # 步态参数初始化
     com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
     com_x_changed = 0
     com_y_changed = 0
-    now_gait = ElementGait(x=10, y=1, yaw=1, is_right=1, is_left=0) # 单个步态
+    now_gait = ElementGait(x=10, y=1, yaw=1, is_right=1) # 单个步态
+
+class stp:
+    gait_queue = []
+    tmp_gait = ElementGait(0, 0, 0, 1)
+    last_gait = ElementGait(0, 0, 0, 1)
 
 class threeInterPolation:
     def __init__(self): # 默认构造函数
@@ -234,6 +237,13 @@ class OneFootLandingParam: # OneFootLanding参数
     BODY_CENTER_Z = -2.4
     UPBODY_MASS = 3158
     FOOT_MASS = 877
+    # 下面是逆运动学的参数
+    UPPER_LEG_LENGTH = 12.3
+    LOWER_LEG_LENGTH = 13.0
+    ANKLE_FROM_GROUND = 6.0
+    HALF_HIP_WIDTH = 4.5
+    HIP_X_FROM_ORIGIN = 0
+    HIP_Z_FROM_ORIGIN = 8.1
 
 class OneFootLanding: # 单步计算类
     def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单步计算函数
@@ -241,7 +251,7 @@ class OneFootLanding: # 单步计算类
         # @param hang_foot 输入双足位置与角度
         # @param whole_body_com 输入全身重心位置
         # @param upbody_pose 输入上半身角度
-        # @return one_foot_result 返回计算出12个舵机值的序列
+        # @return one_foot_return 返回计算出12个舵机值的序列
         hang_foot[3] = math.radians(hang_foot[3]) # 角度转弧度
         hang_foot[4] = math.radians(hang_foot[4])
         hang_foot[5] = math.radians(hang_foot[5])
@@ -433,7 +443,11 @@ class OneFootLanding: # 单步计算类
         else: # 左脚立足
             one_foot_result.append(hanging_invkin)
             one_foot_result.append(landing_invkin)
-        return one_foot_result
+        one_foot_return = [] # 二维数组转换一维数组
+        for i in range(len(one_foot_result)):
+            for j in range(len(one_foot_result[i])):
+                one_foot_return.append(one_foot_result[i][j])
+        return one_foot_return
     def unit_arrow(arrow): # 向量归一化函数
         # 向量归一化函数，将向量的长度归一
         # @param arrow 输入任意维度的向量
