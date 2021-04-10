@@ -6,10 +6,23 @@ class car_data:
         self.id = -1
         self.maxvel = []
         self.power = []
-    def __init__(self, id, maxvel, power):
+        self.val_fit = []
+    def assign(self, id, maxvel, power):
         self.id = id
-        self.maxvel = maxvel
-        self.power = power
+        self.maxvel.append(maxvel)
+        self.power.append(power)
+    def calculate(self):
+        if self.id == -1:
+            self.val_fit = 0
+        else:
+            raw_fit = np.polyfit(self.power, self.maxvel, 2)
+            self.val_fit = np.poly1d(raw_fit)
+    def draw(self):
+        plot_power = np.arange(0, 120, 0.1)
+        plot_fit = self.val_fit(plot_power)
+        plot1 = plt.plot(self.power, self.maxvel, '*', label='original values')
+        plot2 = plt.plot(plot_power, plot_fit, 'r', label='polyfit values')
+        plt.show()
 
 class car_cal:
     def __init__(self):
@@ -48,16 +61,14 @@ class car_cal:
                     self.all_maxvel.append(self.raw_maxvel[i])
                     self.all_power.append(self.raw_power[i])
 
-
-address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData.txt"
-car = car_cal()
-car.read_data(address)
-print(car.all_id)
-# raw_fit = np.polyfit(all_power, all_vel, 2)
-# val_fit = np.poly1d(raw_fit)
-# print(val_fit)
-# plot_power = np.arange(0, 120, 0.1)
-# plot_fit = val_fit(plot_power)
-# plot1 = plt.plot(all_power, all_vel, '*', label='original values')
-# plot2 = plt.plot(plot_power, plot_fit, 'r', label='polyfit values')
-# plt.show()
+address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData1.txt"
+all_car = car_cal() # 数据读取
+all_car.read_data(address)
+car_list = []
+for i in range(16): # 初始化
+    car_list.append(car_data())
+for i in range(len(all_car.all_id)): # 车号划分
+    car_list[int(all_car.all_id[i])].assign(int(all_car.all_id[i]), all_car.all_maxvel[i], all_car.all_power[i])
+for i in range(16):
+    car_list[i].calculate()
+    print(car_list[i].id, '---', car_list[i].val_fit)

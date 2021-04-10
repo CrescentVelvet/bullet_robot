@@ -71,6 +71,7 @@ class stp:
     last_gait = ElementGait(0, 0, 0, 1) # 上一个步态指令
 
 class threeInterPolation:
+    # 注意，python不能对构造函数重载，这里需要修改！
     def __init__(self): # 默认构造函数
         # 默认构造函数
         self.x_array_ = []
