@@ -44,7 +44,7 @@ class PendulumWalkParam: # 步态参数
     foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
     foot_z_p = [0.1, 0.06215, 4.67307, 0.1] # 抬脚高度曲线的z轴向量
     foot_z_s = [-3.0, 0, 0, 3.0] # 抬脚高度曲线的tp曲线斜率向量
-class ElementGait: # 单个步态类
+class ElementGait: # 单个步态指令类
     def __init__(self):
         self.X = 0 # 该步的x方向位移
         self.Y = 0 # 该步的y方向位移
@@ -63,12 +63,12 @@ class BB: # 步态参数初始化
     com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
     com_x_changed = 0
     com_y_changed = 0
-    now_gait = ElementGait(x=10, y=1, yaw=1, is_right=1) # 单个步态
+    now_gait = ElementGait(x=10, y=1, yaw=1, is_right=1) # 单个步态指令
 
 class stp:
-    gait_queue = []
-    tmp_gait = ElementGait(0, 0, 0, 1)
-    last_gait = ElementGait(0, 0, 0, 1)
+    gait_queue = [] # 步态指令序列
+    tmp_gait = ElementGait(0, 0, 0, 1) # 单个步态指令
+    last_gait = ElementGait(0, 0, 0, 1) # 上一个步态指令
 
 class threeInterPolation:
     def __init__(self): # 默认构造函数
@@ -188,6 +188,7 @@ class threeInterPolation:
     def getPoints(self): # 获取坐标函数
         # 在CalculatePoints之后获得计算出来的点的坐标值
         # return 返回这些坐标点的vector
+        print('sss', self.y_samples_)
         return self.y_samples_
     def getTimes(self): # 获取时间函数
         # 在CalculatePoints之后获得计算出来的时间点，作为舵机发值的时间戳
@@ -252,6 +253,8 @@ class OneFootLanding: # 单步计算类
         # @param whole_body_com 输入全身重心位置
         # @param upbody_pose 输入上半身角度
         # @return one_foot_return 返回计算出12个舵机值的序列
+        print('GetOneStep hang_foot', len(hang_foot))
+
         hang_foot[3] = math.radians(hang_foot[3]) # 角度转弧度
         hang_foot[4] = math.radians(hang_foot[4])
         hang_foot[5] = math.radians(hang_foot[5])
