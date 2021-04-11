@@ -189,7 +189,7 @@ class threeInterPolation:
     def getPoints(self): # 获取坐标函数
         # 在CalculatePoints之后获得计算出来的点的坐标值
         # return 返回这些坐标点的vector
-        print('sss', self.y_samples_)
+        # print('sss', self.y_samples_)
         return self.y_samples_
     def getTimes(self): # 获取时间函数
         # 在CalculatePoints之后获得计算出来的时间点，作为舵机发值的时间戳
@@ -254,8 +254,6 @@ class OneFootLanding: # 单步计算类
         # @param whole_body_com 输入全身重心位置
         # @param upbody_pose 输入上半身角度
         # @return one_foot_return 返回计算出12个舵机值的序列
-        print('GetOneStep hang_foot', len(hang_foot))
-
         hang_foot[3] = math.radians(hang_foot[3]) # 角度转弧度
         hang_foot[4] = math.radians(hang_foot[4])
         hang_foot[5] = math.radians(hang_foot[5])

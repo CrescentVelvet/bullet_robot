@@ -12,7 +12,7 @@ import pybullet as p
 import pybullet_data
 import q_param
 
-physicsClient = p.connect(p.GUI)
+physicsClient = p.connect(p.DIRECT)
 p.setAdditionalSearchPath(pybullet_data.getDataPath())
 p.setGravity(0, 0, -98)
 useRealTimeSim = 0
@@ -371,11 +371,11 @@ def walkForward(joint_pos, walk_gait): # 向前行走函数
         giveAStepTick(q_param.stp.gait_queue[0])
         q_param.stp.last_gait = q_param.stp.gait_queue.pop(0)
     return new_joint_pos
-def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作数据函数
+def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
     # step函数,用于生成下一步的动作数据
-    # @param dx_input 下一步质心的x变化,相对于上半身,单位是cm
-    # @param dy_input 下一步执行的y变化,相对于上半身,单位是cm
-    # @param dyaw_input 下一步执行的yaw变化,相对于上半身,角度制
+    # @param dx_input 输入下一步质心的x变化指令,相对于上半身,单位是cm
+    # @param dy_input 输入下一步质心的y变化指令,相对于上半身,单位是cm
+    # @param dyaw_input 输入下一步质心的yaw变化指令,相对于上半身,角度制
     # @return
     q_param.AA.x0 = q_param.BB.com_pos[0] * math.cos(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[0] * math.cos(q_param.BB.hang_foot[2]) + q_param.BB.com_pos[1] * math.sin(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.sin(q_param.BB.hang_foot[2])
     q_param.AA.xt = (dx_input - ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0) ) * math.sin(math.radians(dyaw_input))) / 2.0
@@ -471,36 +471,40 @@ def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作数据函数
     q_param.BB.com_ac_x = ac_x
     q_param.BB.com_ac_y = ac_y
     q_param.AA.tick_num = 0
-def giveATick(): # 下一帧动作数据函数
+def giveATick(tick_times): # 下一帧动作数据函数
     # tick函数,用于用于生成下一帧的动作数据
+    # @tick_times 输入插值曲线的序号
     # @return tick_joint_pos 返回十二个关节舵机控制信息
     tmptick =  q_param.MotionTick()
     q_param.AA.x = q_param.AA.x0 * math.cosh(0.01 * q_param.AA.tick_num / q_param.AA.Tc) + q_param.AA.Tc * q_param.AA.vx * math.sinh(0.01 * (q_param.AA.tick_num) / q_param.AA.Tc)
     q_param.AA.y = q_param.AA.y0 * math.cosh(0.01 * q_param.AA.tick_num / q_param.AA.Tc) + q_param.AA.Tc * q_param.AA.vy * math.sinh(0.01 * (q_param.AA.tick_num) / q_param.AA.Tc)
-    tmptick.hang_foot.append(q_param.AA.akX[q_param.AA.tick_num])
-    tmptick.hang_foot.append(q_param.AA.akY[q_param.AA.tick_num])
-    tmptick.hang_foot.append(q_param.AA.akZ[q_param.AA.tick_num])
-    tmptick.hang_foot.append(0)
-    tmptick.hang_foot.append(0)
-    tmptick.hang_foot.append(q_param.AA.akYaw[q_param.AA.tick_num])
-    tmptick.whole_com.append(q_param.AA.accX[q_param.AA.tick_num] + q_param.AA.x + q_param.PendulumWalkParam.COM_X_OFFSET) # (x * 100 +1.5)
-    tmptick.whole_com.append(q_param.AA.y - q_param.AA.y0 + q_param.AA.comY[q_param.AA.tick_num] + q_param.AA.accY[q_param.AA.tick_num])
+    tmptick.hang_foot.append(q_param.AA.akX[q_param.AA.tick_num][tick_times])
+    tmptick.hang_foot.append(q_param.AA.akY[q_param.AA.tick_num][tick_times])
+    tmptick.hang_foot.append(q_param.AA.akZ[q_param.AA.tick_num][tick_times])
+    tmptick.hang_foot.append(0.001)
+    tmptick.hang_foot.append(0.001)
+    tmptick.hang_foot.append(q_param.AA.akYaw[q_param.AA.tick_num][tick_times])
+    tmptick.whole_com.append(q_param.AA.accX[q_param.AA.tick_num][tick_times] + q_param.AA.x + q_param.PendulumWalkParam.COM_X_OFFSET) # (x * 100 +1.5)
+    tmptick.whole_com.append(q_param.AA.y - q_param.AA.y0 + q_param.AA.comY[q_param.AA.tick_num][tick_times] + q_param.AA.accY[q_param.AA.tick_num][tick_times])
     tmptick.whole_com.append(q_param.PendulumWalkParam.COM_HEIGHT) # 0.308637
     tmptick.upbody_pose.append(0)
     tmptick.upbody_pose.append(0)
-    tmptick.upbody_pose.append(q_param.AA.comYaw[q_param.AA.tick_num])
+    tmptick.upbody_pose.append(q_param.AA.comYaw[q_param.AA.tick_num][tick_times])
     q_param.AA.tick_num += 1
     # tick_joint_pos = np.zeros(len(joint_pos))
     tick_joint_pos = q_param.OneFootLanding.GetOneStep(tmptick.hang_foot, tmptick.whole_com, tmptick.upbody_pose)
-    print('tick_joint_pos', tick_joint_pos)
+    # print('tick_joint_pos', tick_joint_pos)
     return tick_joint_pos
 def giveAStepTick(give_gait): # 步态规划函数
     # steptick函数,调用step函数和tick函数
     # @param give_gait 单个步态的实例
-    giveAStep(give_gait.X, give_gait.Y, give_gait.YAW) # 根据单个步态,计算运动参数
+    giveAStep(give_gait.X, give_gait.Y, give_gait.YAW) # 根据单个步态指令,计算运动参数
     q_param.AA.tick_num = 0
-    for i in range(q_param.PendulumWalkParam.TICK_NUM):
-        giveATick() # 根据运动参数,计算每一帧的运动指令
+    for i in range(q_param.PendulumWalkParam.TICK_NUM): # 循环30次
+        # for j in range(4):
+        j = 1
+        giveATick(j) # 根据运动参数,计算每一帧的运动指令
+    print('giveAStepTick finish~')
 
 
 
