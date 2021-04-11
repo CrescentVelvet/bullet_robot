@@ -352,7 +352,6 @@ def walkForward(joint_pos, walk_gait): # 向前行走函数
     # guard_angles.append(160)
     # print('guard_angles', guard_angles)
     if len(q_param.stp.gait_queue) == 0:
-        # print(0)
         q_param.stp.tmp_gait.X = 8
         q_param.stp.tmp_gait.Y = 0
         q_param.stp.tmp_gait.YAW = 0
@@ -369,7 +368,6 @@ def walkForward(joint_pos, walk_gait): # 向前行走函数
     # print('base_angles', base_angles)
     # new_joint_pos = base_angles
     if len(q_param.stp.gait_queue) != 0:
-        # print(1)
         giveAStepTick(q_param.stp.gait_queue[0])
         q_param.stp.last_gait = q_param.stp.gait_queue.pop(0)
     return new_joint_pos
@@ -472,7 +470,7 @@ def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作数据函数
     q_param.BB.hang_foot.append(2.0 * q_param.BB.com_pos[2]) # 这里使得落脚点的yaw和质心一致了
     q_param.BB.com_ac_x = ac_x
     q_param.BB.com_ac_y = ac_y
-    tick_num = 0
+    q_param.AA.tick_num = 0
 def giveATick(): # 下一帧动作数据函数
     # tick函数,用于用于生成下一帧的动作数据
     # @return tick_joint_pos 返回十二个关节舵机控制信息

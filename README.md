@@ -137,7 +137,7 @@ python
 gcc ./d_test.c -o ./d_test.out
 ./d_test.out
 ```
-### motion思路
+## motion思路
 motion_hub.cpp里527行WALK_TO_BALL调用GenerateNewGait函数，对步态单元tmp_gait和其序列gait_queue进行赋值
 
 motion_hub.cpp是整体运动控制,包含了很多状态与条件.walk_test.cpp是测试步行的简化版.

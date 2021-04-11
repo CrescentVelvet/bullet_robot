@@ -27,3 +27,6 @@ v_test.py
 wrappers.py
 modelvec_normalize.pkl
 d_test.out
+VelData.txt
+VelData1.txt
+VelData2.txt

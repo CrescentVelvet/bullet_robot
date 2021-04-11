@@ -110,7 +110,7 @@ class threeInterPolation:
             self.s_angle_.append(0.0)
         if self.isInOrder(self.x_array_):
             self.piece_num_ = int(len(self.x_array_) - 1)
-            self.oneCalculate()
+            self.Calculate()
             self.CalculatePoints(self.time_interval_)
         else:
             print('error : The x_array is not available!')            
@@ -128,7 +128,7 @@ class threeInterPolation:
         self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL
         if self.isInOrder(self.x_array_):
             self.piece_num_ = int(len(self.x_array_) - 1)
-            self.oneCalculate()
+            self.Calculate()
             self.CalculatePoints(self.time_interval_)
         else:
             print('error : The x_array is not available!')
@@ -148,7 +148,7 @@ class threeInterPolation:
                 pass
         self.is_order = 1
         return 1
-    def oneCalculate(self): # 计算poly_多项式函数
+    def Calculate(self): # 计算poly_多项式函数
         # 计算分段多项式，无返回值
         self.poly_ = []
         for i in range(self.piece_num_):
@@ -162,9 +162,9 @@ class threeInterPolation:
         t0 = float(t0_in / 1000) # 时间间隔的单位从ns转换为ms
         self.time_interval_ = t0
         while (self.x_array_[self.piece_num_] - t_tmp) > 0.000001:
-            self.x_samples_.append(t_tmp)
-            self.y_samples_.append(self.EvalHere(t_tmp))
-            t_tmp += t0
+            self.x_samples_.append(t_tmp) # t_tmp时间值
+            self.y_samples_.append(self.EvalHere(t_tmp)) # t_tmp时刻曲线上的点值
+            t_tmp += t0 # 时刻增加一个时间间隔
         if (self.x_array_[self.piece_num_] - t_tmp + t0) > 0.000001:
             self.x_samples_.append(self.x_array_[self.piece_num_])
             self.y_samples_.append(self.EvalHere(self.x_array_[self.piece_num_]))
