@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import configparser
-# encoding="utf-8"
 class car_data: # 单个车数据
     def __init__(self):
         self.id = -1
@@ -62,31 +61,35 @@ class car_cal: # 全部车数据
         self.raw_power = list(map(float, self.raw_power))
         old_id = self.raw_id[0]
         for i in range(len(self.raw_id)):
-            if old_id != self.raw_id[i]:
+            if old_id != self.raw_id[i]: # id变化时记录数据
                 old_id = self.raw_id[i]
-                if self.raw_power[i-1] > 0.0 and self.raw_power[i-1] < 130.0 and self.raw_maxvel[i-1] > 0.0 and self.raw_maxvel[i-1] < 8000.0: # 排除超量数据
-                    self.all_id.append(self.raw_id[i-1])
+                if self.raw_power[i-1] > 0.0 and self.raw_power[i-1] < 130.0 and self.raw_maxvel[i-1] > 0.0 and self.raw_maxvel[i-1] < 8000.0:
+                    self.all_id.append(self.raw_id[i-1]) # 排除越界数据
                     self.all_vel.append(self.raw_vel[i-1])
                     self.all_maxvel.append(self.raw_maxvel[i-1])
                     self.all_power.append(self.raw_power[i-1])
 static_car_num = 16
-txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_6_10.txt"
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData2_6_10.txt"
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-car_all = car_cal() # txt数据读取
-car_all.read_data(txt_address)
+car_all = car_cal() # txt是小车踢球原始数据
+car_all.read_data(txt_address) # txt数据读取
 car_list = []
 for i in range(static_car_num): # 初始化
     car_list.append(car_data())
 for i in range(len(car_all.all_id)): # 车号划分
     car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
-for i in range(16): # 计算拟合函数
+for i in range(static_car_num): # 计算拟合函数
     car_list[i].calculate()
-# car_list[10].draw()
-robot_conf = configparser.ConfigParser() # 创建管理对象
+car_list[6].draw()
+robot_conf = configparser.ConfigParser() # ini是小车踢球拟合参数
 robot_conf.read(ini_address, encoding="utf-8") # ini数据读取
 for robot_id in range(static_car_num):
+    robot_conf.set("Robot"+str(robot_id), "chip_min", str(30))
+    robot_conf.set("Robot"+str(robot_id), "chip_max", str(120))
+    robot_conf.set("Robot"+str(robot_id), "flat_min", str(30))
+    robot_conf.set("Robot"+str(robot_id), "flat_max", str(120))
     if car_list[robot_id].id != -1: # ini参数更新
         robot_conf.set("Robot"+str(robot_id), "flat_a", str(car_list[robot_id].val_fit[2]))
         robot_conf.set("Robot"+str(robot_id), "flat_b", str(car_list[robot_id].val_fit[1]))
         robot_conf.set("Robot"+str(robot_id), "flat_c", str(car_list[robot_id].val_fit[0]))
-robot_conf.write(open(ini_address, "w", encoding="utf-8"))
+robot_conf.write(open(ini_address, "w", encoding="utf-8")) # ini参数写入
