@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import configparser
-class car_data: # 单个车数据
+class Car_data: # 单个车数据
     def __init__(self):
         self.id = -1
         self.maxvel = []
@@ -30,7 +30,7 @@ class car_data: # 单个车数据
         plt.xlabel('maxvel')
         plt.ylabel('power')
         plt.show()
-class car_cal: # 全部车数据
+class Car_cal: # 全部车数据
     def __init__(self):
         self.raw_id = []
         self.raw_vel = []
@@ -68,28 +68,35 @@ class car_cal: # 全部车数据
                     self.all_vel.append(self.raw_vel[i-1])
                     self.all_maxvel.append(self.raw_maxvel[i-1])
                     self.all_power.append(self.raw_power[i-1])
+class Analy_car: # 操作数据
+    def analy_txt(address):
+        car_all = Car_cal() # txt是小车踢球原始数据
+        car_all.read_data(address) # txt数据读取
+        car_list = []
+        for i in range(static_car_num): # 初始化
+            car_list.append(Car_data())
+        for i in range(len(car_all.all_id)): # 车号划分
+            car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
+        for i in range(static_car_num): # 计算拟合函数
+            car_list[i].calculate()
+            print(i, '---', car_list[i].val_fit)
+        return car_list
+    def analy_ini(address, car_list):
+        robot_conf = configparser.ConfigParser() # ini是小车踢球拟合参数
+        robot_conf.read(address, encoding="utf-8") # ini数据读取
+        for robot_id in range(static_car_num):
+            robot_conf.set("Robot"+str(robot_id), "CHIP_MIN", str(30))
+            robot_conf.set("Robot"+str(robot_id), "CHIP_MAX", str(120))
+            robot_conf.set("Robot"+str(robot_id), "FLAT_MIN", str(30))
+            robot_conf.set("Robot"+str(robot_id), "FLAT_MAX", str(120))
+            if car_list[robot_id].id != -1: # ini参数更新
+                robot_conf.set("Robot"+str(robot_id), "FLAT_A", str(car_list[robot_id].val_fit[2]))
+                robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
+                robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
+        robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
 static_car_num = 16
-txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData2_6_10.txt"
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_8_10_13_14.txt"
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-car_all = car_cal() # txt是小车踢球原始数据
-car_all.read_data(txt_address) # txt数据读取
-car_list = []
-for i in range(static_car_num): # 初始化
-    car_list.append(car_data())
-for i in range(len(car_all.all_id)): # 车号划分
-    car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
-for i in range(static_car_num): # 计算拟合函数
-    car_list[i].calculate()
-car_list[6].draw()
-robot_conf = configparser.ConfigParser() # ini是小车踢球拟合参数
-robot_conf.read(ini_address, encoding="utf-8") # ini数据读取
-for robot_id in range(static_car_num):
-    robot_conf.set("Robot"+str(robot_id), "chip_min", str(30))
-    robot_conf.set("Robot"+str(robot_id), "chip_max", str(120))
-    robot_conf.set("Robot"+str(robot_id), "flat_min", str(30))
-    robot_conf.set("Robot"+str(robot_id), "flat_max", str(120))
-    if car_list[robot_id].id != -1: # ini参数更新
-        robot_conf.set("Robot"+str(robot_id), "flat_a", str(car_list[robot_id].val_fit[2]))
-        robot_conf.set("Robot"+str(robot_id), "flat_b", str(car_list[robot_id].val_fit[1]))
-        robot_conf.set("Robot"+str(robot_id), "flat_c", str(car_list[robot_id].val_fit[0]))
-robot_conf.write(open(ini_address, "w", encoding="utf-8")) # ini参数写入
+car_list = Analy_car.analy_txt(txt_address)
+# Analy_car.analy_ini(ini_address, car_list)
+car_list[8].draw()
