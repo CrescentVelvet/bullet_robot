@@ -99,9 +99,9 @@ def useRobot(): # 仿真机器人函数
                         line_data[i] = tick_data[i]
                     pass
                 else:
-                    # time.sleep(1)
-                    # gait_num = 0
-                    # walkForward(1, 0, 0) # 再次发布向前行走指令
+                    time.sleep(1)
+                    gait_num = 0
+                    walkForward(1, 0, 0) # 再次发布向前行走指令
                     print('向前行走一步')
                 gait_num += 1
             gait_frame += 1
@@ -357,10 +357,25 @@ def climbUp(line_string): # 平躺爬起函数
     for index in range(len(line_data)): # 角度制转换弧度制
         line_data[index] = math.radians(line_data[index])
     return line_data
-def addGaitQueue(input_x, input_y, input_yaw): # 步态指令函
-    # add函数,用于将步态指令添加到队列中
+# def addGaitQueue(): # 步态指令函数
+#     # add函数,用于将步态指令添加到队列中
+#     q_param.stp.tmp_gait.X = 1
+#     q_param.stp.tmp_gait.Y = 0
+#     q_param.stp.tmp_gait.YAW = 0
+#     q_param.stp.gait_queue.append(q_param.stp.tmp_gait)
+#     q_param.stp.tmp_gait.X = 1
+#     q_param.stp.tmp_gait.Y = 0
+#     q_param.stp.tmp_gait.YAW = 0
+#     q_param.stp.gait_queue.append(q_param.stp.tmp_gait)
+#     q_param.stp.tmp_gait.X = 1
+#     q_param.stp.tmp_gait.Y = 0
+#     q_param.stp.tmp_gait.YAW = 0
+#     q_param.stp.gait_queue.append(q_param.stp.tmp_gait)
 def walkForward(input_x, input_y, input_yaw): # 向前行走函数
     # walk函数,用于发布运动指令,调用giveAStep函数计算下一步动作指令
+    # @param input_x
+    # @param input_y
+    # @param input_yaw
     if len(q_param.stp.gait_queue) == 0:
         q_param.stp.tmp_gait.X = input_x # x方向运动指令
         q_param.stp.tmp_gait.Y = input_y # y方向运动指令
@@ -369,6 +384,7 @@ def walkForward(input_x, input_y, input_yaw): # 向前行走函数
     if len(q_param.stp.gait_queue) != 0:
         giveAStep(q_param.stp.gait_queue[0].X, q_param.stp.gait_queue[0].Y, q_param.stp.gait_queue[0].YAW) # 根据单个步态指令,计算下一步的运动参数
         q_param.stp.last_gait = q_param.stp.gait_queue.pop(0) # 队列弹出当前指令
+    q_param.OneFootLandingParam.IS_RIGHT = 1 - q_param.OneFootLandingParam.IS_RIGHT
     print('开始向前行走')
 def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
     # step函数,用于生成下一步的动作数据

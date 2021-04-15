@@ -63,12 +63,10 @@ class BB: # 步态参数初始化
     com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
     com_x_changed = 0
     com_y_changed = 0
-
 class stp:
     gait_queue = [] # 步态指令序列
     tmp_gait = ElementGait(0, 0, 0, 1) # 单个步态指令
     last_gait = ElementGait(0, 0, 0, 1) # 上一个步态指令
-
 class threeInterPolation:
     # 注意,python不能对构造函数重载,这里需要修改！
     # def __init__(self): # 默认构造函数
@@ -208,23 +206,19 @@ class threeInterPolation:
         for j in range(len(self.poly_)):
             result_x0 += self.poly_[0][j] * math.pow(point_x0, len(self.poly_) - j - 1) # 这里的poly是个array,需要取[0]来获得一维数组
         return result_x0
-
 class ThreeInterpolationParam: # 三次曲线参数
     DEFAULT_POINT_INTERVAL = 10.0 # 默认的发值时间间隔
     DEFAULT_BOUNDARY_SLOPE = 1.0
-
 class MotionTick: # 发值瞬间机器人参数类
     def __init__(self):
         self.hang_foot = [] # 双足位置与角度
         self.whole_com = [] # 全身重心位置
         self.upbody_pose = [] # 上半身角度
-
 class UpbodyMode: # 上半身状态参数
     upbody_still = 1 # 上半身rpy(0,0,0)
     self_adaption = 2 # 上半身根据对角线准则自适应
     constant_value = 3 # 上半身设置yaw,固定roll和pitch
     customize_value = 4 # 上半身设置yaw,roll和pitch
-
 class OneFootLandingParam: # OneFootLanding参数
     UPBODY_CONSTANT_ROLL = 0
     UPBODY_CONSTANT_PITCH = 0.2
@@ -244,7 +238,6 @@ class OneFootLandingParam: # OneFootLanding参数
     HALF_HIP_WIDTH = 4.5
     HIP_X_FROM_ORIGIN = 0
     HIP_Z_FROM_ORIGIN = 8.1
-
 class OneFootLanding: # 单步计算类
     def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单步计算函数
         # 单步计算函数,用于计算接下来一步中各个舵机的值
@@ -478,5 +471,4 @@ class OneFootLanding: # 单步计算类
                 return math.atan(opposite / neighbor) + math.pi
             else:
                 return math.atan(opposite / neighbor) - math.pi
-
 # OneFootLanding.GetOneStep(hang_foot=[1,1,1,1,1,1], whole_body_com=[1,1,1], upbody_pose=[1,1,1,1,1,1])
