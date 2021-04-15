@@ -208,7 +208,7 @@ class threeInterPolation:
             return 0
         result_x0 = 0 # point_x0代入多项式poly_求得的坐标值
         for j in range(len(self.poly_)):
-            result_x0 += self.poly_[j] * math.pow(point_x0, len(self.poly_) - j - 1)
+            result_x0 += self.poly_[0][j] * math.pow(point_x0, len(self.poly_) - j - 1) # 这里的poly是个array，需要取[0]来获得一维数组
         return result_x0
 
 class ThreeInterpolationParam: # 三次曲线参数

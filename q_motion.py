@@ -471,39 +471,35 @@ def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
     q_param.BB.com_ac_x = ac_x
     q_param.BB.com_ac_y = ac_y
     q_param.AA.tick_num = 0
-def giveATick(tick_times): # 下一帧动作数据函数
+def giveATick(): # 下一帧动作数据函数
     # tick函数,用于用于生成下一帧的动作数据
-    # @tick_times 输入插值曲线的序号
     # @return tick_joint_pos 返回十二个关节舵机控制信息
     tmptick =  q_param.MotionTick()
     q_param.AA.x = q_param.AA.x0 * math.cosh(0.01 * q_param.AA.tick_num / q_param.AA.Tc) + q_param.AA.Tc * q_param.AA.vx * math.sinh(0.01 * (q_param.AA.tick_num) / q_param.AA.Tc)
     q_param.AA.y = q_param.AA.y0 * math.cosh(0.01 * q_param.AA.tick_num / q_param.AA.Tc) + q_param.AA.Tc * q_param.AA.vy * math.sinh(0.01 * (q_param.AA.tick_num) / q_param.AA.Tc)
-    tmptick.hang_foot.append(q_param.AA.akX[q_param.AA.tick_num][tick_times])
-    tmptick.hang_foot.append(q_param.AA.akY[q_param.AA.tick_num][tick_times])
-    tmptick.hang_foot.append(q_param.AA.akZ[q_param.AA.tick_num][tick_times])
+    tmptick.hang_foot.append(q_param.AA.akX[q_param.AA.tick_num])
+    tmptick.hang_foot.append(q_param.AA.akY[q_param.AA.tick_num])
+    tmptick.hang_foot.append(q_param.AA.akZ[q_param.AA.tick_num])
     tmptick.hang_foot.append(0.001)
     tmptick.hang_foot.append(0.001)
-    tmptick.hang_foot.append(q_param.AA.akYaw[q_param.AA.tick_num][tick_times])
-    tmptick.whole_com.append(q_param.AA.accX[q_param.AA.tick_num][tick_times] + q_param.AA.x + q_param.PendulumWalkParam.COM_X_OFFSET) # (x * 100 +1.5)
-    tmptick.whole_com.append(q_param.AA.y - q_param.AA.y0 + q_param.AA.comY[q_param.AA.tick_num][tick_times] + q_param.AA.accY[q_param.AA.tick_num][tick_times])
+    tmptick.hang_foot.append(q_param.AA.akYaw[q_param.AA.tick_num])
+    tmptick.whole_com.append(q_param.AA.accX[q_param.AA.tick_num] + q_param.AA.x + q_param.PendulumWalkParam.COM_X_OFFSET) # (x * 100 +1.5)
+    tmptick.whole_com.append(q_param.AA.y - q_param.AA.y0 + q_param.AA.comY[q_param.AA.tick_num] + q_param.AA.accY[q_param.AA.tick_num])
     tmptick.whole_com.append(q_param.PendulumWalkParam.COM_HEIGHT) # 0.308637
     tmptick.upbody_pose.append(0)
     tmptick.upbody_pose.append(0)
-    tmptick.upbody_pose.append(q_param.AA.comYaw[q_param.AA.tick_num][tick_times])
+    tmptick.upbody_pose.append(q_param.AA.comYaw[q_param.AA.tick_num])
     q_param.AA.tick_num += 1
     # tick_joint_pos = np.zeros(len(joint_pos))
-    tick_joint_pos = q_param.OneFootLanding.GetOneStep(tmptick.hang_foot, tmptick.whole_com, tmptick.upbody_pose)
+    tick_joint_pos = q_param.OneFootLanding.GetOneStep(tmptick.hang_foot, tmptick.whole_com, tmptick.upbody_pose) # 计算舵机值
     # print('tick_joint_pos', tick_joint_pos)
     return tick_joint_pos
 def giveAStepTick(give_gait): # 步态规划函数
     # steptick函数,调用step函数和tick函数
     # @param give_gait 单个步态的实例
-    giveAStep(give_gait.X, give_gait.Y, give_gait.YAW) # 根据单个步态指令,计算运动参数
-    q_param.AA.tick_num = 0
+    giveAStep(give_gait.X, give_gait.Y, give_gait.YAW) # 根据单个步态指令,计算每一步的运动参数
     for i in range(q_param.PendulumWalkParam.TICK_NUM): # 循环30次
-        # for j in range(4):
-        j = 1
-        giveATick(j) # 根据运动参数,计算每一帧的运动指令
+        giveATick() # 根据运动参数,计算每一帧的运动指令
     print('giveAStepTick finish~')
 
 
