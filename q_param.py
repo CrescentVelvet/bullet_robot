@@ -63,7 +63,6 @@ class BB: # 步态参数初始化
     com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
     com_x_changed = 0
     com_y_changed = 0
-    now_gait = ElementGait(x=10, y=1, yaw=1, is_right=1) # 单个步态指令
 
 class stp:
     gait_queue = [] # 步态指令序列
@@ -72,51 +71,51 @@ class stp:
 
 class threeInterPolation:
     # 注意，python不能对构造函数重载，这里需要修改！
-    def __init__(self): # 默认构造函数
-        # 默认构造函数
-        self.x_array_ = []
-        self.y_array_ = []
-        self.s_angle_ = []
-        self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL # 默认的发值时间间隔
-        self.is_order = 0 # x_array序列是否合格
-        self.piece_num_ = 0
-        self.poly_ = []
-        self.x_samples_ = []
-        self.y_samples_ = []
-    def __init__(self, x_array, y_array): # 缺省构造函数
-        # 缺省构造函数，没有斜率输入，默认斜率都是0
-        # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
-        # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
-        self.x_array_ = x_array
-        self.y_array_ = y_array
-        self.s_angle_ = [] # 在append前需要先设置为空
-        self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL
-        if self.y_array_[0] > self.y_array_[1]:
-            self.s_angle_.append(-ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
-        elif self.y_array_[0] < self.y_array_[1]:
-            self.s_angle_.append(ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
-        else:
-            self.s_angle_.append(0.0)
-        for i in range(len(self.x_array_) - 1):
-            if ( self.y_array_[i - 1] <= self.y_array_[i] and self.y_array_[i] <= y_array_[i + 1] ) or ( self.y_array_[i - 1] >= self.y_array_[i] and self.y_array_[i] >= y_array_[i + 1] ):
-                self.s_angle_.append( (self.y_array_[i + 1] - self.y_array_[i - 1]) / (self.x_array_[i + 1] - self.x_array_[i - 1]) )
-            else:
-                self.s_angle_.append(0.0)
-        if self.y_array_[len(self.y_array_) - 2] > self.y_array_[len(self.y_array_) - 1]:
-            self.s_angle_.append(-ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
-        elif self.y_array_[len(self.y_array_) - 2] < self.y_array_[len(self.y_array_) - 1]:
-            self.s_angle_.append(ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
-        else:
-            self.s_angle_.append(0.0)
-        if self.isInOrder(self.x_array_):
-            self.piece_num_ = int(len(self.x_array_) - 1)
-            self.Calculate()
-            self.CalculatePoints(self.time_interval_)
-        else:
-            print('error : The x_array is not available!')            
-        self.poly_ = []
-        self.x_samples_ = []
-        self.y_samples_ = []
+    # def __init__(self): # 默认构造函数
+    #     # 默认构造函数
+    #     self.x_array_ = []
+    #     self.y_array_ = []
+    #     self.s_angle_ = []
+    #     self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL # 默认的发值时间间隔
+    #     self.is_order = 0 # x_array序列是否合格
+    #     self.piece_num_ = 0
+    #     self.poly_ = []
+    #     self.x_samples_ = []
+    #     self.y_samples_ = []
+    # def __init__(self, x_array, y_array): # 缺省构造函数
+    #     # 缺省构造函数，没有斜率输入，默认斜率都是0
+    #     # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
+    #     # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
+    #     self.x_array_ = x_array
+    #     self.y_array_ = y_array
+    #     self.s_angle_ = [] # 在append前需要先设置为空
+    #     self.time_interval_ = ThreeInterpolationParam.DEFAULT_POINT_INTERVAL
+    #     if self.y_array_[0] > self.y_array_[1]:
+    #         self.s_angle_.append(-ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
+    #     elif self.y_array_[0] < self.y_array_[1]:
+    #         self.s_angle_.append(ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
+    #     else:
+    #         self.s_angle_.append(0.0)
+    #     for i in range(len(self.x_array_) - 1):
+    #         if ( self.y_array_[i - 1] <= self.y_array_[i] and self.y_array_[i] <= y_array_[i + 1] ) or ( self.y_array_[i - 1] >= self.y_array_[i] and self.y_array_[i] >= y_array_[i + 1] ):
+    #             self.s_angle_.append( (self.y_array_[i + 1] - self.y_array_[i - 1]) / (self.x_array_[i + 1] - self.x_array_[i - 1]) )
+    #         else:
+    #             self.s_angle_.append(0.0)
+    #     if self.y_array_[len(self.y_array_) - 2] > self.y_array_[len(self.y_array_) - 1]:
+    #         self.s_angle_.append(-ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
+    #     elif self.y_array_[len(self.y_array_) - 2] < self.y_array_[len(self.y_array_) - 1]:
+    #         self.s_angle_.append(ThreeInterpolationParam.DEFAULT_BOUNDARY_SLOPE)
+    #     else:
+    #         self.s_angle_.append(0.0)
+    #     if self.isInOrder(self.x_array_):
+    #         self.piece_num_ = int(len(self.x_array_) - 1)
+    #         self.Calculate()
+    #         self.CalculatePoints(self.time_interval_)
+    #     else:
+    #         print('error : The x_array is not available!')            
+    #     self.poly_ = []
+    #     self.x_samples_ = []
+    #     self.y_samples_ = []
     def __init__(self, x_array, y_array, s_angle): # 标准构造函数
         # 标准构造函数
         # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
@@ -189,7 +188,6 @@ class threeInterPolation:
     def getPoints(self): # 获取坐标函数
         # 在CalculatePoints之后获得计算出来的点的坐标值
         # return 返回这些坐标点的vector
-        # print('sss', self.y_samples_)
         return self.y_samples_
     def getTimes(self): # 获取时间函数
         # 在CalculatePoints之后获得计算出来的时间点，作为舵机发值的时间戳
@@ -440,8 +438,8 @@ class OneFootLanding: # 单步计算类
         landing_invkin.append(-math.degrees(upbody_pitch))
         landing_invkin.append(-math.degrees(upbody_yaw))
         if is_right: # 右脚立足
-            one_foot_result.append(landing_invkin)
-            one_foot_result.append(hanging_invkin)
+            one_foot_result.append(landing_invkin) # one_foot_result[0]到[5]是右脚
+            one_foot_result.append(hanging_invkin) # one_foot_result[6]到[11]是左脚
         else: # 左脚立足
             one_foot_result.append(hanging_invkin)
             one_foot_result.append(landing_invkin)
