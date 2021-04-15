@@ -22,21 +22,31 @@ p.changeDynamics(planeId[0], -1, lateralFriction = 0.8, spinningFriction = 0.3, 
 p.resetDebugVisualizerCamera(cameraDistance=4.0, cameraYaw=75.0, cameraPitch=-25.0, cameraTargetPosition=[-1.0, 1.0, -0.5], physicsClientId=physicsClient)
 # 各种参数
 use_robot = 1 # 显示机器人模型
+static_flag = 1 # 控制机器人悬空静止以查看步态
 use_camera = 0 # 开启摄像头
 draw_message = 0 # 显示关节名称
 draw_interia = 0 # 绘制转动惯量
 draw_sphere  = 0 # 绘制质心小球
-init_robot_pos = [0, 0, 0.28] # 机器人坐标
+if static_flag:
+    init_robot_pos = [0, 0, 0.78] # 机器人坐标
+else:
+    init_robot_pos = [0, 0, 0.28] # 机器人坐标
 init_robot_ori = [-0.4, 0.9, 0.0, 0.0] # 机器人方向
 joint_name_robot = {} # 机器人关节名
 link_name_robot = {} # 机器人部件名
 
 def useRobot(): # 仿真机器人函数
+    if static_flag:
+        _flag = p.URDF_USE_INERTIA_FROM_FILE
+        _fixed = 1
+    else:
+        _flag = p.URDF_USE_SELF_COLLISION or p.URDF_USE_INERTIA_FROM_FILE
+        _fixed = 0
     robot_urdf = p.loadURDF(r'dancer_urdf_model/model/dancer_urdf_model.URDF',
                             basePosition = init_robot_pos,
                             baseOrientation = init_robot_ori,
-                            flags = p.URDF_USE_SELF_COLLISION or p.URDF_USE_INERTIA_FROM_FILE,
-                            useFixedBase = 0,
+                            flags = _flag,
+                            useFixedBase = _fixed,
                             )
     for i in range(p.getNumJoints(robot_urdf)): # 获取机器人关节信息
         info = p.getJointInfo(robot_urdf, i)
@@ -79,9 +89,9 @@ def useRobot(): # 仿真机器人函数
                 time.sleep(2)
                 endi_flag = 0
                 f.close()
-                walkForward() # 发布向前行走指令
+                walkForward(1, 0, 0) # 发布向前行走指令
         if not endi_flag: # 开始向前行走
-            if gait_frame > 100: # 每隔10帧执行一次步态函数
+            if gait_frame > 10: # 每隔10帧执行一次步态函数
                 gait_frame = 0
                 if gait_num < q_param.PendulumWalkParam.TICK_NUM: # 循环30次
                     tick_data = giveATick() # 根据运动参数,计算每一帧的运动指令
@@ -346,12 +356,12 @@ def climbUp(line_string): # 平躺爬起函数
     for index in range(len(line_data)): # 角度制转换弧度制
         line_data[index] = math.radians(line_data[index])
     return line_data
-def walkForward(): # 向前行走函数
+def walkForward(input_x, input_y, input_yaw): # 向前行走函数
     # walk函数,用于发布运动指令，调用giveAStep函数计算下一步动作指令
     if len(q_param.stp.gait_queue) == 0:
-        q_param.stp.tmp_gait.X = 8 # x方向运动指令
-        q_param.stp.tmp_gait.Y = 0 # y方向运动指令
-        q_param.stp.tmp_gait.YAW = 0 # yaw角度运动指令
+        q_param.stp.tmp_gait.X = input_x # x方向运动指令
+        q_param.stp.tmp_gait.Y = input_y # y方向运动指令
+        q_param.stp.tmp_gait.YAW = input_yaw # yaw角度运动指令
         q_param.stp.gait_queue.append(q_param.stp.tmp_gait) # 指令添加到队列中
     if len(q_param.stp.gait_queue) != 0:
         giveAStep(q_param.stp.gait_queue[0].X, q_param.stp.gait_queue[0].Y, q_param.stp.gait_queue[0].YAW) # 根据单个步态指令,计算下一步的运动参数
@@ -477,7 +487,6 @@ def giveATick(): # 下一帧动作数据函数
     tmptick.upbody_pose.append(q_param.AA.comYaw[q_param.AA.tick_num])
     q_param.AA.tick_num += 1
     tick_joint_pos = q_param.OneFootLanding.GetOneStep(tmptick.hang_foot, tmptick.whole_com, tmptick.upbody_pose) # 计算舵机值
-    print(len(tick_joint_pos))
     return tick_joint_pos
 
 

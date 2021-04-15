@@ -30,15 +30,15 @@ class AA: # 垃圾命名的变量
     akZ = []
     akYaw = []
 class PendulumWalkParam: # 步态参数
-    ANKLE_DIS = 15.8 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm
+    ANKLE_DIS = 0.15 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm(bullet中单位应该是m)
     TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
     TICK_NUM = 30 # 每个步态周期发35个值
-    COM_H = 37.0 # 机器人倒立摆长度37cm
+    COM_H = 0.37 # 机器人倒立摆长度37cm
     ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比，乘以系数的数字作为质心的位置移动，插值后在本次中叠加在倒立摆x轨迹上
     ACC_COEF_Y = 0.3
-    COM_HEIGHT = 28 # 默认规划重心高度
-    Y_HALF_AMPLITUDE = 3.0 # y方向倒立摆起点坐标长度
-    COM_X_OFFSET = 1.3 # 在理想重心规划基础上视走路情况而定的x方向偏移
+    COM_HEIGHT = 0.28 # 默认规划重心高度
+    Y_HALF_AMPLITUDE = 0.03 # y方向倒立摆起点坐标长度
+    COM_X_OFFSET = 0.013 # 在理想重心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
     # 抬脚曲线参数，调参得出的，不会改变
     foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
@@ -446,7 +446,7 @@ class OneFootLanding: # 单步计算类
         one_foot_return = [] # 二维数组转换一维数组
         for i in range(len(one_foot_result)):
             for j in range(len(one_foot_result[i])):
-                one_foot_return.append(one_foot_result[i][j])
+                one_foot_return.append(math.radians(one_foot_result[i][j])) # 角度制还得转回弧度制
         return one_foot_return
     def unit_arrow(arrow): # 向量归一化函数
         # 向量归一化函数，将向量的长度归一
