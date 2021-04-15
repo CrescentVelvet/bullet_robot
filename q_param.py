@@ -11,7 +11,7 @@ class AA: # 垃圾命名的变量
     com_h = 0
     Tc = 1
     tao = 0
-    # 这里固定y0为3cm,和理论不符，实际把这个轨迹进行了平移到了6.5（ANKLE_DIS/2）处,真实的相对于的支撑脚的y方向起点是y00
+    # 这里固定y0为3cm,和理论不符,实际把这个轨迹进行了平移到了6.5（ANKLE_DIS/2）处,真实的相对于的支撑脚的y方向起点是y00
     y00 = 0
     ytt = 0
     y0 = 0
@@ -34,13 +34,13 @@ class PendulumWalkParam: # 步态参数
     TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
     TICK_NUM = 30 # 每个步态周期发35个值
     COM_H = 0.37 # 机器人倒立摆长度37cm
-    ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比，乘以系数的数字作为质心的位置移动，插值后在本次中叠加在倒立摆x轨迹上
+    ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比,乘以系数的数字作为质心的位置移动,插值后在本次中叠加在倒立摆x轨迹上
     ACC_COEF_Y = 0.3
     COM_HEIGHT = 0.28 # 默认规划重心高度
     Y_HALF_AMPLITUDE = 0.03 # y方向倒立摆起点坐标长度
     COM_X_OFFSET = 0.013 # 在理想重心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
-    # 抬脚曲线参数，调参得出的，不会改变
+    # 抬脚曲线参数,调参得出的,不会改变
     foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
     foot_z_p = [0.1, 0.06215, 4.67307, 0.1] # 抬脚高度曲线的z轴向量
     foot_z_s = [-3.0, 0, 0, 3.0] # 抬脚高度曲线的tp曲线斜率向量
@@ -70,7 +70,7 @@ class stp:
     last_gait = ElementGait(0, 0, 0, 1) # 上一个步态指令
 
 class threeInterPolation:
-    # 注意，python不能对构造函数重载，这里需要修改！
+    # 注意,python不能对构造函数重载,这里需要修改！
     # def __init__(self): # 默认构造函数
     #     # 默认构造函数
     #     self.x_array_ = []
@@ -83,9 +83,9 @@ class threeInterPolation:
     #     self.x_samples_ = []
     #     self.y_samples_ = []
     # def __init__(self, x_array, y_array): # 缺省构造函数
-    #     # 缺省构造函数，没有斜率输入，默认斜率都是0
-    #     # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
-    #     # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
+    #     # 缺省构造函数,没有斜率输入,默认斜率都是0
+    #     # @param x_array  样本点的x坐标序列,dmoiton工程中是时间,单位为s,通常从0开始
+    #     # @param y_array  样本点的y坐标序列,dmotion工程中是肢端坐标值
     #     self.x_array_ = x_array
     #     self.y_array_ = y_array
     #     self.s_angle_ = [] # 在append前需要先设置为空
@@ -118,9 +118,9 @@ class threeInterPolation:
     #     self.y_samples_ = []
     def __init__(self, x_array, y_array, s_angle): # 标准构造函数
         # 标准构造函数
-        # @param x_array  样本点的x坐标序列，dmoiton工程中是时间，单位为s，通常从0开始
-        # @param y_array  样本点的y坐标序列，dmotion工程中是肢端坐标值
-        # @param s_angle  样本点的倾斜角度，dmotion工程中是肢端坐标值的变化速度
+        # @param x_array  样本点的x坐标序列,dmoiton工程中是时间,单位为s,通常从0开始
+        # @param y_array  样本点的y坐标序列,dmotion工程中是肢端坐标值
+        # @param s_angle  样本点的倾斜角度,dmotion工程中是肢端坐标值的变化速度
         self.x_array_ = x_array
         self.y_array_ = y_array
         self.s_angle_ = s_angle
@@ -136,10 +136,10 @@ class threeInterPolation:
         # @param x_ar 输入的x_array序列
         # return 返回是否合格的bool值
         for i in range(len(x_ar) - 1):
-            if x_ar[i] > x_ar[i + 1]: # 该帧时间序列倒置，不合格
+            if x_ar[i] > x_ar[i + 1]: # 该帧时间序列倒置,不合格
                 self.is_order = 0
                 return 0
-            elif x_ar[i] == x_ar[i + 1]: # 该帧时间序列相等，删除该帧
+            elif x_ar[i] == x_ar[i + 1]: # 该帧时间序列相等,删除该帧
                 self.x_array_.pop(i)
                 self.y_array_.pop(i)
                 self.s_angle_.pop(i)
@@ -148,13 +148,13 @@ class threeInterPolation:
         self.is_order = 1
         return 1
     def Calculate(self): # 计算poly_多项式函数
-        # 计算分段多项式，无返回值
+        # 计算分段多项式,无返回值
         self.poly_ = []
         for i in range(self.piece_num_):
             self.poly_.append(self.onePiece(self.x_array_[i], self.y_array_[i], self.s_angle_[i], self.x_array_[i + 1], self.y_array_[i + 1], self.s_angle_[i + 1]))
     def CalculatePoints(self, t0_in): # 计算三次曲线值函数
-        # 用于获得固定时间间隔的分段三次曲线的值，无返回值
-        # @param t0_in 时间序列的间隔，单位为ns
+        # 用于获得固定时间间隔的分段三次曲线的值,无返回值
+        # @param t0_in 时间序列的间隔,单位为ns
         self.x_samples_ = []
         self.y_samples_ = []
         t_tmp = self.x_array_[0]
@@ -190,7 +190,7 @@ class threeInterPolation:
         # return 返回这些坐标点的vector
         return self.y_samples_
     def getTimes(self): # 获取时间函数
-        # 在CalculatePoints之后获得计算出来的时间点，作为舵机发值的时间戳
+        # 在CalculatePoints之后获得计算出来的时间点,作为舵机发值的时间戳
         # return 返回这些时间点的vector
         return self.x_samples_
     def EvalHere(self, point_x0): # 计算插值曲线函数
@@ -206,7 +206,7 @@ class threeInterPolation:
             return 0
         result_x0 = 0 # point_x0代入多项式poly_求得的坐标值
         for j in range(len(self.poly_)):
-            result_x0 += self.poly_[0][j] * math.pow(point_x0, len(self.poly_) - j - 1) # 这里的poly是个array，需要取[0]来获得一维数组
+            result_x0 += self.poly_[0][j] * math.pow(point_x0, len(self.poly_) - j - 1) # 这里的poly是个array,需要取[0]来获得一维数组
         return result_x0
 
 class ThreeInterpolationParam: # 三次曲线参数
@@ -247,7 +247,7 @@ class OneFootLandingParam: # OneFootLanding参数
 
 class OneFootLanding: # 单步计算类
     def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单步计算函数
-        # 单步计算函数，用于计算接下来一步中各个舵机的值
+        # 单步计算函数,用于计算接下来一步中各个舵机的值
         # @param hang_foot 输入双足位置与角度
         # @param whole_body_com 输入全身重心位置
         # @param upbody_pose 输入上半身角度
@@ -449,7 +449,7 @@ class OneFootLanding: # 单步计算类
                 one_foot_return.append(math.radians(one_foot_result[i][j])) # 角度制还得转回弧度制
         return one_foot_return
     def unit_arrow(arrow): # 向量归一化函数
-        # 向量归一化函数，将向量的长度归一
+        # 向量归一化函数,将向量的长度归一
         # @param arrow 输入任意维度的向量
         # @return 输出长度为一的向量
         len_arrow = 0

@@ -75,7 +75,7 @@ def useRobot(): # 仿真机器人函数
     init_flag = 1 # 竖直躺平sleep2s
     endi_flag = 1 # 竖直站立sleep2s
     gait_frame = 0 # 步态函数运行间隔帧数
-    gait_num = 0 # 步态函数运行总次数
+    gait_num = 0 # 步态函数运行一步次数
     line_string = f.readline()
     while True:
         if line_string: # 从后躺状态爬起站立
@@ -98,10 +98,11 @@ def useRobot(): # 仿真机器人函数
                     for i in range(len(tick_data)):
                         line_data[i] = tick_data[i]
                     pass
-                elif gait_num > 1000:
-                    gait_num = 1000
                 else:
-                    print('向前行走完毕')
+                    # time.sleep(1)
+                    # gait_num = 0
+                    # walkForward(1, 0, 0) # 再次发布向前行走指令
+                    print('向前行走一步')
                 gait_num += 1
             gait_frame += 1
         pos_joint_robot = transControl(line_data) # 转换bullet和motion的关节控制信号正负区别
@@ -356,8 +357,10 @@ def climbUp(line_string): # 平躺爬起函数
     for index in range(len(line_data)): # 角度制转换弧度制
         line_data[index] = math.radians(line_data[index])
     return line_data
+def addGaitQueue(input_x, input_y, input_yaw): # 步态指令函
+    # add函数,用于将步态指令添加到队列中
 def walkForward(input_x, input_y, input_yaw): # 向前行走函数
-    # walk函数,用于发布运动指令，调用giveAStep函数计算下一步动作指令
+    # walk函数,用于发布运动指令,调用giveAStep函数计算下一步动作指令
     if len(q_param.stp.gait_queue) == 0:
         q_param.stp.tmp_gait.X = input_x # x方向运动指令
         q_param.stp.tmp_gait.Y = input_y # y方向运动指令
