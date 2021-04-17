@@ -80,29 +80,28 @@ def useRobot(): # 仿真机器人函数
     while True:
         if line_string: # 从后躺状态爬起站立
             line_data = climbUp(line_string) # 分析motion爬起数据得到关节控制信号(motion)
-            if init_flag: # 爬起开始前,竖直躺平sleep2s
-                time.sleep(2)
+            if init_flag:
+                time.sleep(1) # 爬起开始前,竖直躺平sleep1s
                 init_flag = 0
             line_string = f.readline()
         else:
-            if endi_flag: # 爬起结束后,竖直站立sleep2s
-                time.sleep(2)
+            if endi_flag:
+                time.sleep(1) # 爬起结束后,竖直站立sleep1s
                 endi_flag = 0
                 f.close()
-                walkForward(1, 0, 0) # 发布向前行走指令
+                walkForward(10, 0, 0) # 发布向前行走指令
         if not endi_flag: # 开始向前行走
-            if gait_frame > 10: # 每隔10帧执行一次步态函数
+            if gait_frame > 2: # 每隔10帧执行一次步态函数
                 gait_frame = 0
-                if gait_num < q_param.PendulumWalkParam.TICK_NUM: # 循环30次
+                if gait_num < q_param.PendulumWalkParam.TICK_NUM: # 走1步30帧,循环30次
                     tick_data = giveATick() # 根据运动参数,计算每一帧的运动指令
                     for i in range(len(tick_data)):
-                        line_data[i] = tick_data[i]
-                    pass
+                        line_data[i] = tick_data[i] # 读取当前帧12个腿部舵机控制信号
                 else:
-                    time.sleep(1)
-                    gait_num = 0
-                    walkForward(1, 0, 0) # 再次发布向前行走指令
-                    print('向前行走一步')
+                    time.sleep(0.5) # 前进一步后,竖直站立sleep0.5s
+                    walkForward(0, 0, 0) # 再次发布向前行走指令
+                    gait_num = 0 # 再次加入循环
+                    print('向前行走一步------')
                 gait_num += 1
             gait_frame += 1
         pos_joint_robot = transControl(line_data) # 转换bullet和motion的关节控制信号正负区别
@@ -371,33 +370,33 @@ def climbUp(line_string): # 平躺爬起函数
 #     q_param.stp.tmp_gait.Y = 0
 #     q_param.stp.tmp_gait.YAW = 0
 #     q_param.stp.gait_queue.append(q_param.stp.tmp_gait)
-def walkForward(input_x, input_y, input_yaw): # 向前行走函数
+def walkForward(x_input, y_input, yaw_input): # 向前行走函数
     # walk函数,用于发布运动指令,调用giveAStep函数计算下一步动作指令
-    # @param input_x
-    # @param input_y
-    # @param input_yaw
+    # @param x_input 输入x方向运动指令
+    # @param y_input 输入y方向运动指令
+    # @param yaw_input 输入yaw角度运动指令
     if len(q_param.stp.gait_queue) == 0:
-        q_param.stp.tmp_gait.X = input_x # x方向运动指令
-        q_param.stp.tmp_gait.Y = input_y # y方向运动指令
-        q_param.stp.tmp_gait.YAW = input_yaw # yaw角度运动指令
+        q_param.stp.tmp_gait.X = x_input # x方向运动指令
+        q_param.stp.tmp_gait.Y = y_input # y方向运动指令
+        q_param.stp.tmp_gait.YAW = yaw_input # yaw角度运动指令
         q_param.stp.gait_queue.append(q_param.stp.tmp_gait) # 指令添加到队列中
     if len(q_param.stp.gait_queue) != 0:
         giveAStep(q_param.stp.gait_queue[0].X, q_param.stp.gait_queue[0].Y, q_param.stp.gait_queue[0].YAW) # 根据单个步态指令,计算下一步的运动参数
         q_param.stp.last_gait = q_param.stp.gait_queue.pop(0) # 队列弹出当前指令
-    q_param.OneFootLandingParam.IS_RIGHT = 1 - q_param.OneFootLandingParam.IS_RIGHT
-    print('开始向前行走')
+        print('当前指令 : x,y,yaw = ', q_param.stp.last_gait.X, q_param.stp.last_gait.Y, q_param.stp.last_gait.YAW)
+    print('开始行走 : isright = ', q_param.OneFootLandingParam.IS_RIGHT)
+    q_param.OneFootLandingParam.IS_RIGHT = 1 - q_param.OneFootLandingParam.IS_RIGHT # 左右腿转换
 def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
-    # step函数,用于生成下一步的动作数据
+    # step函数,用于生成下一步的动作数据,无返回值
     # @param dx_input 输入下一步质心的x变化指令,相对于上半身,单位是cm
     # @param dy_input 输入下一步质心的y变化指令,相对于上半身,单位是cm
     # @param dyaw_input 输入下一步质心的yaw变化指令,相对于上半身,角度制
-    # @return
     q_param.AA.x0 = q_param.BB.com_pos[0] * math.cos(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[0] * math.cos(q_param.BB.hang_foot[2]) + q_param.BB.com_pos[1] * math.sin(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.sin(q_param.BB.hang_foot[2])
     q_param.AA.xt = (dx_input - ( (q_param.PendulumWalkParam.ANKLE_DIS / 2.0) if q_param.BB.support_is_right else (-q_param.PendulumWalkParam.ANKLE_DIS / 2.0) ) * math.sin(math.radians(dyaw_input))) / 2.0
     q_param.AA.tao = q_param.PendulumWalkParam.TAO
     # 算出摆的周期常数,这里的com_h暂时是由机器人crouch姿态下倒挂着摆动测量得出的
     q_param.AA.com_h = q_param.PendulumWalkParam.COM_H
-    q_param.AA.Tc = math.sqrt(q_param.AA.com_h / 980)
+    q_param.AA.Tc = math.sqrt(q_param.AA.com_h / 98)
     # 算出来这个步态单元的初速度vx
     q_param.AA.vx = (q_param.AA.xt - q_param.AA.x0 * math.cosh(q_param.AA.tao / q_param.AA.Tc)) / (q_param.AA.Tc * math.sinh(q_param.AA.tao / q_param.AA.Tc))
     # y方向的研究
@@ -455,6 +454,7 @@ def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
     akX_s = [slope_akX, slope_akX]
     ak_x = q_param.threeInterPolation(akX_t, akX_p, akX_s)
     q_param.AA.akX = ak_x.getPoints()
+    print('akX', q_param.AA.akX)
     # 线性规划脚踝的y方向起点终点的插值
     ak_y_0 = q_param.BB.hang_foot[0] * math.sin(q_param.BB.hang_foot[2]) - q_param.BB.hang_foot[1] * math.cos(q_param.BB.hang_foot[2])
     ak_y_t = 2 * q_param.AA.ytt
@@ -464,6 +464,7 @@ def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
     akY_s = [slope_akY, slope_akY]
     ak_y = q_param.threeInterPolation(akY_t, akY_p, akY_s)
     q_param.AA.akY = ak_y.getPoints()
+    # print('akY', q_param.AA.akY)
     # 线性规划脚踝的yaw起点终点的插值
     akYaw_t = [0, q_param.PendulumWalkParam.TAO]
     akYaw_p = [math.degrees(-q_param.BB.hang_foot[2]), dyaw_input]
@@ -471,6 +472,7 @@ def giveAStep(dx_input, dy_input, dyaw_input): # 下一步动作指令函数
     akYaw_s = [slope_akYaw, slope_akYaw]
     ak_yaw = q_param.threeInterPolation(akYaw_t, akYaw_p, akYaw_s)
     q_param.AA.akYaw = ak_yaw.getPoints()
+    # print('akYaw', q_param.AA.akYaw)
     # 为下一步的数据做准备
     q_param.BB.support_is_right = 1 - q_param.BB.support_is_right
     q_param.BB.com_x_changed = dx_input
@@ -495,8 +497,8 @@ def giveATick(): # 下一帧动作数据函数
     tmptick.hang_foot.append(q_param.AA.akX[q_param.AA.tick_num])
     tmptick.hang_foot.append(q_param.AA.akY[q_param.AA.tick_num])
     tmptick.hang_foot.append(q_param.AA.akZ[q_param.AA.tick_num])
-    tmptick.hang_foot.append(0.001)
-    tmptick.hang_foot.append(0.001)
+    tmptick.hang_foot.append(0)
+    tmptick.hang_foot.append(0)
     tmptick.hang_foot.append(q_param.AA.akYaw[q_param.AA.tick_num])
     tmptick.whole_com.append(q_param.AA.accX[q_param.AA.tick_num] + q_param.AA.x + q_param.PendulumWalkParam.COM_X_OFFSET) # (x * 100 +1.5)
     tmptick.whole_com.append(q_param.AA.y - q_param.AA.y0 + q_param.AA.comY[q_param.AA.tick_num] + q_param.AA.accY[q_param.AA.tick_num])
@@ -505,7 +507,7 @@ def giveATick(): # 下一帧动作数据函数
     tmptick.upbody_pose.append(0)
     tmptick.upbody_pose.append(q_param.AA.comYaw[q_param.AA.tick_num])
     q_param.AA.tick_num += 1
-    tick_joint_pos = q_param.OneFootLanding.GetOneStep(tmptick.hang_foot, tmptick.whole_com, tmptick.upbody_pose) # 计算舵机值
+    tick_joint_pos = q_param.OneFootLanding.GetOneStep(tmptick.hang_foot, tmptick.whole_com, tmptick.upbody_pose) # 计算12个舵机值
     return tick_joint_pos
 
 
