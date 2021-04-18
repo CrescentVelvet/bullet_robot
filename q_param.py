@@ -30,15 +30,15 @@ class AA: # 垃圾命名的变量
     akZ = []
     akYaw = []
 class PendulumWalkParam: # 步态参数
-    ANKLE_DIS = 0.15 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm(bullet中单位应该是m)
+    ANKLE_DIS = 15 * 0.01 # 通过观察,机器人模型踝间距差不多是11到12左右,单位为cm(bullet中单位应该是m)
     TAO = 0.30 # 通过观察,肉包的步态单元的时长是0.35s
-    TICK_NUM = 30 # 每个步态周期发35个值
-    COM_H = 0.37 # 机器人倒立摆长度37cm
-    ACC_COEF_X = 0.15 # 把本次质心前进dx和上一回dx进行做差对比,乘以系数的数字作为质心的位置移动,插值后在本次中叠加在倒立摆x轨迹上
-    ACC_COEF_Y = 0.3
-    COM_HEIGHT = 0.28 # 默认规划重心高度
-    Y_HALF_AMPLITUDE = 0.03 # y方向倒立摆起点坐标长度
-    COM_X_OFFSET = 0.013 # 在理想重心规划基础上视走路情况而定的x方向偏移
+    TICK_NUM = 30.0 # 每个步态周期发35个值
+    COM_H = 37 * 0.01 # 机器人倒立摆长度37cm
+    ACC_COEF_X = 0.15 * 0.01 # 把本次质心前进dx和上一回dx进行做差对比,乘以系数的数字作为质心的位置移动,插值后在本次中叠加在倒立摆x轨迹上
+    ACC_COEF_Y = 0.3 * 0.01
+    COM_HEIGHT = 30.8637 * 0.01 # 0.28 # 默认规划重心高度
+    Y_HALF_AMPLITUDE = 3 * 0.01 # y方向倒立摆起点坐标长度
+    COM_X_OFFSET = 1 * 0.01 # 在理想重心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
     # 抬脚曲线参数,调参得出的,不会改变
     foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
@@ -239,12 +239,12 @@ class OneFootLandingParam: # OneFootLanding参数
     HIP_X_FROM_ORIGIN = 0
     HIP_Z_FROM_ORIGIN = 8.1
 class OneFootLanding: # 单步计算类
-    def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单步计算函数
-        # 单步计算函数,用于计算接下来一步中各个舵机的值
-        # @param hang_foot 输入双足位置与角度
-        # @param whole_body_com 输入全身重心位置
-        # @param upbody_pose 输入上半身角度
-        # @return one_foot_return 返回计算出12个舵机值的序列
+    def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单帧计算函数
+        # 单帧计算函数,用于计算接下来一帧中各个舵机的值
+        # @param hang_foot 输入上一帧双足位置与角度
+        # @param whole_body_com 输入上一帧全身重心位置
+        # @param upbody_pose 输入上一帧上半身角度
+        # @return one_foot_return 返回计算出这一帧12个舵机值的序列
         hang_foot[3] = math.radians(hang_foot[3]) # 角度转弧度
         hang_foot[4] = math.radians(hang_foot[4])
         hang_foot[5] = math.radians(hang_foot[5])
@@ -266,7 +266,7 @@ class OneFootLanding: # 单步计算类
         body_centre = [] # 计算身体中心的位置和姿态
         hanging_invkin = [] # 计算悬荡腿的逆运动学向量
         landing_invkin = [] # 计算立足腿的逆运动学向量
-        one_foot_result = [] # 单步逆运动学最终结果,12个舵机的值(先6个right,后6个left)
+        one_foot_result = [] # 单步逆运动学最终结果,这一帧12个舵机的值(先6个right,后6个left)
         # 求上半身的重心位置,已考虑脚底中心点和脚重心的区别
         hangfoot_com.append(
             - ( ankle_offset_y if is_right else (-ankle_offset_y) )
@@ -436,8 +436,8 @@ class OneFootLanding: # 单步计算类
         else: # 左脚立足
             one_foot_result.append(hanging_invkin)
             one_foot_result.append(landing_invkin)
-        one_foot_return = [] # 二维数组转换一维数组
-        for i in range(len(one_foot_result)):
+        one_foot_return = []
+        for i in range(len(one_foot_result)): # 二维数组转换一维数组
             for j in range(len(one_foot_result[i])):
                 one_foot_return.append(math.radians(one_foot_result[i][j])) # 角度制还得转回弧度制
         return one_foot_return

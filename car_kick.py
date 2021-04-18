@@ -95,8 +95,8 @@ class Analy_car: # 操作数据
                 robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
 static_car_num = 16
-txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_8_10_13_14.txt"
-ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData333.txt"
+# ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_list = Analy_car.analy_txt(txt_address)
 # Analy_car.analy_ini(ini_address, car_list)
-car_list[8].draw()
+car_list[5].draw()
