@@ -36,9 +36,9 @@ class PendulumWalkParam: # 步态参数
     COM_H = 37 * 0.01 # 机器人倒立摆长度37cm
     ACC_COEF_X = 0.15 * 0.01 # 把本次质心前进dx和上一回dx进行做差对比,乘以系数的数字作为质心的位置移动,插值后在本次中叠加在倒立摆x轨迹上
     ACC_COEF_Y = 0.3 * 0.01
-    COM_HEIGHT = 30.8637 * 0.01 # 0.28 # 默认规划重心高度
+    COM_HEIGHT = 30.8637 * 0.01 # 0.28 # 默认规划质心高度
     Y_HALF_AMPLITUDE = 3 * 0.01 # y方向倒立摆起点坐标长度
-    COM_X_OFFSET = 1 * 0.01 # 在理想重心规划基础上视走路情况而定的x方向偏移
+    COM_X_OFFSET = 1 * 0.01 # 在理想质心规划基础上视走路情况而定的x方向偏移
     TURNING_ERROR = 4.0 # 旋转时每步真实角度和理论角度的差异
     # 抬脚曲线参数,调参得出的,不会改变
     foot_z_t = [0, 0.04439, 0.16583, 0.33] # 抬脚高度曲线的时间向量
@@ -59,8 +59,8 @@ class BB: # 步态参数初始化
     com_ac_x = 0
     com_ac_y = 0
     support_is_right = 0
-    hang_foot = [0, PendulumWalkParam.ANKLE_DIS, 0]
-    com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0]
+    hang_foot = [0, PendulumWalkParam.ANKLE_DIS, 0] # 悬荡腿质心坐标
+    com_pos = [0, PendulumWalkParam.ANKLE_DIS/2.0, 0] # 上半身质心坐标
     com_x_changed = 0
     com_y_changed = 0
 class stp:
@@ -211,8 +211,8 @@ class ThreeInterpolationParam: # 三次曲线参数
     DEFAULT_BOUNDARY_SLOPE = 1.0
 class MotionTick: # 发值瞬间机器人参数类
     def __init__(self):
-        self.hang_foot = [] # 双足位置与角度
-        self.whole_com = [] # 全身重心位置
+        self.hang_foot = [] # 悬荡腿质心坐标与方向
+        self.whole_com = [] # 全身质心坐标
         self.upbody_pose = [] # 上半身角度
 class UpbodyMode: # 上半身状态参数
     upbody_still = 1 # 上半身rpy(0,0,0)
@@ -241,8 +241,8 @@ class OneFootLandingParam: # OneFootLanding参数
 class OneFootLanding: # 单步计算类
     def GetOneStep(hang_foot, whole_body_com, upbody_pose): # 单帧计算函数
         # 单帧计算函数,用于计算接下来一帧中各个舵机的值
-        # @param hang_foot 输入上一帧双足位置与角度
-        # @param whole_body_com 输入上一帧全身重心位置
+        # @param hang_foot 输入上一帧悬荡腿质心坐标与方向
+        # @param whole_body_com 输入上一帧全身质心坐标
         # @param upbody_pose 输入上一帧上半身角度
         # @return one_foot_return 返回计算出这一帧12个舵机值的序列
         hang_foot[3] = math.radians(hang_foot[3]) # 角度转弧度
@@ -258,16 +258,16 @@ class OneFootLanding: # 单步计算类
         body_center_z = OneFootLandingParam.BODY_CENTER_Z
         upbody_mass = OneFootLandingParam.UPBODY_MASS
         foot_mass = OneFootLandingParam.FOOT_MASS
-        hangfoot_com = [] # 计算悬荡腿的重心
-        landfoot_com = [] # 计算立足腿的重心
-        upbody_com = [] # 计算上半身的重心
-        v = [] # 计算逆运动学临时变量
+        hangfoot_com = [] # 计算悬荡腿的质心
+        landfoot_com = [] # 计算立足腿的质心
+        upbody_com = [] # 计算上半身的质心
+        v = [] # 逆运动学计算临时变量
         upbody_mode = UpbodyMode.upbody_still # 上半身状态
         body_centre = [] # 计算身体中心的位置和姿态
         hanging_invkin = [] # 计算悬荡腿的逆运动学向量
         landing_invkin = [] # 计算立足腿的逆运动学向量
         one_foot_result = [] # 单步逆运动学最终结果,这一帧12个舵机的值(先6个right,后6个left)
-        # 求上半身的重心位置,已考虑脚底中心点和脚重心的区别
+        # 求上半身的质心位置,已考虑脚底中心点和脚质心的区别
         hangfoot_com.append(
             - ( ankle_offset_y if is_right else (-ankle_offset_y) )
             * ( math.cos(hang_foot[3]) * math.sin(hang_foot[5]) - math.cos(hang_foot[5]) * math.sin(hang_foot[4]) * math.sin(hang_foot[3]) )
@@ -298,7 +298,7 @@ class OneFootLanding: # 单步计算类
         landfoot_com.append(ankle_offset_x)
         landfoot_com.append(ankle_offset_y if not is_right else (-ankle_offset_y))
         landfoot_com.append(ankle_offset_z)
-        # 考虑到了支撑脚作为重心的一部分
+        # 考虑到了支撑脚作为质心的一部分
         upbody_com.append( ( (upbody_mass + 2 * foot_mass) * whole_body_com[0] - foot_mass * hangfoot_com[0] - foot_mass * landfoot_com[0] ) / upbody_mass )
         upbody_com.append( ( (upbody_mass + 2 * foot_mass) * whole_body_com[1] - foot_mass * hangfoot_com[1] - foot_mass * landfoot_com[1] ) / upbody_mass )
         upbody_com.append( ( (upbody_mass + 2 * foot_mass) * whole_body_com[2] - foot_mass * hangfoot_com[2] - foot_mass * landfoot_com[2] ) / upbody_mass )
