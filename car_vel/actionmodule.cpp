@@ -247,7 +247,7 @@ void ActionModule::readData() {
             }
         }
         while (receiveSocket.state() == QUdpSocket::BoundState && receiveSocket.hasPendingDatagrams()) {
-            qDebug() << "receive data !!!";
+//            qDebug() << "receive data !!!";
 //            auto msgInfo = (MessageInfo*)(MessageInfo::instance());
 //            char newInfo = msgInfo->info() | 0x02;
             //        msgInfo->setInfo(newInfo);
@@ -427,20 +427,15 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
     quint16 speed = command.power(); //mm
     quint8 power = 0;
     double send_power;
-    QString fit_msg = "None";
-    if(/*speed > 5*/true) {
+    if(speed > 5) {
         send_power = speed;
         if (AutoShootFit::instance()->getRun()) {
-            fit_msg = "power";
             power = (quint8)speed;
         } else {
-            fit_msg = "fit---power";
             power = kickStandardization(id, kick, speed);
         }
         AutoShootFit::instance()->getKickPower(power, send_power);
     }
-//    qDebug() << fit_msg;
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2200),fit_msg.toLatin1(),COLOR_GREEN);
 //     dribble -1 ~ +1 -> -3 ~ +3
     qint8 dribble = command.dribbler_spin() > 0.5 ? 3 : 0;
     tx[0] = (tx[0]) | (1 << (3 - num));
@@ -490,13 +485,13 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
     new_power = ( a.toDouble() * power * power + b.toDouble() * power + c.toDouble() );
     new_power = (quint8)(std::max(min_power.toDouble(), std::min(new_power, max_power.toDouble())));
 //    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("ZautoFit---").toLatin1(),COLOR_GREEN);
-    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
-    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2150),QString("md:%1").arg(mode).toLatin1(),COLOR_GREEN);
-    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2300),QString("id:%1").arg(id).toLatin1(),COLOR_GREEN);
-    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2450),QString(" b:%1").arg(b).toLatin1(),COLOR_GREEN);
+//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
+//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2150),QString("md:%1").arg(mode).toLatin1(),COLOR_GREEN);
+//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2300),QString("id:%1").arg(id).toLatin1(),COLOR_GREEN);
+//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2450),QString(" b:%1").arg(b).toLatin1(),COLOR_GREEN);
 //    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2600),QString(" c:%1").arg(c).toLatin1(),COLOR_GREEN);
-    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
-    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
+//    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
+//    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
     return new_power;
 }
 } // namespace ZSS::anonymous
