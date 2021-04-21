@@ -15,11 +15,8 @@ public:
     void run();
     void getKickPower(int p, double sp);
     void getKickerMes(int t, int n, bool m);
-//    void sendKickParam(int team, int id);
-//    double my_oldpower;
     double my_maxvel;
     int my_oldid;
-
     struct KickParam {
         int    team;
         int    id;
@@ -43,14 +40,12 @@ public:
                   ca(_ca), cb(_cb), cc(_cc), cMax(_cMax), cMin(_cMin),
                   fa(_fa), fb(_fb), fc(_fc), fMax(_fMax), fMin(_fMin){}
     };
-
     KickParam kick_param[PARAM::ROBOTNUM*PARAM::TEAMS];
 private:
     void       recordVelData(int id, bool mode, int power, double sp, double vel_or_dist);
     void       chipParamTest();
     void       flatParamTest();
     bool       _isrun;
-//    void       sendAllKickParam();
     void       calculate(int i);
     void       reset();
     double     getVel();
@@ -58,7 +53,6 @@ private:
     QUdpSocket sendSocket;
     QUdpSocket receiveSocket;
     double data[PARAM::ROBOTNUM][127];
-
 };
 typedef Singleton <CAutoShootFit> AutoShootFit;
 #endif // CAUTOSHOOTFIT_H

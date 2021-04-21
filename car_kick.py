@@ -103,12 +103,12 @@ class Analy_car: # 操作数据
     def analy_ini_one(address, car_list, robot_id): # 参数写入
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        robot_conf.set("Robot"+str(robot_id), "FLAT_A", str(car_list[robot_id].val_fit[2]))
+        robot_conf.set("Robot"+str(robot_id), "FLAT_A", str(0))
         robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
         robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8"))
     def draw_all(car_list):
-        sum = 0
+        sum = 0 # 有效小车数
         for i in range(len(car_list)):
             if car_list[i].val_fit == 0:
                 continue
@@ -118,7 +118,7 @@ class Analy_car: # 操作数据
         for i in range(len(car_list)):
             if car_list[i].val_fit == 0:
                 continue
-            print(sum // 3 + 1, sum % 3, ax_num)
+            # print(sum // 3 + 1, sum % 3, ax_num)
             ax[ax_num-1] = plt.subplot(sum // 3 + 1, 3, ax_num)
             plot_maxvel = np.arange(0, 7500, 1)
             plot_power = car_list[i].val_fit(plot_maxvel)
@@ -128,12 +128,11 @@ class Analy_car: # 操作数据
             plt.ylabel('power-'+str(i))
             ax_num += 1
         plt.show()
-
 static_car_num = 16
-txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData2_8_10_13_14.txt"
-# ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_6_8_14_15.txt"
+ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_list = Analy_car.analy_txt(txt_address)
-Analy_car.draw_all(car_list)
-# Analy_car.analy_ini(ini_address, car_list)
-# Analy_car.analy_ini_one(ini_address, car_list, 8)
+# Analy_car.draw_all(car_list)
 # car_list[0].draw_one()
+# Analy_car.analy_ini(ini_address, car_list)
+Analy_car.analy_ini_one(ini_address, car_list, 15)

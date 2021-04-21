@@ -20,41 +20,25 @@
 
 namespace  {
     auto zpm = ZSS::ZParamManager::instance();
-    std::thread* receiveThread;
-
-
     //udpsend param
     bool send = false;
     bool sendAll = false;
     int team;
     int id;
-
-
     //test mode
     double send_power;
-
     //kick param
-    const int max_record_num = 5;
     bool flatparamtest;
     bool chipparamtest;
     bool isWaiting = true;
     bool isGettingVel = false;
     bool isGettingDist = false;
-    bool isChanged[PARAM::ROBOTNUM*PARAM::TEAMS] = {false};
-    bool calculated[PARAM::ROBOTNUM] = {false};
-    double vel[PARAM::ROBOTNUM][max_record_num];
-    double dist[PARAM::ROBOTNUM][max_record_num];
-    int p[PARAM::ROBOTNUM][max_record_num];
-    int cnt[PARAM::Field::MAX_PLAYER]={0};
     double max_vel[3];
     int cycle_cnt = 0;
     int power = -1;
     int kicker_team;
     bool mode;
     int i;
-
-
-
     CGeoPoint chip_robot_pos;
 }
 
@@ -67,7 +51,6 @@ CAutoShootFit::CAutoShootFit()
     zpm->loadParam(sendAll, "ZAutoFit/sendAll", false);
     zpm->loadParam(team, "ZAutoFit/team", 0);
     zpm->loadParam(id, "ZAutoFit/id", 0);
-//    my_oldpower = -1000;
     my_maxvel = -1000;
     my_oldid = -1;
     sendSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, 1);
