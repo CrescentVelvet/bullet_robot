@@ -89,7 +89,7 @@ def useRobot(): # 仿真机器人函数
                 time.sleep(1) # 爬起结束后,竖直站立sleep1s
                 endi_flag = 0
                 f.close()
-                walkForward(0, 1, 0) # 发布向前行走指令
+                walkForward(1, 0, 0) # 发布向前行走指令
         if not endi_flag: # 开始向前行走
             if gait_frame > 2: # 每隔10帧执行一次步态函数
                 gait_frame = 0
@@ -99,7 +99,7 @@ def useRobot(): # 仿真机器人函数
                         line_data[i] = tick_data[i] # 读取当前帧12个腿部舵机控制信号
                 else:
                     time.sleep(0.5) # 前进一步后,竖直站立sleep0.5s
-                    walkForward(0, 1, 0) # 再次发布向前行走指令
+                    walkForward(1, 0, 0) # 再次发布向前行走指令
                     gait_num = 0 # 再次加入循环
                     print('向前行走一步------')
                 gait_num += 1

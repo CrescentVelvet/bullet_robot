@@ -11,13 +11,19 @@ class Car_data: # 单个车数据
         self.id = id
         self.maxvel.append(maxvel)
         self.power.append(power)
-    def calculate(self): # 计算拟合函数
+    def calculate_1(self): # 计算一次拟合函数
+        if self.id == -1:
+            self.val_fit = 0
+        else:
+            raw_fit = np.polyfit(self.maxvel, self.power, 1)
+            self.val_fit = np.poly1d(raw_fit)
+    def calculate_2(self): # 计算二次拟合函数
         if self.id == -1:
             self.val_fit = 0
         else:
             raw_fit = np.polyfit(self.maxvel, self.power, 2)
             self.val_fit = np.poly1d(raw_fit)
-    def draw(self): # 绘制拟合曲线
+    def draw_one(self): # 绘制拟合曲线
         if self.id == -1:
             plot_maxvel = np.arange(0, 7500, 1)
             plot_power = np.zeros(len(plot_maxvel))
@@ -78,7 +84,7 @@ class Analy_car: # 操作数据
         for i in range(len(car_all.all_id)): # 车号划分
             car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
         for i in range(static_car_num): # 计算拟合函数
-            car_list[i].calculate()
+            car_list[i].calculate_1()
             print(i, '---', car_list[i].val_fit)
         return car_list
     def analy_ini(address, car_list):
@@ -94,9 +100,32 @@ class Analy_car: # 操作数据
                 robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
                 robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
+    def draw_all(car_list):
+        sum = 0
+        for i in range(len(car_list)):
+            if car_list[i].val_fit == 0:
+                continue
+            sum += 1
+        ax = [None] * sum
+        ax_num = 1
+        for i in range(len(car_list)):
+            if car_list[i].val_fit == 0:
+                continue
+            # print(sum // 3, sum % 3, ax_num)
+            ax[ax_num-1] = plt.subplot(sum % 3, 3, ax_num)
+            plot_maxvel = np.arange(0, 7500, 1)
+            plot_power = car_list[i].val_fit(plot_maxvel)
+            plt.plot(car_list[i].maxvel, car_list[i].power, '*')
+            plt.plot(plot_maxvel, plot_power, 'r')
+            plt.xlabel('maxvel-'+str(i))
+            plt.ylabel('power-'+str(i))
+            ax_num += 1
+        plt.show()
+
 static_car_num = 16
-txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData333.txt"
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_6_8_14_15.txt"
 # ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_list = Analy_car.analy_txt(txt_address)
+Analy_car.draw_all(car_list)
 # Analy_car.analy_ini(ini_address, car_list)
-car_list[5].draw()
+# car_list[0].draw_one()
