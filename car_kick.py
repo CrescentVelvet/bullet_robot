@@ -75,7 +75,7 @@ class Car_cal: # 全部车数据
                     self.all_maxvel.append(self.raw_maxvel[i-1])
                     self.all_power.append(self.raw_power[i-1])
 class Analy_car: # 操作数据
-    def analy_txt(address):
+    def analy_txt(address): # 拟合计算
         car_all = Car_cal() # txt是小车踢球原始数据
         car_all.read_data(address) # txt数据读取
         car_list = []
@@ -87,7 +87,7 @@ class Analy_car: # 操作数据
             car_list[i].calculate_1()
             print(i, '---', car_list[i].val_fit)
         return car_list
-    def analy_ini(address, car_list):
+    def analy_ini(address, car_list): # 参数写入
         robot_conf = configparser.ConfigParser() # ini是小车踢球拟合参数
         robot_conf.read(address, encoding="utf-8") # ini数据读取
         for robot_id in range(static_car_num):
@@ -100,6 +100,13 @@ class Analy_car: # 操作数据
                 robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
                 robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
+    def analy_ini_one(address, car_list, robot_id): # 参数写入
+        robot_conf = configparser.ConfigParser()
+        robot_conf.read(address, encoding="utf-8")
+        robot_conf.set("Robot"+str(robot_id), "FLAT_A", str(car_list[robot_id].val_fit[2]))
+        robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
+        robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
+        robot_conf.write(open(address, "w", encoding="utf-8"))
     def draw_all(car_list):
         sum = 0
         for i in range(len(car_list)):
@@ -111,8 +118,8 @@ class Analy_car: # 操作数据
         for i in range(len(car_list)):
             if car_list[i].val_fit == 0:
                 continue
-            # print(sum // 3, sum % 3, ax_num)
-            ax[ax_num-1] = plt.subplot(sum % 3, 3, ax_num)
+            print(sum // 3 + 1, sum % 3, ax_num)
+            ax[ax_num-1] = plt.subplot(sum // 3 + 1, 3, ax_num)
             plot_maxvel = np.arange(0, 7500, 1)
             plot_power = car_list[i].val_fit(plot_maxvel)
             plt.plot(car_list[i].maxvel, car_list[i].power, '*')
@@ -123,9 +130,10 @@ class Analy_car: # 操作数据
         plt.show()
 
 static_car_num = 16
-txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_6_8_14_15.txt"
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData2_8_10_13_14.txt"
 # ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_list = Analy_car.analy_txt(txt_address)
 Analy_car.draw_all(car_list)
 # Analy_car.analy_ini(ini_address, car_list)
+# Analy_car.analy_ini_one(ini_address, car_list, 8)
 # car_list[0].draw_one()
