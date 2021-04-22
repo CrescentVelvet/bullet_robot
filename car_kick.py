@@ -154,17 +154,20 @@ class Draw_car: # 绘制图像
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
             c = in_car_ini["Robot"+str(i)][mode_str+"C"]
             val_ini = np.poly1d([float(b), float(c)])
-            plot_maxvel = np.arange(0, 7500, 1)
-            plot_power = val_ini(plot_maxvel)
+            plot_maxvel_ini = np.arange(0, 7500, 1)
+            plot_power_ini = val_ini(plot_maxvel_ini)
             ax[i] = plt.subplot(4, 4, i+1)
-            plt.plot(plot_maxvel, plot_power, 'r')
+            plt.plot(plot_maxvel_ini, plot_power_ini, 'r')
             plt.xlabel('maxvel-'+str(i))
             plt.ylabel('power-'+str(i))
         for i in range(len(in_car_txt)):
             if in_car_txt[i].val_fit == 0:
                 continue
+            plot_maxvel_txt = np.arange(0, 7500, 1)
+            plot_power_txt = in_car_txt[i].val_fit(plot_maxvel_txt)
             ax[i] = plt.subplot(4, 4, i+1)
             plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, '*')
+            plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
 
 static_car_num = 16
