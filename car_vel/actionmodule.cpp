@@ -490,8 +490,8 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
 //    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2300),QString("id:%1").arg(id).toLatin1(),COLOR_GREEN);
 //    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2450),QString(" b:%1").arg(b).toLatin1(),COLOR_GREEN);
 //    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2600),QString(" c:%1").arg(c).toLatin1(),COLOR_GREEN);
-//    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
-//    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
+    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
+    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
     return new_power;
 }
 } // namespace ZSS::anonymous

@@ -96,21 +96,21 @@ class Analy_car: # 操作数据
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
         for temp_id in range(static_car_num):
-            robot_conf.set("Robot"+str(temp_id), "CHIP_MIN", str(20))
-            robot_conf.set("Robot"+str(temp_id), "CHIP_MAX", str(120))
-            robot_conf.set("Robot"+str(temp_id), "FLAT_MIN", str(20))
-            robot_conf.set("Robot"+str(temp_id), "FLAT_MAX", str(120))
+            robot_conf.set("Robot"+str(temp_id), "chip_min", str(20))
+            robot_conf.set("Robot"+str(temp_id), "chip_max", str(120))
+            robot_conf.set("Robot"+str(temp_id), "flat_min", str(20))
+            robot_conf.set("Robot"+str(temp_id), "flat_max", str(120))
             if in_car_txt[temp_id].id != -1: # ini参数更新
-                robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(in_car_txt[temp_id].val_fit[2]))
-                robot_conf.set("Robot"+str(temp_id), "FLAT_B", str(in_car_txt[temp_id].val_fit[1]))
-                robot_conf.set("Robot"+str(temp_id), "FLAT_C", str(in_car_txt[temp_id].val_fit[0]))
+                robot_conf.set("Robot"+str(temp_id), "flat_a", str(in_car_txt[temp_id].val_fit[2]))
+                robot_conf.set("Robot"+str(temp_id), "flat_b", str(in_car_txt[temp_id].val_fit[1]))
+                robot_conf.set("Robot"+str(temp_id), "flat_c", str(in_car_txt[temp_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
     def write_ini_one(address, in_car_txt, in_id): # 参数写入
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        robot_conf.set("Robot"+str(in_id), "FLAT_A", str(0))
-        robot_conf.set("Robot"+str(in_id), "FLAT_B", str(in_car_txt[in_id].val_fit[1]))
-        robot_conf.set("Robot"+str(in_id), "FLAT_C", str(in_car_txt[in_id].val_fit[0]))
+        robot_conf.set("Robot"+str(in_id), "flat_a", str(0))
+        robot_conf.set("Robot"+str(in_id), "flat_b", str(in_car_txt[in_id].val_fit[1]))
+        robot_conf.set("Robot"+str(in_id), "flat_c", str(in_car_txt[in_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8"))
 class Draw_car: # 绘制图像
     def draw_txt(in_car_txt): # 绘制全部txt图
@@ -135,7 +135,7 @@ class Draw_car: # 绘制图像
             ax_num += 1
         plt.show()
     def draw_ini(in_car_ini, mode): # 绘制全部ini图
-        mode_str = ("FLAT_") if mode else ("CHIP_")
+        mode_str = ("flat_") if mode else ("chip_")
         ax = [None] * static_car_num
         for i in range(static_car_num):
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
@@ -149,7 +149,7 @@ class Draw_car: # 绘制图像
             plt.ylabel('power-'+str(i))
         plt.show()
     def draw_txt_ini(in_car_txt, in_car_ini, mode):
-        mode_str = ("FLAT_") if mode else ("CHIP_")
+        mode_str = ("flat_") if mode else ("chip_")
         ax = [None] * static_car_num
         for i in range(static_car_num):
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
@@ -174,31 +174,31 @@ class Draw_car: # 绘制图像
 static_car_num = 16
 
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
-# car_txt = Analy_car.analy_txt(txt_address)
+car_txt = Analy_car.analy_txt(txt_address)
 # Draw_car.draw_txt(car_txt)
 # car_txt[0].draw_txt_one()
-# ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-# car_ini = Analy_car.read_ini(ini_address)
-# Draw_car.draw_txt_ini(car_txt, car_ini, 1)
+ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+car_ini = Analy_car.read_ini(ini_address)
+Draw_car.draw_txt_ini(car_txt, car_ini, 1)
 # Draw_car.draw_ini(car_ini, 1)
 # Analy_car.write_ini(ini_address, car_txt)
-# Analy_car.write_ini_one(ini_address, car_txt, 15)
+# Analy_car.write_ini_one(ini_address, car_txt, 10)
 
-fd = open(txt_address)
-kq = select.kqueue()
-flags = select.KQ_EV_ADD | select.KQ_EV_ENABLE | select.KQ_EV_CLEAR # 规定我们所要做的操作，分别为:添加事件，使能该事件，事件被取出后恢复标记
-fflags = select.KQ_NOTE_DELETE | select.KQ_NOTE_WRITE | select.KQ_NOTE_EXTEND | select.KQ_NOTE_RENAME # 要监控的事件类型，分别为:删除，写入，追加写入，重命名
-ev = select.kevent(fd, filter=select.KQ_FILTER_VNODE, flags=flags, fflags=fflags) # 初始化该事件
-while True:
-    revents = kq.control([ev], 1, None) # 将上述事件加入到 kqueue 中，此时程序被阻塞，直到事件发生，或者我们可以设置timeout字段
-    for e in revents: # 取出返回的事件
-        if e.fflags & select.KQ_NOTE_EXTEND:
-            print('文件已扩展')
-        elif e.fflags & select.KQ_NOTE_WRITE:
-            print('发生写')
-        elif e.fflags & select.KQ_NOTE_RENAME:
-            print('文件已重命名')
-        elif e.fflags & select.KQ_NOTE_DELETE:
-            print('文件已删除')
-        else:
-            print(e)
+# fd = open(txt_address)
+# kq = select.kqueue()
+# flags = select.KQ_EV_ADD | select.KQ_EV_ENABLE | select.KQ_EV_CLEAR # 规定我们所要做的操作，分别为:添加事件，使能该事件，事件被取出后恢复标记
+# fflags = select.KQ_NOTE_DELETE | select.KQ_NOTE_WRITE | select.KQ_NOTE_EXTEND | select.KQ_NOTE_RENAME # 要监控的事件类型，分别为:删除，写入，追加写入，重命名
+# ev = select.kevent(fd, filter=select.KQ_FILTER_VNODE, flags=flags, fflags=fflags) # 初始化该事件
+# while True:
+#     revents = kq.control([ev], 1, None) # 将上述事件加入到 kqueue 中，此时程序被阻塞，直到事件发生，或者我们可以设置timeout字段
+#     for e in revents: # 取出返回的事件
+#         if e.fflags & select.KQ_NOTE_EXTEND:
+#             print('文件已扩展')
+#         elif e.fflags & select.KQ_NOTE_WRITE:
+#             print('发生写')
+#         elif e.fflags & select.KQ_NOTE_RENAME:
+#             print('文件已重命名')
+#         elif e.fflags & select.KQ_NOTE_DELETE:
+#             print('文件已删除')
+#         else:
+#             print(e)
