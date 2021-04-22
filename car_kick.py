@@ -78,68 +78,77 @@ class Analy_car: # 操作数据
     def analy_txt(address): # 拟合计算
         car_all = Car_cal() # txt是小车踢球原始数据
         car_all.read_data(address) # txt数据读取
-        car_list = []
+        out_car_list = []
         for i in range(static_car_num): # 初始化
-            car_list.append(Car_data())
+            out_car_list.append(Car_data())
         for i in range(len(car_all.all_id)): # 车号划分
-            car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
+            out_car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
         for i in range(static_car_num): # 计算拟合函数
-            car_list[i].calculate_1()
-            print(i, '---', car_list[i].val_fit)
-        return car_list
+            out_car_list[i].calculate_1()
+            print(i, '---', out_car_list[i].val_fit)
+        return out_car_list
     def read_ini(address): # 读取配置信息
         robot_conf = configparser.ConfigParser() # ini是小车踢球拟合参数
         robot_conf.read(address, encoding="utf-8") # ini数据读取
         return robot_conf
-    def write_ini(address, car_list): # 参数写入
+    def write_ini(address, in_car_list): # 参数写入
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        for robot_id in range(static_car_num):
-            robot_conf.set("Robot"+str(robot_id), "CHIP_MIN", str(20))
-            robot_conf.set("Robot"+str(robot_id), "CHIP_MAX", str(120))
-            robot_conf.set("Robot"+str(robot_id), "FLAT_MIN", str(20))
-            robot_conf.set("Robot"+str(robot_id), "FLAT_MAX", str(120))
-            if car_list[robot_id].id != -1: # ini参数更新
-                robot_conf.set("Robot"+str(robot_id), "FLAT_A", str(car_list[robot_id].val_fit[2]))
-                robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
-                robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
+        for temp_id in range(static_car_num):
+            robot_conf.set("Robot"+str(temp_id), "CHIP_MIN", str(20))
+            robot_conf.set("Robot"+str(temp_id), "CHIP_MAX", str(120))
+            robot_conf.set("Robot"+str(temp_id), "FLAT_MIN", str(20))
+            robot_conf.set("Robot"+str(temp_id), "FLAT_MAX", str(120))
+            if in_car_list[temp_id].id != -1: # ini参数更新
+                robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(in_car_list[temp_id].val_fit[2]))
+                robot_conf.set("Robot"+str(temp_id), "FLAT_B", str(in_car_list[temp_id].val_fit[1]))
+                robot_conf.set("Robot"+str(temp_id), "FLAT_C", str(in_car_list[temp_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
-    def write_ini_one(address, car_list, robot_id): # 参数写入
+    def write_ini_one(address, in_car_list, in_id): # 参数写入
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        robot_conf.set("Robot"+str(robot_id), "FLAT_A", str(0))
-        robot_conf.set("Robot"+str(robot_id), "FLAT_B", str(car_list[robot_id].val_fit[1]))
-        robot_conf.set("Robot"+str(robot_id), "FLAT_C", str(car_list[robot_id].val_fit[0]))
+        robot_conf.set("Robot"+str(in_id), "FLAT_A", str(0))
+        robot_conf.set("Robot"+str(in_id), "FLAT_B", str(in_car_list[in_id].val_fit[1]))
+        robot_conf.set("Robot"+str(in_id), "FLAT_C", str(in_car_list[in_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8"))
-    def draw_txt(car_list):
+    def draw_txt(in_car_list): # 绘制全部txt图
         sum = 0 # 有效小车数
-        for i in range(len(car_list)):
-            if car_list[i].val_fit == 0:
+        for i in range(len(in_car_list)):
+            if in_car_list[i].val_fit == 0:
                 continue
             sum += 1
         ax = [None] * sum
         ax_num = 1
-        for i in range(len(car_list)):
-            if car_list[i].val_fit == 0:
+        for i in range(len(in_car_list)):
+            if in_car_list[i].val_fit == 0:
                 continue
-            # print(sum // 3 + 1, sum % 3, ax_num)
+            print(sum // 3 + 1, sum % 3, ax_num)
             ax[ax_num-1] = plt.subplot(sum // 3 + 1, 3, ax_num)
             plot_maxvel = np.arange(0, 7500, 1)
-            plot_power = car_list[i].val_fit(plot_maxvel)
-            plt.plot(car_list[i].maxvel, car_list[i].power, '*')
+            plot_power = in_car_list[i].val_fit(plot_maxvel)
+            plt.plot(in_car_list[i].maxvel, in_car_list[i].power, '*')
             plt.plot(plot_maxvel, plot_power, 'r')
             plt.xlabel('maxvel-'+str(i))
             plt.ylabel('power-'+str(i))
             ax_num += 1
         plt.show()
-    # def draw_ini()
+    def draw_ini(in_car_ini, mode): # 绘制全部ini图
+        mode_str = ("FALT") if mode else ("CHIP")
+        ax = [None] * static_car_num
+        ax_num = 1
+        for i in range(static_car_num):
+            print(ax_num//4,4,ax_num)
+            ax_num += 1
+
+
 static_car_num = 16
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_6_8_14_15.txt"
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_list = Analy_car.analy_txt(txt_address)
 car_ini = Analy_car.read_ini(ini_address)
-print(car_ini["Robot"+str(2), "FLAT_A"])
-# Analy_car.draw_txt(car_list)
+# Analy_car.draw_ini(car_ini, 1)
+# print(car_ini["Robot"+str(2)]["FLAT_B"])
+Analy_car.draw_txt(car_list)
 # car_list[0].draw_txt_one()
 # Analy_car.write_ini(ini_address, car_list)
 # Analy_car.write_ini_one(ini_address, car_list, 15)
