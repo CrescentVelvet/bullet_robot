@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import configparser
+import select
 class Car_data_one: # 单个车数据
     def __init__(self):
         self.id = -1
@@ -173,12 +174,31 @@ class Draw_car: # 绘制图像
 static_car_num = 16
 
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
-car_txt = Analy_car.analy_txt(txt_address)
+# car_txt = Analy_car.analy_txt(txt_address)
 # Draw_car.draw_txt(car_txt)
 # car_txt[0].draw_txt_one()
-ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-car_ini = Analy_car.read_ini(ini_address)
-Draw_car.draw_txt_ini(car_txt, car_ini, 1)
+# ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+# car_ini = Analy_car.read_ini(ini_address)
+# Draw_car.draw_txt_ini(car_txt, car_ini, 1)
 # Draw_car.draw_ini(car_ini, 1)
 # Analy_car.write_ini(ini_address, car_txt)
 # Analy_car.write_ini_one(ini_address, car_txt, 15)
+
+fd = open(txt_address)
+kq = select.kqueue()
+flags = select.KQ_EV_ADD | select.KQ_EV_ENABLE | select.KQ_EV_CLEAR # 规定我们所要做的操作，分别为:添加事件，使能该事件，事件被取出后恢复标记
+fflags = select.KQ_NOTE_DELETE | select.KQ_NOTE_WRITE | select.KQ_NOTE_EXTEND | select.KQ_NOTE_RENAME # 要监控的事件类型，分别为:删除，写入，追加写入，重命名
+ev = select.kevent(fd, filter=select.KQ_FILTER_VNODE, flags=flags, fflags=fflags) # 初始化该事件
+while True:
+    revents = kq.control([ev], 1, None) # 将上述事件加入到 kqueue 中，此时程序被阻塞，直到事件发生，或者我们可以设置timeout字段
+    for e in revents: # 取出返回的事件
+        if e.fflags & select.KQ_NOTE_EXTEND:
+            print('文件已扩展')
+        elif e.fflags & select.KQ_NOTE_WRITE:
+            print('发生写')
+        elif e.fflags & select.KQ_NOTE_RENAME:
+            print('文件已重命名')
+        elif e.fflags & select.KQ_NOTE_DELETE:
+            print('文件已删除')
+        else:
+            print(e)
