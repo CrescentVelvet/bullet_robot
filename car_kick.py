@@ -122,7 +122,7 @@ class Analy_car: # 操作数据
         for i in range(len(in_car_list)):
             if in_car_list[i].val_fit == 0:
                 continue
-            print(sum // 3 + 1, sum % 3, ax_num)
+            print(sum // 3 + 1, sum % 3, ax_num, i)
             ax[ax_num-1] = plt.subplot(sum // 3 + 1, 3, ax_num)
             plot_maxvel = np.arange(0, 7500, 1)
             plot_power = in_car_list[i].val_fit(plot_maxvel)
@@ -133,22 +133,32 @@ class Analy_car: # 操作数据
             ax_num += 1
         plt.show()
     def draw_ini(in_car_ini, mode): # 绘制全部ini图
-        mode_str = ("FALT") if mode else ("CHIP")
+        mode_str = ("FLAT_") if mode else ("CHIP_")
         ax = [None] * static_car_num
-        ax_num = 1
         for i in range(static_car_num):
-            print(ax_num//4,4,ax_num)
-            ax_num += 1
-
+            b = in_car_ini["Robot"+str(i)][mode_str+"B"]
+            c = in_car_ini["Robot"+str(i)][mode_str+"C"]
+            val_ini = np.poly1d([float(b), float(c)])
+            ax[i] = plt.subplot(4, 4, i+1)
+            plot_maxvel = np.arange(0, 7500, 1)
+            plot_power = val_ini(plot_maxvel)
+            plt.plot(plot_maxvel, plot_power, 'r')
+            plt.xlabel('maxvel-'+str(i))
+            plt.ylabel('power-'+str(i))
+        plt.show()
+    def draw_txt_ini():
+        pass
 
 static_car_num = 16
+
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_6_8_14_15.txt"
-ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_list = Analy_car.analy_txt(txt_address)
-car_ini = Analy_car.read_ini(ini_address)
-# Analy_car.draw_ini(car_ini, 1)
-# print(car_ini["Robot"+str(2)]["FLAT_B"])
-Analy_car.draw_txt(car_list)
+# Analy_car.draw_txt(car_list)
 # car_list[0].draw_txt_one()
+
+ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+car_ini = Analy_car.read_ini(ini_address)
+Analy_car.draw_ini(car_ini, 1)
+# print(car_ini["Robot"+str(0)]["FLAT_"+"B"])
 # Analy_car.write_ini(ini_address, car_list)
 # Analy_car.write_ini_one(ini_address, car_list, 15)
