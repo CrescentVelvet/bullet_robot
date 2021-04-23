@@ -23,7 +23,9 @@ struct RobotCommand{
     double dribble_spin;
 //    RobotCommand():velocity_x(0),velocity_y(0),velocity_r(0),flat_kick(0),chip_kick(0),dribble_spin(0) {}
     bool use_dir;
-    RobotCommand():velocity_x(0),velocity_y(0),velocity_r(0),flat_kick(0),chip_kick(0),dribble_spin(0),use_dir(false) {}
+    double raw_flat_kick;
+    double raw_chip_kick;
+    RobotCommand():velocity_x(0),velocity_y(0),velocity_r(0),flat_kick(0),chip_kick(0),dribble_spin(0),use_dir(false),raw_flat_kick(0),raw_chip_kick(0) {}
 };
 
 class CCommandInterface : public QObject

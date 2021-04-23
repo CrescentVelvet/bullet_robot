@@ -52,4 +52,5 @@ message Robot_Command {
 
   // added by cxw
   required bool use_dir = 10;
+  required float raw_power = 11;
 }

@@ -129,10 +129,12 @@ void CCommandInterface::sendCommands() {
             //qDebug()<<"id: "<<i<<commands[i].flat_kick;
             robot_command->set_kick(false);
             robot_command->set_power(commands[i].flat_kick);
+            robot_command->set_raw_power(commands[i].raw_flat_kick);
         }
         else {
             robot_command->set_kick(true);
             robot_command->set_power(commands[i].chip_kick);
+            robot_command->set_raw_power(commands[i].raw_chip_kick);
         }
     }
     if(COMMANDDEBUG){
