@@ -96,6 +96,15 @@ void CCommandInterface::setKick(int num, double kp, double cp) {
     commands[number].flat_kick = kp;
     commands[number].chip_kick = cp;
 }
+void CCommandInterface::setRawKick(int num, double kp, double cp) {
+    int number = num;
+    if (number < 0 || number > PARAM::Field::MAX_PLAYER - 1) {
+        //std::cout << "Robot Number Error in Simulator setKick" << std::endl;
+        return;
+    }
+    commands[number].raw_flat_kick = kp;
+    commands[number].raw_chip_kick = cp;
+}
 
 void CCommandInterface::sendCommands() {
 //    GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-400,-200),"COMMAND_VALID : ",COLOR_GRAY);

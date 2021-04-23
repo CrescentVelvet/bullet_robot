@@ -19,7 +19,7 @@
 #include <algorithm>
 #include "staticparams.h"
 #include "parammanager.h"
-
+#include "CommandInterface.h"
 
 namespace {
 auto zpm = ZSS::ZParamManager::instance();
@@ -147,6 +147,14 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
     rushMode = kick_flag & PlayerStatus::RUSH;
     ballplacement = kick_flag & PlayerStatus::NOT_AVOID_PENALTY;
     // qDebug()<<"czkdebug::getballv4 flag: "<<kick_flag;
+    /*****************获取原始球速度***************/
+    double raw_power = power;
+    if (chip) {
+        CCommandInterface::instance()->setRawKick(robotNum, 0, raw_power);
+    }
+    else {
+        CCommandInterface::instance()->setRawKick(robotNum, raw_power, 0);
+    }
     /*****************拿球Task初始化***************/
     TaskT getballTask(task());
     if(ballplacement){

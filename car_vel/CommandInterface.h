@@ -40,6 +40,7 @@ public:
 //    void setSpeed(int num, double dribble, double vx, double vy, double vr);
     void setSpeed(int num, double dribble, double vx, double vy, double vr, bool use_dir);
     void setKick(int num, double kp, double cp);
+    void setRawKick(int num, double kp, double cp);
     void sendCommands();
     void showCommands();
 private slots:
