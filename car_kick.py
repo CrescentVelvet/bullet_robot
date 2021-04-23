@@ -182,7 +182,7 @@ car_ini = Analy_car.read_ini(ini_address)
 Draw_car.draw_txt_ini(car_txt, car_ini, 1)
 # Draw_car.draw_ini(car_ini, 1)
 # Analy_car.write_ini(ini_address, car_txt)
-# Analy_car.write_ini_one(ini_address, car_txt, 10)
+# Analy_car.write_ini_one(ini_address, car_txt, 15)
 
 # fd = open(txt_address)
 # kq = select.kqueue()
