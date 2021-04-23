@@ -147,7 +147,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
     rushMode = kick_flag & PlayerStatus::RUSH;
     ballplacement = kick_flag & PlayerStatus::NOT_AVOID_PENALTY;
     // qDebug()<<"czkdebug::getballv4 flag: "<<kick_flag;
-    /*****************获取原始球速度***************/
+    /*****************发送原始球速度***************/
     double raw_power = power;
     if (chip) {
         CCommandInterface::instance()->setRawKick(robotNum, 0, raw_power);

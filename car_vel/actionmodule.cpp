@@ -15,6 +15,7 @@
 #include "zautoshootfit.h"
 #include "debugengine.h"
 #include <QSettings>
+
 namespace ZSS {
 namespace {
 const int TRANSMIT_PACKET_SIZE = 25;const int TRANS_FEEDBACK_SIZE = 26;
@@ -223,12 +224,12 @@ void ActionModule::sendLegacy(int t, const ZSS::Protocol::Robots_Command& comman
     if (true) {
         QDateTime utc_time = QDateTime::fromTime_t( QDateTime::currentDateTimeUtc().toTime_t() );
         QString current_time = utc_time .toString("yyyy.MM.dd hh:mm:ss");
-        GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
+        GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4800,-3150),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
         for(int i = 0; i < PARAM::ROBOTNUM; i++) {
             double id_length = 400 * i;
-            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2150),QString("id:%1").arg(i).toLatin1(),COLOR_GREEN);
-            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2300),QString("b:%1").arg(kick_param[i].fb).toLatin1(),COLOR_GREEN);
-            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2450),QString("c:%1").arg(kick_param[i].fc).toLatin1(),COLOR_GREEN);
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4800+id_length,-3300),QString("id:%1").arg(i).toLatin1(),COLOR_GREEN);
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4800+id_length,-3450),QString("b:%1").arg(kick_param[i].fb).toLatin1(),COLOR_GREEN);
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4800+id_length,-3600),QString("c:%1").arg(kick_param[i].fc).toLatin1(),COLOR_GREEN);
         }
     }
 }
@@ -478,7 +479,6 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
     double new_power = 0;
     QString a, b, c;
     QString min_power, max_power;
-    double id_length = 400 * id;
     QString key = "";
     QSettings *read_ini = new QSettings("kickparam.ini", QSettings::IniFormat);
     key = QString("Robot%1/%2_a").arg(id).arg(mode ? "chip" : "flat");
@@ -491,9 +491,9 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
     min_power = read_ini->value(key).toString();
     key = QString("Robot%1/%2_max").arg(id).arg(mode ? "chip" : "flat");
     max_power = read_ini->value(key).toString();
-    new_power = ( a.toDouble() * power * power + b.toDouble() * power + c.toDouble() );
+    new_power = (a.toDouble() * power * power + b.toDouble() * power + c.toDouble());
     new_power = (quint8)(std::max(min_power.toDouble(), std::min(new_power, max_power.toDouble())));
-    if (mode) {
+    if (mode) { // 用于画图
         ZActionModule::instance()->kick_param[id].cb = b.toDouble();
         ZActionModule::instance()->kick_param[id].cc = c.toDouble();
     }
@@ -503,6 +503,16 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
     }
 //    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
 //    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
+    ZSS::Protocol::Robots_Command commands;
+    auto& command = commands.command(id);
+    bool mode_txt = command.kick();
+    float vel_txt = command.raw_power();
+    double kict_txt = new_power;
+    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/raw_VelData.txt", std::ios::app);
+    if(ratio_file.is_open()){
+        ratio_file << " " << id << " " << mode_txt << " " << vel_txt << " " << kict_txt << std::endl;
+        ratio_file.close();
+    }
     return new_power;
 }
 } // namespace ZSS::anonymous
