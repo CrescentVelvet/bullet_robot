@@ -27,6 +27,13 @@ class ActionModule : public QObject {
     int reportVec[PARAM::TEAMS];
     qint64 last_receive_time[PARAM::TEAMS][PARAM::ROBOTNUM];
     bool no_response[PARAM::TEAMS][PARAM::ROBOTNUM];
+    struct KickParam {
+        double cb = -1;
+        double cc = -1;
+        double fb = -1;
+        double fc = -1;
+    };
+    KickParam kick_param[PARAM::ROBOTNUM];
   private slots:
     void readData();
   private:

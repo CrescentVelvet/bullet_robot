@@ -220,6 +220,17 @@ void ActionModule::sendLegacy(int t, const ZSS::Protocol::Robots_Command& comman
         encodeLegacy(command, this->tx, count++, id);
     }
     socket.writeDatagram(tx.data(), TRANSMIT_PACKET_SIZE, QHostAddress(radioSendAddress[id]), PORT_SEND);
+    if (true) {
+        QDateTime utc_time = QDateTime::fromTime_t( QDateTime::currentDateTimeUtc().toTime_t() );
+        QString current_time = utc_time .toString("yyyy.MM.dd hh:mm:ss");
+        GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
+        for(int i = 0; i < PARAM::ROBOTNUM; i++) {
+            double id_length = 400 * i;
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2150),QString("id:%1").arg(i).toLatin1(),COLOR_GREEN);
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2300),QString("b:%1").arg(kick_param[i].fb).toLatin1(),COLOR_GREEN);
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2450),QString("c:%1").arg(kick_param[i].fc).toLatin1(),COLOR_GREEN);
+        }
+    }
 }
 
 void ActionModule::readData() {
@@ -480,18 +491,18 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
     min_power = read_ini->value(key).toString();
     key = QString("Robot%1/%2_max").arg(id).arg(mode ? "chip" : "flat");
     max_power = read_ini->value(key).toString();
-    QDateTime utc_time = QDateTime::fromTime_t( QDateTime::currentDateTimeUtc().toTime_t() );
-    QString current_time = utc_time .toString("yyyy.MM.dd hh:mm:ss");
     new_power = ( a.toDouble() * power * power + b.toDouble() * power + c.toDouble() );
     new_power = (quint8)(std::max(min_power.toDouble(), std::min(new_power, max_power.toDouble())));
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("ZautoFit---").toLatin1(),COLOR_GREEN);
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200,-2000),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2150),QString("md:%1").arg(mode).toLatin1(),COLOR_GREEN);
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2300),QString("id:%1").arg(id).toLatin1(),COLOR_GREEN);
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2450),QString(" b:%1").arg(b).toLatin1(),COLOR_GREEN);
-//    GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4200+id_length,-2600),QString(" c:%1").arg(c).toLatin1(),COLOR_GREEN);
-    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
-    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
+    if (mode) {
+        ZActionModule::instance()->kick_param[id].cb = b.toDouble();
+        ZActionModule::instance()->kick_param[id].cc = c.toDouble();
+    }
+    else {
+        ZActionModule::instance()->kick_param[id].fb = b.toDouble();
+        ZActionModule::instance()->kick_param[id].fc = c.toDouble();
+    }
+//    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
+//    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
     return new_power;
 }
 } // namespace ZSS::anonymous
