@@ -503,15 +503,20 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
     }
 //    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
 //    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
+//    期望的绝对速度hope
     ZSS::Protocol::Robots_Command commands;
     auto& command = commands.command(id);
-    bool mode_txt = command.kick();
-    float vel_txt = command.raw_power();
-    double kict_txt = new_power;
+    double vel_hope = command.raw_power();
+//    实际的绝对速度real
+    double vel_real = GlobalData::instance()->maintain[0].ball->velocity.mod();
+    double kick_kp = power;
+    double kick_hope = new_power;
+//    记录数据flatshoot
     std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/raw_VelData.txt", std::ios::app);
-    if(ratio_file.is_open()){
-        ratio_file << " " << id << " " << mode_txt << " " << vel_txt << " " << kict_txt << std::endl;
+    if(ratio_file.is_open() && !mode) {
+        ratio_file << " " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope << std::endl;
         ratio_file.close();
+        qDebug() << " " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope;
     }
     return new_power;
 }
