@@ -28,7 +28,7 @@ const double FULL_CAPACITANCE = 254.0;
 const double LOW_CAPACITANCE = 29.0;
 auto zpm = ZSS::ZParamManager::instance();
 bool usedir;
-quint8 kickStandardization(quint8, bool, quint16);
+quint8 kickStandardization(int, quint8, bool, quint16, double);
 const QStringList radioSendAddress2choose=  {"10.12.225.142", "10.12.225.143", "10.12.225.130","10.12.225.109","10.12.225.78"};
 const QStringList radioReceiveAddress2choose =  {"10.12.225.142", "10.12.225.143", "10.12.225.130","10.12.225.110","10.12.225.79"};
 QString radioSendAddress[PARAM::TEAMS] = {"10.12.225.142","10.12.225.130"};
@@ -397,7 +397,7 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
     double origin_vy = command.velocity_y() / 10.0; //mm -> cm
     bool use_dir = command.use_dir();
     double origin_vr = command.velocity_r();
-
+    double vel_hope = command.raw_power();
 //    double dt = 1. / Athena::FRAME_RATE;
 //    double theta = origin_vr * dt;
 //    CVector v(origin_vx, origin_vy);
@@ -444,7 +444,7 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
         if (AutoShootFit::instance()->getRun()) {
             power = (quint8)speed;
         } else {
-            power = kickStandardization(id, kick, speed);
+            power = kickStandardization(team, id, kick, speed, vel_hope);
         }
         AutoShootFit::instance()->getKickPower(power, send_power);
     }
@@ -475,7 +475,7 @@ double Normalize(double angle)
     return angle;
 }
 
-quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
+quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double input_vel) {
     double new_power = 0;
     QString a, b, c;
     QString min_power, max_power;
@@ -504,9 +504,7 @@ quint8 kickStandardization(quint8 id, bool mode, quint16 power) {
 //    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
 //    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
 //    期望的绝对速度hope
-    ZSS::Protocol::Robots_Command commands;
-    auto& command = commands.command(id);
-    double vel_hope = command.raw_power();
+    double vel_hope = input_vel;
 //    实际的绝对速度real
     double vel_real = GlobalData::instance()->maintain[0].ball->velocity.mod();
     double kick_kp = power;
