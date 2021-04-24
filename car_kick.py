@@ -101,7 +101,7 @@ class Analy_car: # 操作数据
             robot_conf.set("Robot"+str(temp_id), "flat_min", str(20))
             robot_conf.set("Robot"+str(temp_id), "flat_max", str(120))
             if in_car_txt[temp_id].id != -1: # ini参数更新
-                robot_conf.set("Robot"+str(temp_id), "flat_a", str(in_car_txt[temp_id].val_fit[2]))
+                robot_conf.set("Robot"+str(temp_id), "flat_a", str(0))
                 robot_conf.set("Robot"+str(temp_id), "flat_b", str(in_car_txt[temp_id].val_fit[1]))
                 robot_conf.set("Robot"+str(temp_id), "flat_c", str(in_car_txt[temp_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
@@ -179,9 +179,9 @@ car_txt = Analy_car.analy_txt(txt_address)
 # car_txt[0].draw_txt_one()
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
 car_ini = Analy_car.read_ini(ini_address)
-Draw_car.draw_txt_ini(car_txt, car_ini, 1)
+# Draw_car.draw_txt_ini(car_txt, car_ini, 1)
 # Draw_car.draw_ini(car_ini, 1)
-# Analy_car.write_ini(ini_address, car_txt)
+Analy_car.write_ini(ini_address, car_txt)
 # Analy_car.write_ini_one(ini_address, car_txt, 15)
 
 # fd = open(txt_address)
