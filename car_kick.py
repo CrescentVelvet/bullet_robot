@@ -170,19 +170,20 @@ class Draw_car: # 绘制图像
             plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, '*')
             plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
+class Feed_back: # 反馈数据
 
 static_car_num = 16
 
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
-car_txt = Analy_car.analy_txt(txt_address)
-# Draw_car.draw_txt(car_txt)
-# car_txt[0].draw_txt_one()
+car_txt = Analy_car.analy_txt(txt_address) # 读取txt
+# Draw_car.draw_txt(car_txt) # 绘制全部txt
+# car_txt[0].draw_txt_one() # 绘制一张txt
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-car_ini = Analy_car.read_ini(ini_address)
-# Draw_car.draw_txt_ini(car_txt, car_ini, 1)
-# Draw_car.draw_ini(car_ini, 1)
-Analy_car.write_ini(ini_address, car_txt)
-# Analy_car.write_ini_one(ini_address, car_txt, 15)
+car_ini = Analy_car.read_ini(ini_address) # 读取ini
+# Draw_car.draw_txt_ini(car_txt, car_ini, 1) # 绘制全部txt和ini
+# Draw_car.draw_ini(car_ini, 1) # 绘制一张ini
+# Analy_car.write_ini(ini_address, car_txt) # 写入全部ini
+# Analy_car.write_ini_one(ini_address, car_txt, 15) # 写入一车ini
 
 # fd = open(txt_address)
 # kq = select.kqueue()
