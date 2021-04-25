@@ -6,13 +6,15 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
-
+class Flag:
+    old_time = -1
 class File_monitor(FileSystemEventHandler):
     def __init__(self, **kwargs):
         super(File_monitor, self).__init__(**kwargs)
-        self._watch_path = './' # 监控目录 目录下面以device_id为目录存放各自的图片
+        self._watch_path = './'
     def on_modified(self, event):
-        print("修改了文件", event.src_path)
+        if not event.is_directory:
+            print("修改了文件", event.src_path)
     def on_created(self, event):
         print("创建了文件夹", event.src_path)
     def on_moved(self, event):
@@ -20,8 +22,8 @@ class File_monitor(FileSystemEventHandler):
     def on_deleted(self, event):
         print("删除了文件", event.src_path)
     def on_any_event(self, event):
-        print("任何事件都会触发")
-class Car_data_one: # 单个车数据
+        print("------")
+class Car_data_one: # 单个车数据类
     def __init__(self):
         self.id = -1
         self.maxvel = []
@@ -56,6 +58,62 @@ class Car_data_one: # 单个车数据
         plt.xlabel('maxvel')
         plt.ylabel('power')
         plt.show()
+class Feed_back: # 反馈数据类
+    def __init__(self):
+        self.raw_id = []
+        self.raw_vel_hope = []
+        self.raw_vel_real = []
+        self.all_id = []
+        self.all_vel_hope = []
+        self.all_vel_real = []
+    def read_data(self, address):
+        with open(address, "r") as f:
+            raw_data = f.readlines()
+            for line in raw_data:
+                line_data = line.split()
+                if len(line_data) != 6:
+                    continue
+                if line_data[1] == '1' or line_data[2] == '0' or line_data[3] == '0': # 排除异常数据
+                    continue
+                if line_data[0] != '\n':
+                    self.raw_id.append(line_data[0].strip())
+                if line_data[2] != '\n':
+                    self.raw_vel_hope.append(line_data[2].strip())
+                if line_data[3] != '\n':
+                    self.raw_vel_real.append(line_data[3].strip())
+        self.raw_id = list(map(float, self.raw_id))
+        self.raw_vel_hope = list(map(float, self.raw_vel_hope))
+        self.raw_vel_real = list(map(float, self.raw_vel_real))
+        old_id = self.raw_id[0]
+        for i in range(len(self.raw_id)):
+            if old_id != self.raw_id[i]: # id变化时记录数据
+                old_id = self.raw_id[i]
+                if self.raw_vel_hope[i-1] > 1000.0 and self.raw_vel_hope[i-1] < 7000.0 and self.raw_vel_real[i-1] > 1000.0 and self.raw_vel_real[i-1] < 7000.0:
+                    self.all_id.append(self.raw_id[i-1]) # 排除越界数据
+                    self.all_vel_hope.append(self.raw_vel_hope[i-1])
+                    self.all_vel_real.append(self.raw_vel_real[i-1])
+    def analy_data(in_car_feb):
+        out_id = [-1, 0]
+        out_id[0] = in_car_feb.all_id[-1]
+        out_sum = in_car_feb.all_vel_hope[-1] - in_car_feb.all_vel_real[-1]
+        if out_sum > 100.0:
+            out_id[1] = 1
+        elif out_sum < -100.0:
+            out_id[1] = -1
+        else:
+            out_id[1] = 0
+        return out_id
+    def Watch_dog(address):
+        observer = Observer() # 检测改动
+        event_handler = File_monitor() # 事件处理
+        observer.schedule(event_handler, path=address, recursive=True)
+        observer.start()
+        try:
+            while True:
+                time.sleep(100)
+        except KeyboardInterrupt:
+            observer.stop()
+        observer.join()
 class Car_data_all: # 全部车数据
     def __init__(self):
         self.raw_id = []
@@ -133,6 +191,20 @@ class Analy_car: # 操作数据
         robot_conf.set("Robot"+str(in_id), "flat_b", str(in_car_txt[in_id].val_fit[1]))
         robot_conf.set("Robot"+str(in_id), "flat_c", str(in_car_txt[in_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8"))
+    def read_feb(address): # feb数据读取
+        out_car_feb = Feed_back()
+        out_car_feb.read_data(address)
+        return out_car_feb
+    def write_ini_feb(address, in_car_ini, in_id):
+        robot_conf = configparser.ConfigParser()
+        robot_conf.read(address, encoding="utf-8")
+        mode_str = "flat_"
+        a = 0
+        b = in_car_ini["Robot"+str(in_id[0])][mode_str+"B"] + in_id[0] * 10
+        c = in_car_ini["Robot"+str(in_id[0])][mode_str+"C"] + in_id[0] * 10
+        robot_conf.set("Robot"+str(in_id[0]), "flat_a", str(a))
+        robot_conf.set("Robot"+str(in_id[0]), "flat_b", str(b))
+        robot_conf.set("Robot"+str(in_id[0]), "flat_c", str(c))
 class Draw_car: # 绘制图像
     def draw_txt(in_car_txt): # 绘制全部txt图
         sum = 0 # 有效小车数
@@ -191,28 +263,7 @@ class Draw_car: # 绘制图像
             plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, '*')
             plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
-class Feed_back: # 反馈数据
-    def read_data(address):
-        with open(address, "r") as f:
-            raw_data = f.readlines()
-            for line in raw_data:
-                line_data = line.split()
-                if len(line_data) != 6:
-                    continue
-                if line_data[1] == '1' or line_data[2] == '6300' or line_data[2] == '0' or line_data[3] == '0':
-                    continue
-                print(line_data)
-    def Watch_dog(address):
-        observer = Observer()
-        event_handler = File_monitor()
-        observer.schedule(event_handler, path=address, recursive=True)
-        observer.start()
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            observer.stop()
-        observer.join()
+
 
 static_car_num = 16
 
@@ -221,11 +272,21 @@ txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.tx
 # car_txt[0].draw_txt_one()                             # 绘制一张txt
 # Draw_car.draw_txt(car_txt)                            # 绘制全部txt
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-# car_ini = Analy_car.read_ini(ini_address)               # 读取ini
+car_ini = Analy_car.read_ini(ini_address)               # 读取ini
 # Draw_car.draw_ini(car_ini, 1)                         # 绘制全部ini
 # Draw_car.draw_txt_ini(car_txt, car_ini, 1)              # 绘制全部txt和ini
-# Analy_car.write_ini_one(ini_address, car_txt, 15)     # 写入一车ini
+# Analy_car.write_ini_one(ini_address, car_txt, 9)      # 写入一车ini
 # Analy_car.write_ini(ini_address, car_txt)             # 写入全部ini
 feb_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/feedbackData1.txt"
-# car_feb = Feed_back.read_data(feb_address)              # 读取feb
-Feed_back.Watch_dog(feb_address)
+car_feb = Analy_car.read_feb(feb_address)               # 读取feb
+car_feb_id = Feed_back.analy_data(car_feb)              # 拿到偏差
+Analy_car.write_ini_feb(ini_address, car_ini, car_feb_id)        #　修改ini
+# Feed_back.Watch_dog(feb_address)                        # 检测feb改动
+# while True:
+#     new_time = int(time.time() % 1000)
+#     if Flag.old_time == -1:
+#         Flag.old_time = new_time
+#     if new_time - Flag.old_time > 5:
+#         Flag.old_time = new_time
+#         print('Reading feedbackData ', new_time)
+#         car_feb = Feed_back.read_data(feb_address)

@@ -510,7 +510,7 @@ quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double
     double kick_kp = power;
     double kick_hope = new_power;
 //    记录数据flatshoot
-    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/raw_VelData.txt", std::ios::app);
+    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/feedbackData.txt", std::ios::app);
     if(ratio_file.is_open() && !mode) {
         ratio_file << " " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope << std::endl;
         ratio_file.close();
