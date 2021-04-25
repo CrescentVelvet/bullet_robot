@@ -2,6 +2,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 import configparser
 import select
+import time
+from watchdog.observers import Observer
+from watchdog.events import LoggingEventHandler
+from watchdog.events import FileSystemEventHandler
+
+class File_monitor(FileSystemEventHandler):
+    def __init__(self, **kwargs):
+        super(File_monitor, self).__init__(**kwargs)
+        self._watch_path = './' # 监控目录 目录下面以device_id为目录存放各自的图片
+    def on_modified(self, event):
+        print("修改了文件", event.src_path)
+    def on_created(self, event):
+        print("创建了文件夹", event.src_path)
+    def on_moved(self, event):
+        print("移动了文件", event.src_path)
+    def on_deleted(self, event):
+        print("删除了文件", event.src_path)
+    def on_any_event(self, event):
+        print("任何事件都会触发")
 class Car_data_one: # 单个车数据
     def __init__(self):
         self.id = -1
@@ -52,6 +71,8 @@ class Car_data_all: # 全部车数据
             raw_data = f.readlines()
             for line in raw_data:
                 line_data = line.split()
+                if len(line_data) != 4:
+                    continue
                 if line_data[1] == '0' or line_data[2] == '-1000': # 排除异常数据
                     continue
                 if line_data[0] != '\n':
@@ -171,35 +192,40 @@ class Draw_car: # 绘制图像
             plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
 class Feed_back: # 反馈数据
+    def read_data(address):
+        with open(address, "r") as f:
+            raw_data = f.readlines()
+            for line in raw_data:
+                line_data = line.split()
+                if len(line_data) != 6:
+                    continue
+                if line_data[1] == '1' or line_data[2] == '6300' or line_data[2] == '0' or line_data[3] == '0':
+                    continue
+                print(line_data)
+    def Watch_dog(address):
+        observer = Observer()
+        event_handler = File_monitor()
+        observer.schedule(event_handler, path=address, recursive=True)
+        observer.start()
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            observer.stop()
+        observer.join()
 
 static_car_num = 16
 
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
-car_txt = Analy_car.analy_txt(txt_address) # 读取txt
-# Draw_car.draw_txt(car_txt) # 绘制全部txt
-# car_txt[0].draw_txt_one() # 绘制一张txt
+# car_txt = Analy_car.analy_txt(txt_address)              # 读取txt
+# car_txt[0].draw_txt_one()                             # 绘制一张txt
+# Draw_car.draw_txt(car_txt)                            # 绘制全部txt
 ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-car_ini = Analy_car.read_ini(ini_address) # 读取ini
-# Draw_car.draw_txt_ini(car_txt, car_ini, 1) # 绘制全部txt和ini
-# Draw_car.draw_ini(car_ini, 1) # 绘制一张ini
-# Analy_car.write_ini(ini_address, car_txt) # 写入全部ini
-# Analy_car.write_ini_one(ini_address, car_txt, 15) # 写入一车ini
-
-# fd = open(txt_address)
-# kq = select.kqueue()
-# flags = select.KQ_EV_ADD | select.KQ_EV_ENABLE | select.KQ_EV_CLEAR # 规定我们所要做的操作，分别为:添加事件，使能该事件，事件被取出后恢复标记
-# fflags = select.KQ_NOTE_DELETE | select.KQ_NOTE_WRITE | select.KQ_NOTE_EXTEND | select.KQ_NOTE_RENAME # 要监控的事件类型，分别为:删除，写入，追加写入，重命名
-# ev = select.kevent(fd, filter=select.KQ_FILTER_VNODE, flags=flags, fflags=fflags) # 初始化该事件
-# while True:
-#     revents = kq.control([ev], 1, None) # 将上述事件加入到 kqueue 中，此时程序被阻塞，直到事件发生，或者我们可以设置timeout字段
-#     for e in revents: # 取出返回的事件
-#         if e.fflags & select.KQ_NOTE_EXTEND:
-#             print('文件已扩展')
-#         elif e.fflags & select.KQ_NOTE_WRITE:
-#             print('发生写')
-#         elif e.fflags & select.KQ_NOTE_RENAME:
-#             print('文件已重命名')
-#         elif e.fflags & select.KQ_NOTE_DELETE:
-#             print('文件已删除')
-#         else:
-#             print(e)
+# car_ini = Analy_car.read_ini(ini_address)               # 读取ini
+# Draw_car.draw_ini(car_ini, 1)                         # 绘制全部ini
+# Draw_car.draw_txt_ini(car_txt, car_ini, 1)              # 绘制全部txt和ini
+# Analy_car.write_ini_one(ini_address, car_txt, 15)     # 写入一车ini
+# Analy_car.write_ini(ini_address, car_txt)             # 写入全部ini
+feb_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/feedbackData1.txt"
+# car_feb = Feed_back.read_data(feb_address)              # 读取feb
+Feed_back.Watch_dog(feb_address)
