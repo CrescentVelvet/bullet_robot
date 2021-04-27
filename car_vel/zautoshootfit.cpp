@@ -125,7 +125,7 @@ void CAutoShootFit::getKickPower(int p, double sp) {
 }
 
 double CAutoShootFit::getDist() {
-    bool isChip =  GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
+    bool isChip = GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
     static bool lastStatus = false;
     if (isChip) {
         lastStatus = true;
@@ -135,7 +135,7 @@ double CAutoShootFit::getDist() {
         double dist = chip_pos.dist(chip_robot_pos);
         if (abs(chip_pos.x()) < PARAM::Field::PITCH_LENGTH/2 && abs(chip_pos.y()) < PARAM::Field::PITCH_WIDTH/2 ) {
             lastStatus = false;
-            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("%1").arg(dist).toLatin1());
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("getDist: %1").arg(dist).toLatin1());
             return dist;
         }
     }
@@ -173,17 +173,27 @@ double CAutoShootFit::getVel() {
     return maxv;
 }
 
-void CAutoShootFit::recordVelData(int id, bool mode, int my_power, double sp,double vel_or_dist) {
-    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData.txt", std::ios::app);
-    double my_vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
-    if (my_maxvel < my_vel){
+void CAutoShootFit::recordVelData(int id, bool mode, int my_power, double sp, double vel_or_dist) {
+    bool flag_flat = false;
+    char *file_name;
+    double my_vel;
+    if (flag_flat){
+        file_name = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData.txt";
+        my_vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
+    }
+    else {
+        file_name = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData.txt";
+        my_vel = vel_or_dist;
+    }
+    std::ofstream ratio_file(file_name, std::ios::app);
+    if (my_maxvel < my_vel) {
         my_maxvel = my_vel;
     }
-    if (my_oldid != id){
+    if (my_oldid != id) {
         my_oldid = id;
         my_maxvel = -1000;
     }
-    if(ratio_file.is_open() && my_power != -1){
+    if(ratio_file.is_open() && my_power != -1) {
         ratio_file << " " << id << " " << my_vel << " " << my_maxvel << " " << my_power << std::endl;
         ratio_file.close();
     }

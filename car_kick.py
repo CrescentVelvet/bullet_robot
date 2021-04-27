@@ -175,21 +175,21 @@ class Analy_car: # 操作数据
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
         for temp_id in range(static_car_num):
-            robot_conf.set("Robot"+str(temp_id), "chip_min", str(20))
-            robot_conf.set("Robot"+str(temp_id), "chip_max", str(120))
-            robot_conf.set("Robot"+str(temp_id), "flat_min", str(20))
-            robot_conf.set("Robot"+str(temp_id), "flat_max", str(120))
+            robot_conf.set("Robot"+str(temp_id), "CHIP_MIN", str(0))
+            robot_conf.set("Robot"+str(temp_id), "CHIP_MAX", str(130))
+            robot_conf.set("Robot"+str(temp_id), "FLAT_MIN", str(0))
+            robot_conf.set("Robot"+str(temp_id), "FLAT_MAX", str(130))
             if in_car_txt[temp_id].id != -1: # ini参数更新
-                robot_conf.set("Robot"+str(temp_id), "flat_a", str(0))
-                robot_conf.set("Robot"+str(temp_id), "flat_b", str(in_car_txt[temp_id].val_fit[1]))
-                robot_conf.set("Robot"+str(temp_id), "flat_c", str(in_car_txt[temp_id].val_fit[0]))
+                robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(0))
+                robot_conf.set("Robot"+str(temp_id), "FLAT_B", str(in_car_txt[temp_id].val_fit[1]))
+                robot_conf.set("Robot"+str(temp_id), "FLAT_C", str(in_car_txt[temp_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
     def write_ini_one(address, in_car_txt, in_id): # 参数写入
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        robot_conf.set("Robot"+str(in_id), "flat_a", str(0))
-        robot_conf.set("Robot"+str(in_id), "flat_b", str(in_car_txt[in_id].val_fit[1]))
-        robot_conf.set("Robot"+str(in_id), "flat_c", str(in_car_txt[in_id].val_fit[0]))
+        robot_conf.set("Robot"+str(in_id), "FLAT_A", str(0))
+        robot_conf.set("Robot"+str(in_id), "FLAT_B", str(in_car_txt[in_id].val_fit[1]))
+        robot_conf.set("Robot"+str(in_id), "FLAT_C", str(in_car_txt[in_id].val_fit[0]))
         robot_conf.write(open(address, "w", encoding="utf-8"))
     def read_feb(address): # feb数据读取
         out_car_feb = Feed_back()
@@ -198,13 +198,13 @@ class Analy_car: # 操作数据
     def write_ini_feb(address, in_car_ini, in_id):
         robot_conf = configparser.ConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        mode_str = "flat_"
+        mode_str = "FLAT_"
         a = 0
         b = in_car_ini["Robot"+str(in_id[0])][mode_str+"B"] + in_id[0] * 10
         c = in_car_ini["Robot"+str(in_id[0])][mode_str+"C"] + in_id[0] * 10
-        robot_conf.set("Robot"+str(in_id[0]), "flat_a", str(a))
-        robot_conf.set("Robot"+str(in_id[0]), "flat_b", str(b))
-        robot_conf.set("Robot"+str(in_id[0]), "flat_c", str(c))
+        robot_conf.set("Robot"+str(in_id[0]), "FLAT_A", str(a))
+        robot_conf.set("Robot"+str(in_id[0]), "FLAT_B", str(b))
+        robot_conf.set("Robot"+str(in_id[0]), "FLAT_C", str(c))
 class Draw_car: # 绘制图像
     def draw_txt(in_car_txt): # 绘制全部txt图
         sum = 0 # 有效小车数
@@ -228,7 +228,7 @@ class Draw_car: # 绘制图像
             ax_num += 1
         plt.show()
     def draw_ini(in_car_ini, mode): # 绘制全部ini图
-        mode_str = ("flat_") if mode else ("chip_")
+        mode_str = ("FLAT_") if mode else ("CHIP_")
         ax = [None] * static_car_num
         for i in range(static_car_num):
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
@@ -242,7 +242,7 @@ class Draw_car: # 绘制图像
             plt.ylabel('power-'+str(i))
         plt.show()
     def draw_txt_ini(in_car_txt, in_car_ini, mode):
-        mode_str = ("flat_") if mode else ("chip_")
+        mode_str = ("FLAT_") if mode else ("CHIP_")
         ax = [None] * static_car_num
         for i in range(static_car_num):
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
