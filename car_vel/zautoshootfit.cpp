@@ -51,7 +51,8 @@ CAutoShootFit::CAutoShootFit()
     zpm->loadParam(sendAll, "ZAutoFit/sendAll", false);
     zpm->loadParam(team, "ZAutoFit/team", 0);
     zpm->loadParam(id, "ZAutoFit/id", 0);
-    my_maxvel = -1000;
+    chip_oldvel = -1.0;
+    my_maxvel = -1.0;
     my_oldid = -1;
     sendSocket.setSocketOption(QAbstractSocket::MulticastTtlOption, 1);
 }
@@ -106,9 +107,7 @@ void CAutoShootFit::chipParamTest() {
     if (isGettingDist) {
         double dist = getDist();
         recordVelData(i, false, power, send_power, dist);
-        if (dist > 0 ) {
-            reset();
-        }
+        if (dist > 0 ) { reset(); }
     }
 }
 
@@ -125,65 +124,80 @@ void CAutoShootFit::getKickPower(int p, double sp) {
 }
 
 double CAutoShootFit::getDist() {
-    bool isChip = GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
-    static bool lastStatus = false;
-    if (isChip) {
-        lastStatus = true;
+    double dist = -1.0;
+    double vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
+    if(chip_oldvel == -1.0) {
+        chip_oldvel = vel;
     }
-    if (lastStatus && !isChip) {
+    if(chip_oldvel < vel) {
+        chip_oldvel - vel;
+    }
+    else {
+        qDebug() << "chip~~~~~~";
+    }
+    if(chip_oldvel - vel > 2) {
+        chip_oldvel = vel;
         CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
-        double dist = chip_pos.dist(chip_robot_pos);
-        if (abs(chip_pos.x()) < PARAM::Field::PITCH_LENGTH/2 && abs(chip_pos.y()) < PARAM::Field::PITCH_WIDTH/2 ) {
-            lastStatus = false;
-            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("getDist: %1").arg(dist).toLatin1());
-            return dist;
-        }
+        dist = chip_pos.dist(chip_robot_pos);
+        qDebug() << "loading data---";
     }
-    return -1.0;
+//    bool isChip = GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
+    qDebug() << "getdist";
+//    static bool lastStatus = false;
+//    if (isChip) { lastStatus = true; }
+//    if (lastStatus && !isChip) {
+//        CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
+//        double dist = chip_pos.dist(chip_robot_pos);
+//        if ( abs(chip_pos.x()) < PARAM::Field::PITCH_LENGTH/2 && abs(chip_pos.y()) < PARAM::Field::PITCH_WIDTH/2 ) {
+//            lastStatus = false;
+//            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("getDist: %1").arg(dist).toLatin1(), COLOR_RED);
+//            return dist;
+//        }
+//    }
+
+    return dist;
 }
 
 double CAutoShootFit::getVel() {
-    double maxv = -1.0;
-    double v = GlobalData::instance()->maintain[0].ball->velocity.mod();
-    if (v > max_vel[2] and v < max_vel[1]) {
-        max_vel[2] = v;
-    }
-    else if (v > max_vel[1] and v < max_vel[0]) {
-        max_vel[2] = max_vel[1];
-        max_vel[1] = v;
-    }
-    else if (v > max_vel[0]) {
-        max_vel[2] = max_vel[1];
-        max_vel[1] = max_vel[0];
-        max_vel[0] = v;
-    }
-    cycle_cnt ++;
-    if(cycle_cnt == 30) {
-        maxv= (max_vel[0] + max_vel[1] + max_vel[2]) / 3;
-        if(maxv>0){
+    double maxv = GlobalData::instance()->maintain[0].ball->velocity.mod();
+//    double v = GlobalData::instance()->maintain[0].ball->velocity.mod();
+//    if (v > max_vel[2] and v < max_vel[1]) {
+//        max_vel[2] = v;
+//    }
+//    else if (v > max_vel[1] and v < max_vel[0]) {
+//        max_vel[2] = max_vel[1];
+//        max_vel[1] = v;
+//    }
+//    else if (v > max_vel[0]) {
+//        max_vel[2] = max_vel[1];
+//        max_vel[1] = max_vel[0];
+//        max_vel[0] = v;
+//    }
+//    cycle_cnt ++;
+//    if(cycle_cnt == 30) {
+//        maxv= (max_vel[0] + max_vel[1] + max_vel[2]) / 3;
+//        if(maxv>0){
 
-        }
-        else {
-            qDebug() << "error when getvel";
-        }
-        for (int i=0; i<3; i++) {
-            max_vel[i] = -1;
-        }
-    }
+//        }
+//        else {
+//            qDebug() << "error when getvel";
+//        }
+//        for (int i=0; i<3; i++) {
+//            max_vel[i] = -1;
+//        }
+//    }
     return maxv;
 }
 
 void CAutoShootFit::recordVelData(int id, bool mode, int my_power, double sp, double vel_or_dist) {
     bool flag_flat = false;
     char *file_name;
-    double my_vel;
+    double my_vel = vel_or_dist;
     if (flag_flat){
         file_name = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData.txt";
-        my_vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
     }
     else {
         file_name = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData.txt";
-        my_vel = vel_or_dist;
     }
     std::ofstream ratio_file(file_name, std::ios::app);
     if (my_maxvel < my_vel) {
@@ -191,11 +205,11 @@ void CAutoShootFit::recordVelData(int id, bool mode, int my_power, double sp, do
     }
     if (my_oldid != id) {
         my_oldid = id;
-        my_maxvel = -1000;
+        my_maxvel = -1;
     }
     if(ratio_file.is_open() && my_power != -1) {
         ratio_file << " " << id << " " << my_vel << " " << my_maxvel << " " << my_power << std::endl;
         ratio_file.close();
     }
-    qDebug() << "id " << id << "my_vel " << my_vel << "my_maxvel " << my_maxvel << "my_power " << my_power;
+//    qDebug() << "id " << id << "my_vel " << my_vel << "my_maxvel " << my_maxvel << "my_power " << my_power;
 }

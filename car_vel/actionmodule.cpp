@@ -457,7 +457,7 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
     tx[num * 4 + 4] = (vr >> 8 & 0x80) | (abs_vr & 0x7f);
     tx[num  + 17] = (abs_vx >> 1 & 0xc0) | (abs_vy >> 3 & 0x30) | (abs_vr >> 7 & 0x0f);
     tx[num  + 21] = 0x7f & power;
-    tx[num  + 21] = use_dir? (tx[num  + 21] | 0x80) : tx[num  + 21];
+    tx[num  + 21] = use_dir? (tx[num + 21] | 0x80) : tx[num  + 21];
 }
 
 namespace {

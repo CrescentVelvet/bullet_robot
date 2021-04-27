@@ -15,6 +15,7 @@ public:
     void run();
     void getKickPower(int p, double sp);
     void getKickerMes(int t, int n, bool m);
+    double chip_oldvel;
     double my_maxvel;
     int my_oldid;
     struct KickParam {
