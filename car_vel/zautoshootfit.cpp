@@ -105,7 +105,7 @@ void CAutoShootFit::chipParamTest() {
         chip_robot_pos = robot_vision.robot[kicker_team][i].pos;
     }
     if (isGettingDist) {
-        double dist = getDist();
+        double dist = getDist(i);
         recordVelData(i, false, power, send_power, dist);
         if (dist > 0 ) { reset(); }
     }
@@ -123,77 +123,60 @@ void CAutoShootFit::getKickPower(int p, double sp) {
     send_power = sp;
 }
 
-double CAutoShootFit::getDist() {
+double CAutoShootFit::getDist(int id) {
     double dist = -1.0;
-    double vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
-    if(chip_oldvel == -1.0) {
-        chip_oldvel = vel;
-    }
-    if(chip_oldvel < vel) {
-        chip_oldvel - vel;
-    }
-    else {
-        qDebug() << "chip~~~~~~";
-    }
-    if(chip_oldvel - vel > 2) {
-        chip_oldvel = vel;
-        CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
-        dist = chip_pos.dist(chip_robot_pos);
-        qDebug() << "loading data---";
-    }
-//    bool isChip = GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
-    qDebug() << "getdist";
-//    static bool lastStatus = false;
-//    if (isChip) { lastStatus = true; }
-//    if (lastStatus && !isChip) {
+//    double vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
+//    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipBallVel.txt", std::ios::app);
+//    if(chip_oldvel == -1.0) {
+//        chip_oldvel = vel;
+//    }
+//    if(chip_oldvel < vel) {
+//        chip_oldvel - vel;
+//    }
+//    else {
+//        qDebug() << "chip~~~~~~";
+//    }
+//    if(chip_oldvel - vel > 2) {
+//        chip_oldvel = vel;
 //        CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
-//        double dist = chip_pos.dist(chip_robot_pos);
-//        if ( abs(chip_pos.x()) < PARAM::Field::PITCH_LENGTH/2 && abs(chip_pos.y()) < PARAM::Field::PITCH_WIDTH/2 ) {
-//            lastStatus = false;
-//            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("getDist: %1").arg(dist).toLatin1(), COLOR_RED);
-//            return dist;
-//        }
+//        dist = chip_pos.dist(chip_robot_pos);
+//        qDebug() << "loading data---";
+//    }
+//    qDebug() << "getdist" << vel;
+//    if(ratio_file.is_open()) {
+//        ratio_file << " " << id << " " << vel << " " << chip_oldvel << " " << dist << std::endl;
+//        ratio_file.close();
 //    }
 
-    return dist;
+    bool isChip = GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
+    static bool lastStatus = false;
+//    qDebug() << GlobalData::instance()->maintain[0].robot[1][id].pos.x() << GlobalData::instance()->maintain[0].robot[1][id].pos.y(); //先读取踢球数据再更新踢球车的坐标
+    if (isChip) { lastStatus = true; }
+    if (lastStatus && !isChip) {
+        CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
+        double dist = chip_pos.dist(chip_robot_pos);
+//        qDebug() << GlobalData::instance()->maintain[0].robot[1][id].pos.x() << GlobalData::instance()->maintain[0].robot[1][id].pos.y();
+//        if ( abs(chip_pos.x()) < PARAM::Field::PITCH_LENGTH/2 && abs(chip_pos.y()) < PARAM::Field::PITCH_WIDTH/2) {
+        if ( GlobalData::instance()->maintain[0].robot[1][id].pos.x() > 0 && GlobalData::instance()->maintain[0].robot[1][id].pos.y() > 0) {
+            lastStatus = false;
+            GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("getDist: %1").arg(dist).toLatin1(), COLOR_RED);
+            qDebug() << "loading data---" << dist;
+            return dist;
+        }
+    }
+    return -1.0;
 }
 
 double CAutoShootFit::getVel() {
     double maxv = GlobalData::instance()->maintain[0].ball->velocity.mod();
-//    double v = GlobalData::instance()->maintain[0].ball->velocity.mod();
-//    if (v > max_vel[2] and v < max_vel[1]) {
-//        max_vel[2] = v;
-//    }
-//    else if (v > max_vel[1] and v < max_vel[0]) {
-//        max_vel[2] = max_vel[1];
-//        max_vel[1] = v;
-//    }
-//    else if (v > max_vel[0]) {
-//        max_vel[2] = max_vel[1];
-//        max_vel[1] = max_vel[0];
-//        max_vel[0] = v;
-//    }
-//    cycle_cnt ++;
-//    if(cycle_cnt == 30) {
-//        maxv= (max_vel[0] + max_vel[1] + max_vel[2]) / 3;
-//        if(maxv>0){
-
-//        }
-//        else {
-//            qDebug() << "error when getvel";
-//        }
-//        for (int i=0; i<3; i++) {
-//            max_vel[i] = -1;
-//        }
-//    }
     return maxv;
 }
 
 void CAutoShootFit::recordVelData(int id, bool mode, int my_power, double sp, double vel_or_dist) {
-    bool flag_flat = false;
+    bool is_FlatChip = false;
     char *file_name;
     double my_vel = vel_or_dist;
-    if (flag_flat){
+    if (is_FlatChip){
         file_name = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData.txt";
     }
     else {

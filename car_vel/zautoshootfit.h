@@ -50,7 +50,7 @@ private:
     void       calculate(int i);
     void       reset();
     double     getVel();
-    double     getDist();
+    double     getDist(int id);
     QUdpSocket sendSocket;
     QUdpSocket receiveSocket;
     double data[PARAM::ROBOTNUM][127];
