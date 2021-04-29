@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/BallVel1.txt"
+raw_id = []
 raw_vel = []
+raw_dist = []
 avg_vel = []
 with open(txt_address, "r") as f: # 读取数据
     raw_data = f.readlines()
