@@ -282,7 +282,6 @@ class Draw_car: # 绘制图像
             plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
 
-
 static_car_num = 16
 is_FlatChip = 0
 if is_FlatChip:
