@@ -43,14 +43,13 @@ public:
     };
     KickParam kick_param[PARAM::ROBOTNUM*PARAM::TEAMS];
 private:
-    void       recordVelData(int id, bool mode, int power, double sp, double vel_or_dist);
+    double     recordFlatData(int id, int power, double sp);
+    double     recordChipData(int id, int power, double sp);
     void       chipParamTest();
     void       flatParamTest();
     bool       _isrun;
     void       calculate(int i);
     void       reset();
-    double     getVel();
-    double     getDist(int id);
     QUdpSocket sendSocket;
     QUdpSocket receiveSocket;
     double data[PARAM::ROBOTNUM][127];
