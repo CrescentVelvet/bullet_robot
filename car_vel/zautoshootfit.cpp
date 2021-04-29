@@ -125,38 +125,16 @@ void CAutoShootFit::getKickPower(int p, double sp) {
 
 double CAutoShootFit::getDist(int id) {
     double dist = -1.0;
-//    double vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
-//    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipBallVel.txt", std::ios::app);
-//    if(chip_oldvel == -1.0) {
-//        chip_oldvel = vel;
-//    }
-//    if(chip_oldvel < vel) {
-//        chip_oldvel - vel;
-//    }
-//    else {
-//        qDebug() << "chip~~~~~~";
-//    }
-//    if(chip_oldvel - vel > 2) {
-//        chip_oldvel = vel;
-//        CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
-//        dist = chip_pos.dist(chip_robot_pos);
-//        qDebug() << "loading data---";
-//    }
-//    qDebug() << "getdist" << vel;
-//    if(ratio_file.is_open()) {
-//        ratio_file << " " << id << " " << vel << " " << chip_oldvel << " " << dist << std::endl;
-//        ratio_file.close();
-//    }
-
     bool isChip = GlobalData::instance()->maintain[0].ball[0].ball_state_machine == 10;
+    isChip = true;
     static bool lastStatus = false;
-//    qDebug() << GlobalData::instance()->maintain[0].robot[1][id].pos.x() << GlobalData::instance()->maintain[0].robot[1][id].pos.y(); //先读取踢球数据再更新踢球车的坐标
     if (isChip) { lastStatus = true; }
     if (lastStatus && !isChip) {
         CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
         double dist = chip_pos.dist(chip_robot_pos);
 //        qDebug() << GlobalData::instance()->maintain[0].robot[1][id].pos.x() << GlobalData::instance()->maintain[0].robot[1][id].pos.y();
 //        if ( abs(chip_pos.x()) < PARAM::Field::PITCH_LENGTH/2 && abs(chip_pos.y()) < PARAM::Field::PITCH_WIDTH/2) {
+        qDebug() << GlobalData::instance()->maintain[0].robot[1][id].pos.x() << GlobalData::instance()->maintain[0].robot[1][id].pos.y();
         if ( GlobalData::instance()->maintain[0].robot[1][id].pos.x() > 0 && GlobalData::instance()->maintain[0].robot[1][id].pos.y() > 0) {
             lastStatus = false;
             GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-1000,0),QString("getDist: %1").arg(dist).toLatin1(), COLOR_RED);
