@@ -46,15 +46,13 @@ class Car_data_one: # 单个车数据类
             raw_fit = np.polyfit(self.maxvel, self.power, 2)
             self.val_fit = np.poly1d(raw_fit)
     def draw_txt_one(self): # 绘制拟合曲线
+        plot_maxvel = np.arange(0, 7500, 1)
         if self.id == -1:
-            plot_maxvel = np.arange(0, 7500, 1)
             plot_power = np.zeros(len(plot_maxvel))
-            plot2 = plt.plot(plot_maxvel, plot_power, 'r', label='polyfit values')
         else:
-            plot_maxvel = np.arange(0, 7500, 1)
             plot_power = self.val_fit(plot_maxvel)
             plot1 = plt.plot(self.maxvel, self.power, '*', label='original values')
-            plot2 = plt.plot(plot_maxvel, plot_power, 'r', label='polyfit values')
+        plot2 = plt.plot(plot_maxvel, plot_power, 'r', label='polyfit values')
         plt.xlabel('maxvel')
         plt.ylabel('power')
         plt.show()
@@ -141,7 +139,7 @@ class Car_data_all: # 全部车数据
                     self.raw_maxvel.append(line_data[2].strip())
                 if line_data[3] != '\n':
                     self.raw_power.append(line_data[3].strip())
-        self.raw_id = list(map(float, self.raw_id))
+        self.raw_id = list(map(int, self.raw_id))
         self.raw_vel = list(map(float, self.raw_vel))
         self.raw_maxvel = list(map(float, self.raw_maxvel))
         self.raw_power = list(map(float, self.raw_power))

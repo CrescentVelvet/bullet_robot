@@ -49,7 +49,7 @@ DDPG用来解决连续动作问题
 
 [pytorch的PPO思路](https://blog.csdn.net/melody_cjw/article/details/112851552)
 
-## baselines3最强pytorch下的PPO
+## baselines3-pytorch中的PPO
 
 [简介](https://araffin.github.io/post/sb3/)
 [代码](https://github.com/DLR-RM/stable-baselines3)
@@ -91,7 +91,8 @@ pip uninstall tensorboard
 pip uninstall tensorboard-plugin-wit
 pip install tensorboard
 ```
-会生成网址http://localhost:6006/，进入即可查看，30s刷新一次
+会生成网址http://localhost:6006/
+进入即可查看，30s刷新一次
 ## 文件说明
 ```
 modelset.py
@@ -124,9 +125,9 @@ python
 
 小括号( )：代表tuple元组数据类型，元组是一种不可变序列
 
-中括号[ ]，代表list列表数据类型
+中括号[ ]：代表list列表数据类型
 
-大括号{ }花括号：代表dict字典数据类型，字典是由键对值组组成
+大括号{ }：代表dict字典数据类型，字典是由键对值组组成
 
 角度转弧度：math.radians---Deg2Rad
 
