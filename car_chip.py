@@ -40,7 +40,7 @@ class BallDataOne: # 单次踢球的球数据
         plt.scatter(self.chip_point, self.vel[self.chip_point], s=50, color='mediumvioletred', alpha=1.0)
         plt.plot(self.avg_vel, color='orangered')
         plt.show()
-class BallTest:
+class BallTest: # 单次踢球数据测试
     def read(address):
         ball = BallDataOne()
         with open(address, "r") as f:
@@ -114,5 +114,5 @@ class CarDataOne:
         plt.show()
 # class CarDataAll:
 # class ChipData:
-# txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/BallVel1.txt"
-# BallTest.read(txt_address)
+txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/BallVel7.txt"
+BallTest.read(txt_address)
