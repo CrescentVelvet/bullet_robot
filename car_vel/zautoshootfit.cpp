@@ -99,13 +99,16 @@ void CAutoShootFit::flatParamTest() {
 
 void CAutoShootFit::chipParamTest() {
     if (!isWaiting && GlobalData::instance()->robotInformation[kicker_team][i].chip) {
+        qDebug() << "111111";
         isGettingDist = true;
+        isWaiting = false;
         const OriginMessage &robot_vision = GlobalData::instance()->processRobot[0];
         chip_robot_pos = robot_vision.robot[kicker_team][i].pos;
     }
     if (isGettingDist) {
+        qDebug() << "222222";
         double dist = recordChipData(i, power, send_power);
-        if (dist > 0 ) { reset(); }
+        if (dist > 0) { reset(); }
     }
 }
 
@@ -121,7 +124,7 @@ void CAutoShootFit::getKickPower(int p, double sp) {
     send_power = sp;
 }
 
-double CAutoShootFit::recordFlatData(int id, int my_power, double send_power) {
+double CAutoShootFit::recordFlatData(int id, int now_power, double send_power) {
     std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/FlatData.txt", std::ios::app);
     double my_vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
     if (my_maxvel < my_vel) {
@@ -131,21 +134,23 @@ double CAutoShootFit::recordFlatData(int id, int my_power, double send_power) {
         my_oldid = id;
         my_maxvel = -1.0;
     }
-    if(ratio_file.is_open() && my_power != -1) {
-        ratio_file << " " << id << " " << my_vel << " " << my_maxvel << " " << my_power << " " << send_power << std::endl;
+    if(ratio_file.is_open()) {
+        ratio_file << " " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power << std::endl;
         ratio_file.close();
     }
+    qDebug() << " " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power;
     return my_vel;
 }
 
-double CAutoShootFit::recordChipData(int id, int my_power, double send_power) {
+double CAutoShootFit::recordChipData(int id, int now_power, double send_power) {
     CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
     double my_dist = chip_pos.dist(chip_robot_pos);
     double ball_vel = GlobalData::instance()->maintain[0].ball[0].velocity.mod();
     std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData.txt", std::ios::app);
-    if(ratio_file.is_open() && my_power != -1) {
-        ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << my_power << " " << send_power << std::endl;
+    if(ratio_file.is_open()) {
+        ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << std::endl;
         ratio_file.close();
     }
+    qDebug() << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power;
     return my_dist;
 }

@@ -78,7 +78,6 @@ ActionModule::~ActionModule() {
 }
 
 bool ActionModule::connectRadio(int id, int frq) {
-//    qDebug() << "connectRadio------";
     bool color;
     if(id >= 0 && id < PARAM::TEAMS) {
         zpm->loadParam(color, "ZAlert/IsYellow", false);
@@ -101,11 +100,9 @@ bool ActionModule::disconnectRadio(int id) {
     return false;
 }
 void ActionModule::setSimulation(bool simulation){
-//    qDebug() << "setSimulation------";
     IS_SIMULATION = simulation;
 }
 void ActionModule::sendStartPacket(int t, int frequency) {
-//    qDebug() << "sendStartPacket------";
     // this 't' is id
     QByteArray startPacketSend(TRANSMIT_START_PACKET_SIZE, 0);
     QByteArray startPacketReceive(TRANSMIT_START_PACKET_SIZE, 0);
@@ -193,7 +190,6 @@ void ActionModule::sendStartPacket(int t, int frequency) {
 }
 
 void ActionModule::sendLegacy(int t, const ZSS::Protocol::Robots_Command& commands) {
-//    qDebug() << "sendLegacy------";
     // this 't' is color
     auto& socket = sendSocket;
     int id = -1;
@@ -235,7 +231,6 @@ void ActionModule::sendLegacy(int t, const ZSS::Protocol::Robots_Command& comman
 }
 
 void ActionModule::readData() {
-//    qDebug() << "readData------";
     static QHostAddress address;
     static int color;
     while(true) {
@@ -349,7 +344,6 @@ void ActionModule::readData() {
 
 
 QStringList ActionModule::getAllAddress(){
-//    qDebug() << "getAllAddress------";
     return radioSendAddress2choose;
 }
 
@@ -440,6 +434,7 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
     quint8 power = 0;
     double send_power;
     if(speed > 5) {
+        //    qDebug() << "getAllAddress------";
         send_power = speed;
         if (AutoShootFit::instance()->getRun()) {
             power = (quint8)speed;
@@ -463,7 +458,8 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
 namespace {
 double Normalize(double angle)
 {
-    const double M_2PI = PARAM::Math::PI * 2;
+    const double M_2PI = PARAM::Math
+            //    qDebug() << "getAllAddress------";::PI * 2;
 
     while( angle > PARAM::Math::PI ) {
         angle -= M_2PI;
@@ -493,7 +489,7 @@ quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double
     max_power = read_ini->value(key).toString();
     new_power = (a.toDouble() * power * power + b.toDouble() * power + c.toDouble());
     new_power = (quint8)(std::max(min_power.toDouble(), std::min(new_power, max_power.toDouble())));
-    if (mode) { // 用于画图
+    if (mode) { // 用于画debug
         ZActionModule::instance()->kick_param[id].cb = b.toDouble();
         ZActionModule::instance()->kick_param[id].cc = c.toDouble();
     }
@@ -514,8 +510,8 @@ quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double
     if(ratio_file.is_open() && !mode) {
         ratio_file << " " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope << std::endl;
         ratio_file.close();
-        qDebug() << " " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope;
     }
+    qDebug() << "kickStandardization " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope;
     return new_power;
 }
 } // namespace ZSS::anonymous
