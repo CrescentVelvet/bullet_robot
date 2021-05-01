@@ -127,8 +127,8 @@ class Car_data_all: # 全部车数据
             raw_data = f.readlines()
             for line in raw_data:
                 line_data = line.split()
-                if len(line_data) != 4: # 排除位数错误数据
-                    continue
+                # if len(line_data) != 4: # 排除位数错误数据
+                    # continue
                 if line_data[1] == '0' or line_data[2] == '-1' or line_data[2] == '-1000': # 排除初始化数据
                     continue
                 if line_data[0] != '\n':
