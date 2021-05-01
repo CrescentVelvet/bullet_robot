@@ -99,16 +99,14 @@ void CAutoShootFit::flatParamTest() {
 
 void CAutoShootFit::chipParamTest() {
     if (!isWaiting && GlobalData::instance()->robotInformation[kicker_team][i].chip) {
-        qDebug() << "111111";
         isGettingDist = true;
         isWaiting = false;
         const OriginMessage &robot_vision = GlobalData::instance()->processRobot[0];
         chip_robot_pos = robot_vision.robot[kicker_team][i].pos;
     }
     if (isGettingDist) {
-        qDebug() << "222222";
         double dist = recordChipData(i, power, send_power);
-        if (dist > 0) { reset(); }
+//        if (dist > 0) { reset(); } // reset会导致输出数据减少
     }
 }
 
@@ -143,14 +141,17 @@ double CAutoShootFit::recordFlatData(int id, int now_power, double send_power) {
 }
 
 double CAutoShootFit::recordChipData(int id, int now_power, double send_power) {
-    CGeoPoint chip_pos = GlobalData::instance()->maintain[0].ball[0].pos;
-    double my_dist = chip_pos.dist(chip_robot_pos);
+    double dist = -1.0;
+    int color = 1;
+    CGeoPoint ball_pos = GlobalData::instance()->maintain[0].ball[0].pos;
+    CGeoPoint car_pos = GlobalData::instance()->maintain[0].robot[color][id].pos;
+    double my_dist = dist;
     double ball_vel = GlobalData::instance()->maintain[0].ball[0].velocity.mod();
     std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData.txt", std::ios::app);
     if(ratio_file.is_open()) {
-        ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << std::endl;
+        ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y() << std::endl;
         ratio_file.close();
     }
-    qDebug() << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power;
+    qDebug() << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y();
     return my_dist;
 }
