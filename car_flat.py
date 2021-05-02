@@ -123,27 +123,27 @@ class Car_data_all: # 全部车数据
         self.all_maxvel = []
         self.all_power = []
     def read_data(self, address, flag): # txt数据读取
-        with open(address, "r") as f:
-            raw_data = f.readlines()
-            for line in raw_data:
-                line_data = line.split()
-                # if len(line_data) != 4: # 排除位数错误数据
-                    # continue
-                if line_data[1] == '0' or line_data[2] == '-1' or line_data[2] == '-1000': # 排除初始化数据
-                    continue
-                if line_data[0] != '\n':
-                    self.raw_id.append(line_data[0].strip())
-                if line_data[1] != '\n':
-                    self.raw_vel.append(line_data[1].strip())
-                if line_data[2] != '\n':
-                    self.raw_maxvel.append(line_data[2].strip())
-                if line_data[3] != '\n':
-                    self.raw_power.append(line_data[3].strip())
-        self.raw_id = list(map(int, self.raw_id))
-        self.raw_vel = list(map(float, self.raw_vel))
-        self.raw_maxvel = list(map(float, self.raw_maxvel))
-        self.raw_power = list(map(float, self.raw_power))
-        if flag: # 平射时用id变化记录
+        if flag == 1: # 平射时用id变化记录
+            with open(address, "r") as f:
+                raw_data = f.readlines()
+                for line in raw_data:
+                    line_data = line.split()
+                    if len(line_data) != 4: # 排除位数错误数据
+                        continue
+                    if line_data[1] == '0' or line_data[2] == '-1' or line_data[2] == '-1000': # 排除初始化数据
+                        continue
+                    if line_data[0] != '\n':
+                        self.raw_id.append(line_data[0].strip())
+                    if line_data[1] != '\n':
+                        self.raw_vel.append(line_data[1].strip())
+                    if line_data[2] != '\n':
+                        self.raw_maxvel.append(line_data[2].strip())
+                    if line_data[3] != '\n':
+                        self.raw_power.append(line_data[3].strip())
+            self.raw_id = list(map(int, self.raw_id))
+            self.raw_vel = list(map(float, self.raw_vel))
+            self.raw_maxvel = list(map(float, self.raw_maxvel))
+            self.raw_power = list(map(float, self.raw_power))
             old_id = self.raw_id[0]
             for i in range(len(self.raw_id)):
                 if old_id != self.raw_id[i]: # id变化时记录数据
@@ -153,16 +153,34 @@ class Car_data_all: # 全部车数据
                         self.all_vel.append(self.raw_vel[i-1])
                         self.all_maxvel.append(self.raw_maxvel[i-1])
                         self.all_power.append(self.raw_power[i-1])
-        else: # 挑射时用maxvel变化记录
+        elif flag == 0: # 挑射时用maxvel=dist变化记录
+            with open(address, "r") as f:
+                raw_data = f.readlines()
+                for line in raw_data:
+                    line_data = line.split()
+                    if len(line_data) != 3: # 排除位数错误数据
+                        continue
+                    if line_data[1] == '0' or line_data[2] == '-1' or line_data[2] == '-1000': # 排除初始化数据
+                        continue
+                    if line_data[0] != '\n':
+                        self.raw_id.append(line_data[0].strip())
+                    if line_data[1] != '\n':
+                        self.raw_maxvel.append(line_data[1].strip())
+                    if line_data[2] != '\n':
+                        self.raw_power.append(line_data[2].strip())
+            self.raw_id = list(map(int, self.raw_id))
+            self.raw_maxvel = list(map(float, self.raw_maxvel))
+            self.raw_power = list(map(float, self.raw_power))
             old_maxvel = self.raw_maxvel[0]
             for i in range(len(self.raw_maxvel)):
                 if old_maxvel != self.raw_maxvel[i] and self.raw_maxvel[i] != -1.0:
                     old_maxvel = self.raw_maxvel[i]
                     if self.raw_power[i-1] > 0.0 and self.raw_power[i-1] < 130.0 and self.raw_maxvel[i-1] > 0.0 and self.raw_maxvel[i-1] < 8000.0:
                         self.all_id.append(self.raw_id[i-1]) # 排除越界数据
-                        self.all_vel.append(self.raw_vel[i-1])
                         self.all_maxvel.append(self.raw_maxvel[i-1])
                         self.all_power.append(self.raw_power[i-1])
+        else:
+            print("error in is_FlatChip")
 class Analy_car: # 操作数据
     def analy_txt(address, flag): # 拟合计算
         car_all = Car_data_all() # txt是小车踢球原始数据
@@ -242,6 +260,8 @@ class Draw_car: # 绘制图像
             plt.xlabel('maxvel-'+str(i))
             plt.ylabel('power-'+str(i))
             ax_num += 1
+            plt.xlim(0, 8000)
+            plt.ylim(30, 130)
         plt.show()
     def draw_ini(in_car_ini, mode): # 绘制全部ini图
         mode_str = ("FLAT_") if mode else ("CHIP_")
@@ -285,7 +305,7 @@ is_FlatChip = 0
 if is_FlatChip:
     txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
 else:
-    txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData_bigfield.txt"
+    txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData.txt"
 car_txt = Analy_car.analy_txt(txt_address, is_FlatChip) # 读取txt
 # car_txt[0].draw_txt_one()                             # 绘制一张txt
 Draw_car.draw_txt(car_txt)                            # 绘制全部txt

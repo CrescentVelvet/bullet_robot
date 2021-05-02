@@ -145,6 +145,6 @@ class CarDataOne:
         plt.show()
 # class CarDataAll:
 # class ChipData:
-in_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/in_ChipData1.txt"
+in_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/in_ChipData_tmp.txt"
 out_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData.txt"
 BallTest.read(in_address, out_address)
