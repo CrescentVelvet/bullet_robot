@@ -8,9 +8,9 @@ class BallDataOne: # 单次踢球的球数据
         self.power = -1
         self.avg_vel = []
         self.chip_point = -1
-    def assignVel(self, vel): # 数据赋值
+    def assignVel(self, vel): # 速度赋值
         self.vel.append(vel)
-    def assignDist(self, iid, dist, power): # 数据赋值
+    def assignDist(self, iid, dist, power): # 距离赋值
         self.id = iid
         self.dist = dist
         self.power = power
@@ -21,7 +21,7 @@ class BallDataOne: # 单次踢球的球数据
         self.power = -1
         self.avg_vel = []
         self.chip_point = -1
-    def analy(self, per):
+    def analy(self, per): # 求落地点距离
         for i in range(0, len(self.vel)-per, per): # 均值滤波
             sum = 0
             for j in range(per):
@@ -45,7 +45,12 @@ class BallDataOne: # 单次踢球的球数据
     def write(self, address): # 写入数据
         with open(address, "a") as f:
             f.write(" "+str(self.id)+" "+str(self.dist)+" "+str(self.power)+'\r\n')
-class BallTest: # 单次踢球数据测试
+    def empty(self): # 长度小于100判定为空
+        if len(self.vel) < 100:
+            return 1
+        else:
+            return 0
+class BallTestOne: # 单次踢球数据测试
     def read(in_address, out_address):
         ball = BallDataOne()
         t_id = []
@@ -84,6 +89,61 @@ class BallTest: # 单次踢球数据测试
         ball.write(out_address)
         ball.draw()
         ball.clear()
+class BallTestAll: # 多次踢球数据测试
+    def read(in_address, out_address):
+        ball = BallDataOne()
+        t_id = []
+        t_power = []
+        t_ballpos_x = []
+        t_ballpos_y = []
+        t_carpos_x = []
+        t_carpos_y = []
+        old_id = -1
+        old_power = -1.0
+        with open(in_address, "r") as f:
+            raw_data = f.readlines()
+            for line in raw_data:
+                line_data = line.split()
+                if line_data[1] != '\n' or line_data[1] != '0':
+                    if int(line_data[0].strip()) != old_id or float(line_data[3].strip()) != old_power: # 用id或power改变来区分每次踢球
+                        old_id = int(line_data[0].strip())
+                        old_power = float(line_data[3].strip())
+                        # print(old_id, len(ball.vel), line_data[8])
+                        if ball.empty() != 1: # 判空
+                            ball.vel = list(map(float, ball.vel))
+                            t_id = list(map(int, t_id))
+                            t_power = list(map(float, t_power))
+                            t_ballpos_x = list(map(float, t_ballpos_x))
+                            t_ballpos_y = list(map(float, t_ballpos_y))
+                            t_carpos_x = list(map(float, t_carpos_x))
+                            t_carpos_y = list(map(float, t_carpos_y))
+                            ball.analy(5)
+                            ball_x = t_ballpos_x[ball.chip_point]
+                            ball_y = t_ballpos_y[ball.chip_point]
+                            car_x = t_carpos_x[0]
+                            car_y = t_carpos_y[0]
+                            dist = math.fabs( math.sqrt( (ball_x-car_x)*(ball_x-car_x) + (ball_y-car_y)*(ball_y-car_y) ) )
+                            ball.assignDist(t_id[0], dist, t_power[0])
+                            print(ball.id, ball.dist, ball.power)
+                            # ball.write(out_address)
+                            ball.clear()
+                            t_id = []
+                            t_power = []
+                            t_ballpos_x = []
+                            t_ballpos_y = []
+                            t_carpos_x = []
+                            t_carpos_y = []
+                        else:
+                            print("Invalid data pass")
+                        print("------")
+                    ball.assignVel(line_data[1].strip())
+                    t_id.append(line_data[0].strip())
+                    t_power.append(line_data[3].strip())
+                    t_ballpos_x.append(line_data[5].strip())
+                    t_ballpos_y.append(line_data[6].strip())
+                    t_carpos_x.append(line_data[7].strip())
+                    t_carpos_y.append(line_data[8].strip())
+
 class BallDataAll: # 多次踢球的球数据
     def __init__(self):
         self.id = []
@@ -145,6 +205,7 @@ class CarDataOne:
         plt.show()
 # class CarDataAll:
 # class ChipData:
-in_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/in_ChipData_tmp.txt"
-out_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData.txt"
-BallTest.read(in_address, out_address)
+in_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData_6_15.txt"
+out_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData111.txt"
+# BallTestOne.read(in_address, out_address)
+BallTestAll.read(in_address, out_address)

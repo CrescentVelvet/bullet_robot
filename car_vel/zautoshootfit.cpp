@@ -136,7 +136,7 @@ double CAutoShootFit::recordFlatData(int id, int now_power, double send_power) {
         ratio_file << " " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power << std::endl;
         ratio_file.close();
     }
-    qDebug() << " " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power;
+    qDebug() << "Flat " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power;
     return my_vel;
 }
 
@@ -152,6 +152,6 @@ double CAutoShootFit::recordChipData(int id, int now_power, double send_power) {
         ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y() << std::endl;
         ratio_file.close();
     }
-    qDebug() << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y();
+    qDebug() << "Chip " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y();
     return my_dist;
 }

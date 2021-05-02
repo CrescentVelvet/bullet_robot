@@ -5,20 +5,18 @@ local kicker_number = 0
 local kicked = false
 local kicker_side = 1
 local kick_target = CGeoPoint:new_local(0,0)
-local KICK_FLAG = flag.kick + flag.chip
-local max_power = 120.00
-local min_power = 80.00
-local step_power = 10
 local nkick = 0
-
--- if KICK_SETTING then
--- 	KICK_FLAG = flag.kick + flag.chip
--- 	max_power = 90.00
--- 	min_power = 30.00
--- else
+local is_FlatChip = 0
+-- if is_FlatChip then
 -- 	KICK_FLAG = flag.kick
 -- 	max_power = 120
 -- 	min_power = 30
+-- 	step_power = 10
+-- else
+	KICK_FLAG = flag.kick + flag.chip
+	max_power = 120
+	min_power = 60
+	step_power = 5
 -- end
 
 local get_kicker_num = function()

@@ -458,8 +458,8 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
 namespace {
 double Normalize(double angle)
 {
-    const double M_2PI = PARAM::Math
-            //    qDebug() << "getAllAddress------";::PI * 2;
+    const double M_2PI = PARAM::Math::PI * 2;
+            //    qDebug() << "getAllAddress------";
 
     while( angle > PARAM::Math::PI ) {
         angle -= M_2PI;
