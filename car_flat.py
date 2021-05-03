@@ -8,6 +8,11 @@ from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 class Flag:
     old_time = -1
+class MyConfigParser(configparser.ConfigParser):
+    def __init__(self, defaults=None):
+        configparser.ConfigParser.__init__(self, defaults=defaults)
+    def optionxform(self, optionstr): # 重载ConfigParser实现大小写区分
+        return optionstr
 class File_monitor(FileSystemEventHandler):
     def __init__(self, **kwargs):
         super(File_monitor, self).__init__(**kwargs)
@@ -202,11 +207,11 @@ class Analy_car: # 操作数据
             print("error in is_FlatChip")
         return out_car_list
     def read_ini(address): # ini数据读取
-        robot_conf = configparser.ConfigParser() # ini是小车踢球拟合参数
+        robot_conf = MyConfigParser() # ini是小车踢球拟合参数
         robot_conf.read(address, encoding="utf-8") # ini数据读取
         return robot_conf
     def write_ini(address, in_car_txt): # 参数写入
-        robot_conf = configparser.ConfigParser()
+        robot_conf = MyConfigParser()
         robot_conf.read(address, encoding="utf-8")
         for temp_id in range(static_car_num):
             robot_conf.set("Robot"+str(temp_id), "CHIP_MIN", str(0))
@@ -214,23 +219,37 @@ class Analy_car: # 操作数据
             robot_conf.set("Robot"+str(temp_id), "FLAT_MIN", str(0))
             robot_conf.set("Robot"+str(temp_id), "FLAT_MAX", str(130))
             if in_car_txt[temp_id].id != -1: # ini参数更新
-                robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(0))
-                robot_conf.set("Robot"+str(temp_id), "FLAT_B", str(in_car_txt[temp_id].val_fit[1]))
-                robot_conf.set("Robot"+str(temp_id), "FLAT_C", str(in_car_txt[temp_id].val_fit[0]))
+                if len(in_car_txt[temp_id].val_fit) == 1: # 平射
+                    robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(0))
+                    robot_conf.set("Robot"+str(temp_id), "FLAT_B", str(in_car_txt[temp_id].val_fit[1]))
+                    robot_conf.set("Robot"+str(temp_id), "FLAT_C", str(in_car_txt[temp_id].val_fit[0]))
+                elif len(in_car_txt[temp_id].val_fit) == 2: # 挑射
+                    robot_conf.set("Robot"+str(temp_id), "CHIP_A", str(in_car_txt[temp_id].val_fit[2]))
+                    robot_conf.set("Robot"+str(temp_id), "CHIP_B", str(in_car_txt[temp_id].val_fit[1]))
+                    robot_conf.set("Robot"+str(temp_id), "CHIP_C", str(in_car_txt[temp_id].val_fit[0]))
+                else:
+                    print("error in write_ini")
         robot_conf.write(open(address, "w", encoding="utf-8")) # ini参数写入
     def write_ini_one(address, in_car_txt, in_id): # 参数写入
-        robot_conf = configparser.ConfigParser()
+        robot_conf = MyConfigParser()
         robot_conf.read(address, encoding="utf-8")
-        robot_conf.set("Robot"+str(in_id), "FLAT_A", str(0))
-        robot_conf.set("Robot"+str(in_id), "FLAT_B", str(in_car_txt[in_id].val_fit[1]))
-        robot_conf.set("Robot"+str(in_id), "FLAT_C", str(in_car_txt[in_id].val_fit[0]))
+        if len(in_car_txt[temp_id].val_fit) == 1: # 平射
+            robot_conf.set("Robot"+str(in_id), "FLAT_A", str(0))
+            robot_conf.set("Robot"+str(in_id), "FLAT_B", str(in_car_txt[in_id].val_fit[1]))
+            robot_conf.set("Robot"+str(in_id), "FLAT_C", str(in_car_txt[in_id].val_fit[0]))
+        elif len(in_car_txt[temp_id].val_fit) == 2: # 挑射
+            robot_conf.set("Robot"+str(in_id), "CHIP_A", str(in_car_txt[in_id].val_fit[2]))
+            robot_conf.set("Robot"+str(in_id), "CHIP_B", str(in_car_txt[in_id].val_fit[1]))
+            robot_conf.set("Robot"+str(in_id), "CHIP_C", str(in_car_txt[in_id].val_fit[0]))
+        else:
+            print("error in write_ini")
         robot_conf.write(open(address, "w", encoding="utf-8"))
     def read_feb(address): # feb数据读取
         out_car_feb = Feed_back()
         out_car_feb.read_data(address)
         return out_car_feb
-    def write_ini_feb(address, in_car_ini, in_id):
-        robot_conf = configparser.ConfigParser()
+    def write_ini_feb(address, in_car_ini, in_id): # 实时修改ini参数
+        robot_conf = MyConfigParser()
         robot_conf.read(address, encoding="utf-8")
         mode_str = "FLAT_"
         a = 0
@@ -267,9 +286,10 @@ class Draw_car: # 绘制图像
         mode_str = ("FLAT_") if mode else ("CHIP_")
         ax = [None] * static_car_num
         for i in range(static_car_num):
+            a = in_car_ini["Robot"+str(i)][mode_str+"A"]
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
             c = in_car_ini["Robot"+str(i)][mode_str+"C"]
-            val_ini = np.poly1d([float(b), float(c)])
+            val_ini = np.poly1d([float(a), float(b), float(c)])
             ax[i] = plt.subplot(4, 4, i+1)
             plot_maxvel = np.arange(0, 7500, 1)
             plot_power = val_ini(plot_maxvel)
@@ -281,9 +301,10 @@ class Draw_car: # 绘制图像
         mode_str = ("FLAT_") if mode else ("CHIP_")
         ax = [None] * static_car_num
         for i in range(static_car_num):
+            a = in_car_ini["Robot"+str(i)][mode_str+"A"]
             b = in_car_ini["Robot"+str(i)][mode_str+"B"]
             c = in_car_ini["Robot"+str(i)][mode_str+"C"]
-            val_ini = np.poly1d([float(b), float(c)])
+            val_ini = np.poly1d([float(a), float(b), float(c)])
             plot_maxvel_ini = np.arange(0, 7500, 1)
             plot_power_ini = val_ini(plot_maxvel_ini)
             ax[i] = plt.subplot(4, 4, i+1)
@@ -301,20 +322,20 @@ class Draw_car: # 绘制图像
         plt.show()
 
 static_car_num = 16
-is_FlatChip = 0
+is_FlatChip = 0 # 1是平射,0是挑射
 if is_FlatChip:
     txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
 else:
     txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData.txt"
-car_txt = Analy_car.analy_txt(txt_address, is_FlatChip) # 读取txt
+car_txt = Analy_car.analy_txt(txt_address, is_FlatChip) ### 读取txt
 # car_txt[0].draw_txt_one()                             # 绘制一张txt
-Draw_car.draw_txt(car_txt)                            # 绘制全部txt
-# ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
-# car_ini = Analy_car.read_ini(ini_address)               # 读取ini
-# Draw_car.draw_ini(car_ini, 1)                         # 绘制全部ini
-# Draw_car.draw_txt_ini(car_txt, car_ini, 1)              # 绘制全部txt和ini
+# Draw_car.draw_txt(car_txt)                            # 绘制全部txt
+ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+car_ini = Analy_car.read_ini(ini_address)               ### 读取ini
 # Analy_car.write_ini_one(ini_address, car_txt, 9)      # 写入一车ini
-# Analy_car.write_ini(ini_address, car_txt)             # 写入全部ini
+# Analy_car.write_ini(ini_address, car_txt)             ### 写入全部ini
+# Draw_car.draw_ini(car_ini, is_FlatChip)               # 绘制全部ini
+Draw_car.draw_txt_ini(car_txt, car_ini, is_FlatChip)  ### 绘制全部txt和ini
 # feb_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/feedbackData1.txt"
 # car_feb = Analy_car.read_feb(feb_address)               # 读取feb
 # car_feb_id = Feed_back.analy_data(car_feb)              # 拿到偏差

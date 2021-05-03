@@ -86,7 +86,7 @@ class BallTestOne: # 单次踢球数据测试
         dist = math.fabs( math.sqrt( (ball_x-car_x)*(ball_x-car_x) + (ball_y-car_y)*(ball_y-car_y) ) )
         ball.assignDist(t_id[0], dist, t_power[0])
         print(ball.id, ball.dist, ball.power)
-        ball.write(out_address)
+        # ball.write(out_address)
         ball.draw()
         ball.clear()
 class BallTestAll: # 多次踢球数据测试
@@ -125,7 +125,8 @@ class BallTestAll: # 多次踢球数据测试
                             dist = math.fabs( math.sqrt( (ball_x-car_x)*(ball_x-car_x) + (ball_y-car_y)*(ball_y-car_y) ) )
                             ball.assignDist(t_id[0], dist, t_power[0])
                             print(ball.id, ball.dist, ball.power)
-                            # ball.write(out_address)
+                            ball.write(out_address)
+                            # ball.draw()
                             ball.clear()
                             t_id = []
                             t_power = []
@@ -143,7 +144,6 @@ class BallTestAll: # 多次踢球数据测试
                     t_ballpos_y.append(line_data[6].strip())
                     t_carpos_x.append(line_data[7].strip())
                     t_carpos_y.append(line_data[8].strip())
-
 class BallDataAll: # 多次踢球的球数据
     def __init__(self):
         self.id = []
