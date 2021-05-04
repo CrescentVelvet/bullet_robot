@@ -296,6 +296,8 @@ class Draw_car: # 绘制图像
             plt.plot(plot_maxvel, plot_power, 'r')
             plt.xlabel('maxvel-'+str(i))
             plt.ylabel('power-'+str(i))
+            plt.xlim(0, 8000)
+            plt.ylim(30, 130)
         plt.show()
     def draw_txt_ini(in_car_txt, in_car_ini, mode):
         mode_str = ("FLAT_") if mode else ("CHIP_")
@@ -320,7 +322,7 @@ class Draw_car: # 绘制图像
             plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, '*')
             plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
-
+# class FlatData:
 static_car_num = 16
 is_FlatChip = 0 # 1是平射,0是挑射
 if is_FlatChip:

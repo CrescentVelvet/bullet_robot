@@ -29,6 +29,7 @@ const double LOW_CAPACITANCE = 29.0;
 auto zpm = ZSS::ZParamManager::instance();
 bool usedir;
 quint8 kickStandardization(int, quint8, bool, quint16, double);
+void speedRegulation(double&, double&, quint8);
 const QStringList radioSendAddress2choose=  {"10.12.225.142", "10.12.225.143", "10.12.225.130","10.12.225.109","10.12.225.78"};
 const QStringList radioReceiveAddress2choose =  {"10.12.225.142", "10.12.225.143", "10.12.225.130","10.12.225.110","10.12.225.79"};
 QString radioSendAddress[PARAM::TEAMS] = {"10.12.225.142","10.12.225.130"};
@@ -389,6 +390,7 @@ void ActionModule::encodeLegacy(const ZSS::Protocol::Robot_Command& command, QBy
     quint8 id = (quint8)command.robot_id();
     double origin_vx = command.velocity_x() / 10.0; //mm -> cm
     double origin_vy = command.velocity_y() / 10.0; //mm -> cm
+    speedRegulation(origin_vx, origin_vy, id);
     bool use_dir = command.use_dir();
     double origin_vr = command.velocity_r();
     double vel_hope = command.raw_power();
@@ -470,11 +472,18 @@ double Normalize(double angle)
     }
     return angle;
 }
-
+void speedRegulation(double& vx, double& vy, quint8 id) {
+    QString key = "";
+    double constant;
+    key = QString("Robot%1/OPEN_SPEED").arg(id);
+    KParamManager::instance()->loadParam(constant, key, 1);
+    vx = vx / constant;
+    vy = vy / constant;
+}
 quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double input_vel) {
     double new_power = 0;
     QString a, b, c;
-    QString min_power, max_power;
+    QString min_power, max_power, open_speed;
     QString key = "";
     QSettings *read_ini = new QSettings("kickparam.ini", QSettings::IniFormat);
     key = QString("Robot%1/%2_A").arg(id).arg(mode ? "CHIP" : "FLAT");
@@ -487,6 +496,8 @@ quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double
     min_power = read_ini->value(key).toString();
     key = QString("Robot%1/%2_MAX").arg(id).arg(mode ? "CHIP" : "FLAT");
     max_power = read_ini->value(key).toString();
+    key = QString("Robot%1/%2").arg(id).arg("OPEN_SPEED");
+    open_speed =read_ini->value(key).toString();
     new_power = (a.toDouble() * power * power + b.toDouble() * power + c.toDouble());
     new_power = (quint8)(std::max(min_power.toDouble(), std::min(new_power, max_power.toDouble())));
     if (mode) { // 用于画debug
