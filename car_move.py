@@ -7,6 +7,7 @@ class CarMoveOne:
         self.send_vel = []
         self.raw_vel = []
         self.avg_vel = []
+        self.val_fit = []
     def assign(self, id, send_vel, raw_vel):
         self.id = id
         self.send_vel.append(send_vel)
@@ -43,6 +44,9 @@ class CarMoveOne:
             else:
                 print("error in average")
             self.avg_vel.append(median)
+    def calculate(self): # 计算拟合函数
+        raw_fit = np.polyfit(list(set(self.send_vel)), self.avg_vel, 1)
+        self.val_fit = np.poly1d(raw_fit)
 class CarMoveAll:
     def __init__(self):
         self.id = []
@@ -82,15 +86,20 @@ class CarMoveTest:
             car_list[carcar.id[i]].assign(carcar.id[i], carcar.send_vel[i], carcar.raw_vel[i])
         # for i in range(static_car_num):
             # print(i, car_list[i].id)
-        for i in range(static_car_num): # 计算中位数
+        for i in range(static_car_num): # 计算中位数并拟合
             if car_list[i].id != -1:
                 car_list[i].average()
+                car_list[i].calculate()
         ax = [None] * carcar.getid()
         for i in range(carcar.getid()): # 绘制图像
-            ax[i] = plt.subplot(4, 4, i+1)
+            ax[i] = plt.subplot(2, 3, i+1)
+            plot_send = np.arange(100, 2100, 1)
+            plot_raw = car_list[carcar.id[i]].val_fit(plot_send)
             plot = plt.scatter(car_list[carcar.id[i]].send_vel, car_list[carcar.id[i]].raw_vel, s=1, color='limegreen')
-            plot = plt.scatter(list(set(car_list[carcar.id[i]].send_vel)), car_list[carcar.id[i]].avg_vel, s=5, color='red')
-            plt.xlabel('send_vel')
+            plot = plt.scatter(list(set(car_list[carcar.id[i]].send_vel)), car_list[carcar.id[i]].avg_vel, s=20, color='red')
+            plot = plt.plot(plot_send, plot_raw, 'r')
+            # plt.xlabel('send_vel')
+            plt.xlabel(str(car_list[carcar.id[i]].id) + 'car' + str(car_list[carcar.id[i]].val_fit))
             plt.ylabel('raw_vel')
         plt.show()
         # car_list[10].draw()
