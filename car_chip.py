@@ -132,7 +132,7 @@ class BallTestAll: # 多次踢球数据测试
                             dist = math.fabs( math.sqrt( (ball_x-car_x)*(ball_x-car_x) + (ball_y-car_y)*(ball_y-car_y) ) )
                             ball.assignDist(t_id[0], dist, t_power[0])
                             print(ball.id, ball.dist, ball.power)
-                            # ball.write(out_address) # 写入
+                            ball.write(out_address) # 写入
                             ball.draw() # 绘图
                             ball.clear()
                             t_id = []
@@ -213,6 +213,6 @@ class CarDataOne:
 # class CarDataAll:
 # class ChipData:
 in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData.txt"
-out_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/out_ChipData111.txt"
+out_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData_all.txt"
 # BallTestOne.read(in_address, out_address)
 BallTestAll.read(in_address, out_address)
