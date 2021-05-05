@@ -326,9 +326,9 @@ class Draw_car: # 绘制图像
 static_car_num = 16
 is_FlatChip = 0 # 1是平射,0是挑射
 if is_FlatChip:
-    txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/VelData_all.txt"
+    txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/FlatData_all.txt"
 else:
-    txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/out_ChipData.txt"
+    txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData_all.txt"
 car_txt = Analy_car.analy_txt(txt_address, is_FlatChip) ### 读取txt
 # car_txt[0].draw_txt_one()                             # 绘制一张txt
 # Draw_car.draw_txt(car_txt)                            # 绘制全部txt

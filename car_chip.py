@@ -114,7 +114,7 @@ class BallTestAll: # 多次踢球数据测试
                     if int(line_data[0].strip()) != old_id or float(line_data[3].strip()) != old_power: # 用id或power改变来区分每次踢球
                         old_id = int(line_data[0].strip())
                         old_power = float(line_data[3].strip())
-                        print(old_id, len(ball.vel), line_data[7], line_data[8]) # 数据检查
+                        # print(old_id, len(ball.vel), line_data[7], line_data[8]) # 数据检查
                         if ball.empty() != 1: # 判空
                             ball.vel = list(map(float, ball.vel))
                             t_id = list(map(int, t_id))
@@ -133,7 +133,7 @@ class BallTestAll: # 多次踢球数据测试
                             ball.assignDist(t_id[0], dist, t_power[0])
                             print(ball.id, ball.dist, ball.power)
                             ball.write(out_address) # 写入
-                            ball.draw() # 绘图
+                            # ball.draw() # 绘图
                             ball.clear()
                             t_id = []
                             t_power = []

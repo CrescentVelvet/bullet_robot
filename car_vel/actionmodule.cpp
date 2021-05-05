@@ -475,40 +475,39 @@ double Normalize(double angle)
 void speedRegulation(double& vx, double& vy, quint8 id) {
     QString key = "";
     double constant;
+    QSettings *read_ini = new QSettings("kickparam.ini", QSettings::IniFormat);
     key = QString("Robot%1/OPEN_SPEED").arg(id);
-    KParamManager::instance()->loadParam(constant, key, 1);
+    constant = read_ini->value(key).toDouble();
     vx = vx / constant;
     vy = vy / constant;
 }
 quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double input_vel) {
     double new_power = 0;
-    QString a, b, c;
-    QString min_power, max_power, open_speed;
+    double a, b, c;
+    double min_power, max_power;
     QString key = "";
     QSettings *read_ini = new QSettings("kickparam.ini", QSettings::IniFormat);
     key = QString("Robot%1/%2_A").arg(id).arg(mode ? "CHIP" : "FLAT");
-    a = read_ini->value(key).toString();
+    a = read_ini->value(key).toDouble();
     key = QString("Robot%1/%2_B").arg(id).arg(mode ? "CHIP" : "FLAT");
-    b = read_ini->value(key).toString();
+    b = read_ini->value(key).toDouble();
     key = QString("Robot%1/%2_C").arg(id).arg(mode ? "CHIP" : "FLAT");
-    c = read_ini->value(key).toString();
+    c = read_ini->value(key).toDouble();
     key = QString("Robot%1/%2_MIN").arg(id).arg(mode ? "CHIP" : "FLAT");
-    min_power = read_ini->value(key).toString();
+    min_power = read_ini->value(key).toDouble();
     key = QString("Robot%1/%2_MAX").arg(id).arg(mode ? "CHIP" : "FLAT");
-    max_power = read_ini->value(key).toString();
-    key = QString("Robot%1/%2").arg(id).arg("OPEN_SPEED");
-    open_speed =read_ini->value(key).toString();
-    new_power = (a.toDouble() * power * power + b.toDouble() * power + c.toDouble());
-    new_power = (quint8)(std::max(min_power.toDouble(), std::min(new_power, max_power.toDouble())));
+    max_power = read_ini->value(key).toDouble();
+    new_power = (a * power * power + b * power + c);
+    new_power = (quint8)(std::max(min_power, std::min(new_power, max_power)));
     if (mode) { // 用于画debug
-        ZActionModule::instance()->kick_param[id].cb = b.toDouble();
-        ZActionModule::instance()->kick_param[id].cc = c.toDouble();
+        ZActionModule::instance()->kick_param[id].cb = b;
+        ZActionModule::instance()->kick_param[id].cc = c;
     }
     else {
-        ZActionModule::instance()->kick_param[id].fb = b.toDouble();
-        ZActionModule::instance()->kick_param[id].fc = c.toDouble();
+        ZActionModule::instance()->kick_param[id].fb = b;
+        ZActionModule::instance()->kick_param[id].fc = c;
     }
-//    qDebug() << "a:" << a.toDouble() << " b:" << b.toDouble() << " c:" << c.toDouble();
+//    qDebug() << "a:" << a << " b:" << b << " c:" << c;
 //    qDebug() << "id : " << id << " power : " << power << "new_power : " << new_power;
 //    期望的绝对速度hope
     double vel_hope = input_vel;
