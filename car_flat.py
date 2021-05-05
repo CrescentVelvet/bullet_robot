@@ -326,19 +326,19 @@ class Draw_car: # 绘制图像
 static_car_num = 16
 is_FlatChip = 0 # 1是平射,0是挑射
 if is_FlatChip:
-    txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/VelData_all.txt"
+    txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/VelData_all.txt"
 else:
-    txt_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData.txt"
+    txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/out_ChipData.txt"
 car_txt = Analy_car.analy_txt(txt_address, is_FlatChip) ### 读取txt
 # car_txt[0].draw_txt_one()                             # 绘制一张txt
 # Draw_car.draw_txt(car_txt)                            # 绘制全部txt
-ini_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/kickparam.ini"
+ini_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/kickparam.ini"
 car_ini = Analy_car.read_ini(ini_address)               ### 读取ini
 # Analy_car.write_ini_one(ini_address, car_txt, 9)      # 写入一车ini
 # Analy_car.write_ini(ini_address, car_txt)             ### 写入全部ini
 # Draw_car.draw_ini(car_ini, is_FlatChip)               # 绘制全部ini
 Draw_car.draw_txt_ini(car_txt, car_ini, is_FlatChip)  ### 绘制全部txt和ini
-# feb_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/feedbackData1.txt"
+# feb_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/feedbackData1.txt"
 # car_feb = Analy_car.read_feb(feb_address)               # 读取feb
 # car_feb_id = Feed_back.analy_data(car_feb)              # 拿到偏差
 # Analy_car.write_ini_feb(ini_address, car_ini, car_feb_id) # 修改ini

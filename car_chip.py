@@ -21,18 +21,21 @@ class BallDataOne: # 单次踢球的球数据
         self.power = -1
         self.avg_vel = []
         self.chip_point = -1
-    def analy(self, per): # 求落地点距离
-        for i in range(0, len(self.vel)-per, per): # 均值滤波
+    def meanfilter(self, per): # 均值滤波
+        for i in range(0, len(self.vel)-per, per):
             sum = 0
             for j in range(per):
                 sum += self.vel[i+j]
             for j in range(per):
                 self.avg_vel.append(sum/per)
+    def kalmanfilter(self): # 卡尔曼滤波
+        pass
+    def analy(self): # 求落地点距离
         max_vel = max(self.avg_vel) # 求最值
         max_index = self.avg_vel.index(max_vel)
         self.chip_point = -1
         for i in range(max_index, len(self.avg_vel)-1): #　找落地点
-            if self.avg_vel[i] < self.avg_vel[i+1]:
+            if self.avg_vel[i] < self.avg_vel[i+1] and self.avg_vel[i] < max_vel/2: # 落地点速度限制在最大值/2
                 self.chip_point = i
                 break
     def draw(self): # 绘制图像
@@ -41,6 +44,8 @@ class BallDataOne: # 单次踢球的球数据
         plt.scatter(self.chip_point, self.vel[self.chip_point], s=200, color='deeppink', alpha=0.4)
         plt.scatter(self.chip_point, self.vel[self.chip_point], s=50, color='mediumvioletred', alpha=1.0)
         plt.plot(self.avg_vel, color='orangered')
+        plt.xlabel('time-car'+str(self.id))
+        plt.ylabel('vel')
         plt.show()
     def write(self, address): # 写入数据
         with open(address, "a") as f:
@@ -78,7 +83,8 @@ class BallTestOne: # 单次踢球数据测试
         t_ballpos_y = list(map(float, t_ballpos_y))
         t_carpos_x = list(map(float, t_carpos_x))
         t_carpos_y = list(map(float, t_carpos_y))
-        ball.analy(5)
+        ball.meanfilter(5)
+        ball.analy()
         ball_x = t_ballpos_x[ball.chip_point]
         ball_y = t_ballpos_y[ball.chip_point]
         car_x = t_carpos_x[0]
@@ -104,11 +110,11 @@ class BallTestAll: # 多次踢球数据测试
             raw_data = f.readlines()
             for line in raw_data:
                 line_data = line.split()
-                if line_data[1] != '\n' or line_data[1] != '0':
+                if line_data[1] != '\n' and line_data[1] != '0':
                     if int(line_data[0].strip()) != old_id or float(line_data[3].strip()) != old_power: # 用id或power改变来区分每次踢球
                         old_id = int(line_data[0].strip())
                         old_power = float(line_data[3].strip())
-                        # print(old_id, len(ball.vel), line_data[8])
+                        print(old_id, len(ball.vel), line_data[7], line_data[8]) # 数据检查
                         if ball.empty() != 1: # 判空
                             ball.vel = list(map(float, ball.vel))
                             t_id = list(map(int, t_id))
@@ -117,7 +123,8 @@ class BallTestAll: # 多次踢球数据测试
                             t_ballpos_y = list(map(float, t_ballpos_y))
                             t_carpos_x = list(map(float, t_carpos_x))
                             t_carpos_y = list(map(float, t_carpos_y))
-                            ball.analy(5)
+                            ball.meanfilter(5) # 滤波
+                            ball.analy() # 拟合
                             ball_x = t_ballpos_x[ball.chip_point]
                             ball_y = t_ballpos_y[ball.chip_point]
                             car_x = t_carpos_x[0]
@@ -125,8 +132,8 @@ class BallTestAll: # 多次踢球数据测试
                             dist = math.fabs( math.sqrt( (ball_x-car_x)*(ball_x-car_x) + (ball_y-car_y)*(ball_y-car_y) ) )
                             ball.assignDist(t_id[0], dist, t_power[0])
                             print(ball.id, ball.dist, ball.power)
-                            # ball.write(out_address)
-                            # ball.draw()
+                            # ball.write(out_address) # 写入
+                            ball.draw() # 绘图
                             ball.clear()
                             t_id = []
                             t_power = []
@@ -205,7 +212,7 @@ class CarDataOne:
         plt.show()
 # class CarDataAll:
 # class ChipData:
-in_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData_6_15.txt"
-out_address = "/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/out_ChipData111.txt"
+in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData.txt"
+out_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/out_ChipData111.txt"
 # BallTestOne.read(in_address, out_address)
 BallTestAll.read(in_address, out_address)
