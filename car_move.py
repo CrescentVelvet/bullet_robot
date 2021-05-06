@@ -1,6 +1,12 @@
 import matplotlib.pyplot as plt
-import math
+import configparser
 import numpy as np
+import math
+class MyConfigParser(configparser.ConfigParser):
+    def __init__(self, defaults=None):
+        configparser.ConfigParser.__init__(self, defaults=defaults)
+    def optionxform(self, optionstr): # 重载ConfigParser实现大小写区分
+        return optionstr
 class CarMoveOne:
     def __init__(self):
         self.id = -1
@@ -64,11 +70,11 @@ class CarMoveAll:
         self.id = []
         self.send_vel = []
         self.raw_vel = []
-    def getid(self): # 获取id个数
+    def getid(self): # 获取不同id个数
         return len(set(self.id))
 class CarMoveTest:
-    def read(in_address):
-        carcar = CarMoveAll()
+    def read(in_address, ini_address):
+        carcar = CarMoveAll() # 全部车数据
         with open(in_address, "r") as f:
             raw_data = f.readlines()
             for line in raw_data:
@@ -79,32 +85,38 @@ class CarMoveTest:
                     continue
                 carcar.assign(line_data[0], line_data[1], line_data[2])
         carcar.tolist()
-        car_list = []
+        car_list = [] # 单车数据列表
         for i in range(static_car_num): # 初始化
             car_list.append(CarMoveOne())
         for i in range(len(carcar.id)): # 车号划分
             car_list[carcar.id[i]].assign(carcar.id[i], carcar.send_vel[i], carcar.raw_vel[i])
-        # for i in range(static_car_num):
-            # print(i, car_list[i].id)
+        for i in range(static_car_num):
+            print(i, car_list[i].id)
         for i in range(static_car_num): # 计算中位数并拟合
             if car_list[i].id != -1:
                 car_list[i].average()
                 car_list[i].calculate()
         ax = [None] * carcar.getid()
-        for i in range(carcar.getid()): # 绘制图像
-            ax[i] = plt.subplot(2, 3, i+1)
-            plot_send = np.arange(100, 2100, 1)
-            plot_raw = car_list[carcar.id[i]].val_fit(plot_send)
-            plot = plt.scatter(car_list[carcar.id[i]].send_vel, car_list[carcar.id[i]].raw_vel, s=1, color='limegreen')
-            plot = plt.scatter(list(set(car_list[carcar.id[i]].send_vel)), car_list[carcar.id[i]].avg_vel, s=30, color='orange', alpha=0.8)
-            plot = plt.plot(plot_send, plot_raw, 'red')
-            # plt.xlabel('send_vel')
-            plt.xlabel(str(car_list[carcar.id[i]].id) + 'car' + str(car_list[carcar.id[i]].val_fit))
-            plt.ylabel('raw_vel')
-        plt.show()
-        # car_list[10].draw()
-        # car_list[10].average()
+        # robot_conf = MyConfigParser() # 参数写入
+        # robot_conf.read(ini_address, encoding="utf-8")
+        # for i in range(carcar.getid()):
+        #     now_id = list(set(carcar.id))[i]
+        #     robot_conf.set("Robot"+str(now_id), "OPEN_SPEED", str(car_list[now_id].val_fit[1]))
+        #     print("write "+str(now_id)+" "+str(car_list[now_id].val_fit[1]))
+        # robot_conf.write(open(ini_address, "w", encoding="utf-8"))
+        # for i in range(carcar.getid()): # 绘制图像
+        #     now_id = list(set(carcar.id))[i]
+        #     ax[i] = plt.subplot(2, 3, i+1)
+        #     plot_send = np.arange(100, 2100, 1)
+        #     plot_raw = car_list[now_id].val_fit(plot_send)
+        #     plot = plt.scatter(car_list[now_id].send_vel, car_list[now_id].raw_vel, s=1, color='limegreen')
+        #     plot = plt.scatter(list(set(car_list[now_id].send_vel)), car_list[now_id].avg_vel, s=30, color='orange', alpha=0.8)
+        #     plot = plt.plot(plot_send, plot_raw, 'red')
+        #     plt.xlabel(str(car_list[now_id].id) + '-send_vel' + str(car_list[now_id].val_fit))
+        #     plt.ylabel('raw_vel')
+        # plt.show()
 # class MoveData:
 static_car_num = 16
 in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/Speedconstant.txt"
-CarMoveTest.read(in_address)
+ini_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/kickparam.ini"
+CarMoveTest.read(in_address, ini_address)

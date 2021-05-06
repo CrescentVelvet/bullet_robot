@@ -123,7 +123,7 @@ void CAutoShootFit::getKickPower(int p, double sp) {
 }
 
 double CAutoShootFit::recordFlatData(int id, int now_power, double send_power) {
-    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/FlatData.txt", std::ios::app);
+    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/FlatData.txt", std::ios::app);
     double my_vel = GlobalData::instance()->maintain[0].ball->velocity.mod();
     if (my_maxvel < my_vel) {
         my_maxvel = my_vel;
@@ -142,12 +142,11 @@ double CAutoShootFit::recordFlatData(int id, int now_power, double send_power) {
 
 double CAutoShootFit::recordChipData(int id, int now_power, double send_power) {
     double dist = -1.0;
-    int color = 1;
     CGeoPoint ball_pos = GlobalData::instance()->maintain[0].ball[0].pos;
-    CGeoPoint car_pos = GlobalData::instance()->maintain[0].robot[color][id].pos;
+    CGeoPoint car_pos = GlobalData::instance()->maintain[0].robot[kicker_team][id].pos;
     double my_dist = dist;
     double ball_vel = GlobalData::instance()->maintain[0].ball[0].velocity.mod();
-    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/dhz/Kun2/ZBin/data/ChipData.txt", std::ios::app);
+    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData.txt", std::ios::app);
     if(ratio_file.is_open()) {
         ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y() << std::endl;
         ratio_file.close();
