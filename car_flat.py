@@ -266,19 +266,17 @@ class Draw_car: # 绘制图像
                 continue
             sum += 1
         ax = [None] * sum
-        ax_num = 0
         for i in range(len(in_car_txt)):
             if in_car_txt[i].val_fit == 0:
                 continue
             # print(sum // 3 + 1, sum % 3, ax_num, i)
-            ax[ax_num] = plt.subplot(sum // 3 + 1, 3, ax_num + 1)
+            ax[i] = plt.subplot(sum//3+1, 3, i+1)
             plot_maxvel = np.arange(0, 7500, 1)
             plot_power = in_car_txt[i].val_fit(plot_maxvel)
             plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, '*')
             plt.plot(plot_maxvel, plot_power, 'r')
             plt.xlabel('maxvel-'+str(i))
             plt.ylabel('power-'+str(i))
-            ax_num += 1
             plt.xlim(0, 8000)
             plt.ylim(30, 130)
         plt.show()

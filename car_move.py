@@ -104,17 +104,17 @@ class CarMoveTest:
         #     robot_conf.set("Robot"+str(now_id), "OPEN_SPEED", str(car_list[now_id].val_fit[1]))
         #     print("write "+str(now_id)+" "+str(car_list[now_id].val_fit[1]))
         # robot_conf.write(open(ini_address, "w", encoding="utf-8"))
-        # for i in range(carcar.getid()): # 绘制图像
-        #     now_id = list(set(carcar.id))[i]
-        #     ax[i] = plt.subplot(2, 3, i+1)
-        #     plot_send = np.arange(100, 2100, 1)
-        #     plot_raw = car_list[now_id].val_fit(plot_send)
-        #     plot = plt.scatter(car_list[now_id].send_vel, car_list[now_id].raw_vel, s=1, color='limegreen')
-        #     plot = plt.scatter(list(set(car_list[now_id].send_vel)), car_list[now_id].avg_vel, s=30, color='orange', alpha=0.8)
-        #     plot = plt.plot(plot_send, plot_raw, 'red')
-        #     plt.xlabel(str(car_list[now_id].id) + '-send_vel' + str(car_list[now_id].val_fit))
-        #     plt.ylabel('raw_vel')
-        # plt.show()
+        for i in range(carcar.getid()): # 绘制图像
+            now_id = list(set(carcar.id))[i]
+            ax[i] = plt.subplot(carcar.getid()//3+1, 3, i+1)
+            plot_send = np.arange(100, 2100, 1)
+            plot_raw = car_list[now_id].val_fit(plot_send)
+            plot = plt.scatter(car_list[now_id].send_vel, car_list[now_id].raw_vel, s=1, color='limegreen')
+            plot = plt.scatter(list(set(car_list[now_id].send_vel)), car_list[now_id].avg_vel, s=30, color='orange', alpha=0.8)
+            plot = plt.plot(plot_send, plot_raw, 'red')
+            plt.xlabel(str(car_list[now_id].id) + '-send_vel' + str(car_list[now_id].val_fit))
+            plt.ylabel(str(car_list[now_id].id) + '-raw_vel' + str(car_list[now_id].val_fit))
+        plt.show()
 # class MoveData:
 static_car_num = 16
 in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/Speedconstant.txt"

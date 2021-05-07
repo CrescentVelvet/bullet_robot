@@ -131,7 +131,7 @@ class BallTestAll: # 多次踢球数据测试
                             car_y = t_carpos_y[0]
                             dist = math.fabs( math.sqrt( (ball_x-car_x)*(ball_x-car_x) + (ball_y-car_y)*(ball_y-car_y) ) )
                             ball.assignDist(t_id[0], dist, t_power[0])
-                            print(ball.id, ball_x, ball_y, car_x, car_y)
+                            # print(ball.id, ball_x, ball_y, car_x, car_y)
                             print(ball.id, ball.dist, ball.power)
                             # ball.write(out_address) # 写入
                             ball.draw() # 绘图
