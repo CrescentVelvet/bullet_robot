@@ -218,7 +218,7 @@ void ActionModule::sendLegacy(int t, const ZSS::Protocol::Robots_Command& comman
         encodeLegacy(command, this->tx, count++, id);
     }
     socket.writeDatagram(tx.data(), TRANSMIT_PACKET_SIZE, QHostAddress(radioSendAddress[id]), PORT_SEND);
-    if (true) {
+    if (false) {
         QDateTime utc_time = QDateTime::fromTime_t( QDateTime::currentDateTimeUtc().toTime_t() );
         QString current_time = utc_time .toString("yyyy.MM.dd hh:mm:ss");
         GDebugEngine::instance()->gui_debug_msg(CGeoPoint(-4800,-3150),QString("time : %1").arg(current_time).toLatin1(),COLOR_GREEN);
@@ -301,10 +301,11 @@ void ActionModule::readData() {
                 //qDebug()<<"imu_dir"<<imu_dir<<color<<id;
                 GlobalData::instance()->robotInfoMutex.lock();
                 GlobalData::instance()->robotInformation[color][id].rawImuDir = imu_dir;
-                if(abs(wheelVel[0])<10 && abs(wheelVel[1])<10 && abs(wheelVel[2])<10 && abs(wheelVel[3])<10 && GlobalData::instance()->maintain[-1].robot[color][id].rotateVel<1){
+                if((abs(wheelVel[0])<10 && abs(wheelVel[1])<10 && abs(wheelVel[2])<10 && abs(wheelVel[3])<10 && GlobalData::instance()->maintain[-1].robot[color][id].rotateVel<1)||!GlobalData::instance()->robotInformation[color][id].imuavailable){
 //                    if(id == 15) qDebug()<<"image dir: "<<GlobalData::instance()->processRobot[0].robot[color][id].angle;
+                    if(abs(imu_dir - GlobalData::instance()->processRobot[0].robot[color][id].angle) > M_PI/20)
                     RobotSensor::instance()->imuZero[color][id] = imu_dir - GlobalData::instance()->processRobot[0].robot[color][id].angle;
-                    RobotSensor::instance()->imuCorrect[color][id]++;
+                    RobotSensor::instance()->imuCorrect[color][id] = fmax(10,RobotSensor::instance()->imuCorrect[color][id]+1);
                     GlobalData::instance()->robotInformation[color][id].needreport = false;
                     GlobalData::instance()->robotInformation[color][id].imucleaned = true;
                     GlobalData::instance()->robotInformation[color][id].imuavailable = true;
@@ -521,7 +522,7 @@ quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double
         ratio_file << " " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope << std::endl;
         ratio_file.close();
     }
-    qDebug() << "kickStandardization " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope;
+//    qDebug() << "kickStandardization " << id << " " << mode << " " << vel_hope << " " << vel_real << " " << kick_kp << " " << kick_hope;
     return new_power;
 }
 } // namespace ZSS::anonymous
