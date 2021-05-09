@@ -43,7 +43,7 @@ class CarRegulation:
             t_y.append(self.bally[i] / self.ballx[i])
         raw_fit = np.polyfit(t_x, t_y, 1)
         val_fit = np.poly1d(raw_fit)
-        print(val_fit)
+        print('直线拟合结果为：', val_fit)
         plot_x = np.arange(sorted(t_x)[0], sorted(t_x)[-1], 0.01)
         plot_y = val_fit(plot_x)
         plt.scatter(t_x, t_y, color='limegreen')

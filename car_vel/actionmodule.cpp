@@ -301,7 +301,7 @@ void ActionModule::readData() {
                 //qDebug()<<"imu_dir"<<imu_dir<<color<<id;
                 GlobalData::instance()->robotInfoMutex.lock();
                 GlobalData::instance()->robotInformation[color][id].rawImuDir = imu_dir;
-                if((abs(wheelVel[0])<10 && abs(wheelVel[1])<10 && abs(wheelVel[2])<10 && abs(wheelVel[3])<10 && GlobalData::instance()->maintain[-1].robot[color][id].rotateVel<1)||!GlobalData::instance()->robotInformation[color][id].imuavailable){
+                if(!infrared && ((abs(wheelVel[0])<10 && abs(wheelVel[1])<10 && abs(wheelVel[2])<10 && abs(wheelVel[3])<10 && GlobalData::instance()->maintain[-1].robot[color][id].rotateVel<1)||!GlobalData::instance()->robotInformation[color][id].imuavailable)){
 //                    if(id == 15) qDebug()<<"image dir: "<<GlobalData::instance()->processRobot[0].robot[color][id].angle;
                     if(abs(imu_dir - GlobalData::instance()->processRobot[0].robot[color][id].angle) > M_PI/20)
                     RobotSensor::instance()->imuZero[color][id] = imu_dir - GlobalData::instance()->processRobot[0].robot[color][id].angle;
@@ -527,3 +527,4 @@ quint8 kickStandardization(int team, quint8 id, bool mode, quint16 power, double
 }
 } // namespace ZSS::anonymous
 }
+
