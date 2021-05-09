@@ -35,7 +35,21 @@ class CarRegulation:
                     self.sum_bally[i][j] = 0
                 else:
                     self.sum_bally[i][j] = self.sum_bally[i][j] / num_bally[i][j] # 求平均
-    def draw3D(self):
+    def draw2D(self): # 绘制二维图像
+        t_x = []
+        t_y = []
+        for i in range(len(self.rovel)): # rovel和power相除
+            t_x.append(self.rovel[i] / self.power[i])
+            t_y.append(self.bally[i] / self.ballx[i])
+        raw_fit = np.polyfit(t_x, t_y, 1)
+        val_fit = np.poly1d(raw_fit)
+        print(val_fit)
+        plot_x = np.arange(sorted(t_x)[0], sorted(t_x)[-1], 0.01)
+        plot_y = val_fit(plot_x)
+        plt.scatter(t_x, t_y, color='limegreen')
+        plt.plot(plot_x, plot_y, color='red')
+        plt.show()
+    def draw3D(self): # 绘制三维图像
         ax = Axes3D(plt.figure())
         ax.scatter(self.power, self.rovel, self.bally, c='g') # 绘制散点
         for i in range(len(set(self.power))):
@@ -88,8 +102,8 @@ class CarDataTest:
                 t_ballx = float(line_data[2].strip())
                 t_bally = float(line_data[3].strip())
                 car_data.assign(t_rovel, t_power, t_ballx, t_bally)
-        # print(car_data.bally)
-        car_data.summary()
-        car_data.draw3D()
+        # car_data.summary()
+        # car_data.draw3D()
+        car_data.draw2D()
 in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguData.txt"
 CarDataTest.read(in_address)
