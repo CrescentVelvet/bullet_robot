@@ -4,61 +4,74 @@ import numpy as np
 import math
 class CarRegulation:
     def __init__(self):
-        self.rotvel = []
+        self.rovel = []
         self.power = []
         self.ballx = []
         self.bally = []
         self.sum_bally = []
-    def assign(self, rotvel, power, ballx, bally):
-        self.rotvel.append(rotvel)
+    def assign(self, rovel, power, ballx, bally):
+        self.rovel.append(rovel)
         self.power.append(power)
         self.ballx.append(ballx)
         self.bally.append(bally)
     def clear(self):
-        self.rotvel = []
+        self.rovel = []
         self.power = []
         self.ballx = []
         self.bally = []
         self.sum_bally = []
-    def summary(self): # 求rotvel平均值
-        print("rotvel", len(set(self.rotvel)), "power", len(set(self.power)))
-        num_bally = [[0 for cols in range(len(set(self.rotvel)))] for rows in range(len(set(self.power)))] # row行,col列
-        self.sum_bally = [[0 for cols in range(len(set(self.rotvel)))] for rows in range(len(set(self.power)))]
-        for i in range(len(self.rotvel)):
-            num_power = list(set(self.power)).index(self.power[i]) # 当前行列号
-            num_rotvel = list(set(self.rotvel)).index(self.rotvel[i])
-            num_bally[num_power][num_rotvel] += 1 # 求个数
-            self.sum_bally[num_power][num_rotvel] += self.bally[i] # 求和
+    def summary(self): # 求rovel平均值
+        # print("rovel", len(set(self.rovel)), "power", len(set(self.power)))
+        num_bally = [[0 for cols in range(len(set(self.rovel)))] for rows in range(len(set(self.power)))] # row行,col列
+        self.sum_bally = [[0 for cols in range(len(set(self.rovel)))] for rows in range(len(set(self.power)))]
+        for i in range(len(self.bally)):
+            num_power = sorted(list(set(self.power)),reverse=False).index(self.power[i]) # 求行列号
+            num_rovel = sorted(list(set(self.rovel)),reverse=False).index(self.rovel[i])
+            num_bally[num_power][num_rovel] += 1 # 求个数
+            self.sum_bally[num_power][num_rovel] += self.bally[i] # 求和
         for i in range(len(set(self.power))):
-            for j in range(len(set(self.rotvel))):
+            for j in range(len(set(self.rovel))):
                 if num_bally[i][j] == 0:
                     self.sum_bally[i][j] = 0
                 else:
                     self.sum_bally[i][j] = self.sum_bally[i][j] / num_bally[i][j] # 求平均
-    # def analy(self):
-    #     old_power = -1
-    #     for i in range(len(self.power)):
-    #         if old_power != self.power[i]:
-
-    def draw(self):
+    def draw3D(self):
         ax = Axes3D(plt.figure())
-        ax.scatter(self.power, self.rotvel, self.bally, c='g')
-        # for i in range(len(set(self.power))):
-            # for j in range(len(set(self.rotvel))):
-                # ax.scatter(list(set(self.power))[i], list(set(self.rotvel))[j], self.sum_bally[i][j], c='r')
-        plot_power, plot_carvel = np.meshgrid(sorted(list(set(self.power))), sorted(list(set(self.rotvel)))) # 数据网格化
+        ax.scatter(self.power, self.rovel, self.bally, c='g') # 绘制散点
+        for i in range(len(set(self.power))):
+            for j in range(len(set(self.rovel))):
+                ax.scatter(sorted(list(set(self.power)),reverse=False)[i], sorted(list(set(self.rovel)),reverse=False)[j], self.sum_bally[i][j], c='r')
+        plot_power, plot_rovel = np.meshgrid(sorted(list(set(self.power)),reverse=True), sorted(list(set(self.rovel)),reverse=True)) # 数据网格化
         plot_bally = np.array(self.sum_bally)
-        print(type(plot_bally))
-        ax.plot_surface(plot_power, plot_carvel, plot_bally)
-        # ax.plot_surface(plot_power, plot_carvel, self.sum_bally, rstride=1, cstride=1, cmap=plt.get_cmap('rainbow'))
-        # plot_rotvel = np.arange(1, 8, 0.1)
-        # plot_power = [3000] * len(plot_rotvel)
-        # raw_bally = np.polyfit(self.rotvel, self.bally, 1)
-        # val_bally = np.poly1d(raw_bally)
-        # plot_bally = val_bally(plot_rotvel)
-        # ax.scatter(plot_rotvel, plot_bally, plot_power)
-        ax.set_xlabel('rotvel', fontdict={'size': 15, 'color': 'black'})
-        ax.set_ylabel('power', fontdict={'size': 15, 'color': 'black'})
+        ax.plot_surface(plot_power, plot_rovel, plot_bally, cmap='Greens') # 绘制曲面OrRd
+        matrix_A = np.zeros((3,3)) # 创建系数矩阵A
+        for i in range(len(set(self.power))):
+            for j in range(len(set(self.rovel))):
+                matrix_A[0,0] = matrix_A[0,0] + plot_power[i][j]**2
+                matrix_A[0,1] = matrix_A[0,1] + plot_power[i][j] * plot_rovel[i][j]
+                matrix_A[0,2] = matrix_A[0,2] + plot_power[i][j]
+                matrix_A[1,0] = matrix_A[0,1]
+                matrix_A[1,1] = matrix_A[1,1] + plot_rovel[i][j]**2
+                matrix_A[1,2] = matrix_A[1,2] + plot_rovel[i][j]
+                matrix_A[2,0] = matrix_A[0,2]
+                matrix_A[2,1] = matrix_A[1,2]
+                matrix_A[2,2] = 100
+        matrix_b = np.zeros((3,1)) # 创建系数矩阵b
+        for i in range(len(set(self.power))):
+            for j in range(len(set(self.rovel))):
+                matrix_b[0,0] = matrix_b[0,0] + plot_power[i][j] * plot_bally[i][j]
+                matrix_b[1,0] = matrix_b[1,0] + plot_rovel[i][j] * plot_bally[i][j]
+                matrix_b[2,0] = matrix_b[2,0] + plot_bally[i][j]
+        inv_A = np.linalg.inv(matrix_A)
+        inv_X = np.dot(inv_A, matrix_b)
+        print('平面拟合结果为：z = %.3f * x + %.3f * y + %.3f'%(inv_X[0,0], inv_X[1,0], inv_X[2,0]))
+        t_power = np.linspace(sorted(list(set(self.power)),reverse=False)[0], sorted(list(set(self.power)),reverse=False)[-1], 100) # 构建等差数列
+        t_rovel = np.linspace(sorted(list(set(self.rovel)),reverse=False)[0], sorted(list(set(self.rovel)),reverse=False)[-1], 100)
+        t_power, t_rovel = np.meshgrid(t_power, t_rovel)
+        t_bally = inv_X[0, 0] * t_power + inv_X[1, 0] * t_rovel + inv_X[2, 0]
+        ax.plot_wireframe(t_power, t_rovel, t_bally, rstride=5, cstride=5)
+        ax.set_xlabel('power', fontdict={'size': 15, 'color': 'black'})
+        ax.set_ylabel('rovel', fontdict={'size': 15, 'color': 'black'})
         ax.set_zlabel('bally', fontdict={'size': 15, 'color': 'black'})
         plt.show()
 class CarDataTest:
@@ -70,13 +83,13 @@ class CarDataTest:
                 line_data = line.split()
                 if len(line_data) != 4:
                     continue
-                t_rotvel = float(line_data[0].strip())
+                t_rovel = float(line_data[0].strip()) * 98
                 t_power = float(line_data[1].strip())
                 t_ballx = float(line_data[2].strip())
                 t_bally = float(line_data[3].strip())
-                car_data.assign(t_rotvel, t_power, t_ballx, t_bally)
+                car_data.assign(t_rovel, t_power, t_ballx, t_bally)
         # print(car_data.bally)
         car_data.summary()
-        car_data.draw()
+        car_data.draw3D()
 in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguData.txt"
 CarDataTest.read(in_address)
