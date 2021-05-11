@@ -28,13 +28,13 @@ def random_partition(n,n_data):
     idxs2 = all_idxs[n:]
     return idxs1, idxs2
 def ransac(data, model, n, k, t, d, debug=False, return_all=False):
-    # 输入:
-    #     data - 样本点
+    # 输入:all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True
+    #     data  - 样本点
     #     model - 假设模型:事先自己确定
-    #     n - 生成模型所需的最少样本点
-    #     k - 最大迭代次数
-    #     t - 阈值:作为判断点满足模型的条件
-    #     d - 拟合较好时,需要的样本点最少的个数,当做阈值看待
+    #     n     - 生成模型所需的最少样本点
+    #     k     - 最大迭代次数
+    #     t     - 阈值:作为判断点满足模型的条件
+    #     d     - 拟合较好时,需要的样本点最少的个数,当做阈值看待
     # 输出:
     #     bestfit - 最优拟合解(如果未找到返回nil)
     iterations = 0
@@ -153,27 +153,23 @@ class CarRegulation:
         plt.xlabel('rovel/power')
         plt.ylabel('balldir-cardir')
         plt.show()
-    def ransacTest(self):
-        # n_samples = len(self.rovel) # 样本个数
-        n_samples = 500 # 样本个数
+    def ransacTest(self): # RANSAC随机采样一致算法
+        n_samples = len(self.rovel) # 样本个数
         n_inputs = 1 # 输入变量个数
-        n_outputs = 1 # 输出变量个数
-        A_exact = 20 * np.random.random((n_samples, n_inputs)) # 随机生成0-20之间的500个数据:行向量
-        perfect_fit = 60 * np.random.normal( size = (n_inputs, n_outputs) ) #随机线性度即随机生成一个斜率
-        B_exact = scipy.dot(A_exact, perfect_fit) # y = x * k
-        # A_exact = []
-        # B_exact = []
-        # for i in range(len(self.rovel)):
-        #     A_exact.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
-        #     B_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
-        # A_exact = np.array(A_exact)
-        # B_exact = np.array(B_exact)
+        n_outputs = 1 # 输出变量个数  
+        A_exact = []
+        B_exact = []
+        for i in range(len(self.rovel)):
+            A_exact.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
+            B_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
+        A_exact = np.array([A_exact]).T
+        B_exact = np.array([B_exact]).T
         all_data = np.hstack((A_exact,B_exact)) # 在水平方向上平铺拼接数组
         input_columns = range(n_inputs) # 数组的第一列x:0
         output_columns = [n_inputs + i for i in range(n_outputs)] # 数组最后一列y:1
         model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
-        linear_fit,resids,rank,s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
-        ransac_fit, ransac_data = ransac(all_data, model, 50, 1000, 7e3, 300, debug=False, return_all=True) # RANSAC模型
+        linear_fit, resids, rank, s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
+        ransac_fit, ransac_data = ransac(all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True) # RANSAC模型
         sort_idxs = np.argsort(A_exact[:,0])
         A_col0_sorted = A_exact[sort_idxs] # 秩为2的数组
         plt.plot(A_exact[:,0], B_exact[:,0], 'k.', label='data')
