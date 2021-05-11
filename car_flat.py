@@ -197,7 +197,7 @@ class Analy_car: # 操作数据
             out_car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
         if flag == 1: # 平射用一次拟合
             for i in range(static_car_num): # 计算拟合函数
-                out_car_list[i].calculate_1()
+                out_car_list[i].calculate_2()
                 print(i, '---', out_car_list[i].val_fit)
         elif flag == 0: # 挑射用二次拟合
             for i in range(static_car_num): # 计算拟合函数
@@ -214,16 +214,20 @@ class Analy_car: # 操作数据
         robot_conf = MyConfigParser()
         robot_conf.read(address, encoding="utf-8")
         for temp_id in range(static_car_num):
-            robot_conf.set("Robot"+str(temp_id), "CHIP_MIN", str(0))
-            robot_conf.set("Robot"+str(temp_id), "CHIP_MAX", str(127))
-            robot_conf.set("Robot"+str(temp_id), "FLAT_MIN", str(0))
-            robot_conf.set("Robot"+str(temp_id), "FLAT_MAX", str(127))
+            # robot_conf.set("Robot"+str(temp_id), "CHIP_MIN", str(0))
+            # robot_conf.set("Robot"+str(temp_id), "CHIP_MAX", str(127))
+            # robot_conf.set("Robot"+str(temp_id), "FLAT_MIN", str(0))
+            # robot_conf.set("Robot"+str(temp_id), "FLAT_MAX", str(127))
             if in_car_txt[temp_id].id != -1: # ini参数更新
-                if len(in_car_txt[temp_id].val_fit) == 1: # 平射
-                    robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(0))
+                # if len(in_car_txt[temp_id].val_fit) == 1: # 一次拟合平射
+                if is_FlatChip:
+                    print('flat')
+                    robot_conf.set("Robot"+str(temp_id), "FLAT_A", str(in_car_txt[temp_id].val_fit[2]))
                     robot_conf.set("Robot"+str(temp_id), "FLAT_B", str(in_car_txt[temp_id].val_fit[1]))
                     robot_conf.set("Robot"+str(temp_id), "FLAT_C", str(in_car_txt[temp_id].val_fit[0]))
-                elif len(in_car_txt[temp_id].val_fit) == 2: # 挑射
+                # elif len(in_car_txt[temp_id].val_fit) == 2: # 二次拟合挑射
+                elif not is_FlatChip:
+                    print('chip')
                     robot_conf.set("Robot"+str(temp_id), "CHIP_A", str(in_car_txt[temp_id].val_fit[2]))
                     robot_conf.set("Robot"+str(temp_id), "CHIP_B", str(in_car_txt[temp_id].val_fit[1]))
                     robot_conf.set("Robot"+str(temp_id), "CHIP_C", str(in_car_txt[temp_id].val_fit[0]))
@@ -322,7 +326,7 @@ class Draw_car: # 绘制图像
         plt.show()
 # class FlatData:
 static_car_num = 16
-is_FlatChip = 1 # 1是平射,0是挑射
+is_FlatChip = 0 # 1是平射,0是挑射
 if is_FlatChip:
     txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/FlatData_all.txt"
 else:
