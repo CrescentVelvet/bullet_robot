@@ -1,4 +1,4 @@
-﻿#include "zautoshootfit.h"
+#include "zautoshootfit.h"
 #include "visionmodule.h"
 #include "globaldata.h"
 #include <Eigen/Core>
@@ -133,10 +133,10 @@ double CAutoShootFit::recordFlatData(int id, int now_power, double send_power) {
         my_maxvel = -1.0;
     }
     if(ratio_file.is_open()) {
-        ratio_file << " " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power << std::endl;
+        ratio_file << " " << id << " " << my_vel << " " << my_maxvel  << " " << send_power << std::endl;
         ratio_file.close();
     }
-    qDebug() << "Flat " << id << " " << my_vel << " " << my_maxvel << " " << now_power << " " << send_power;
+    qDebug() << "Flat " << id << " " << my_vel << " " << my_maxvel  << " " << send_power;
     return my_vel;
 }
 
@@ -146,7 +146,7 @@ double CAutoShootFit::recordChipData(int id, int now_power, double send_power) {
     CGeoPoint car_pos = GlobalData::instance()->maintain[0].robot[kicker_team][id].pos;
     double my_dist = dist;
     double ball_vel = GlobalData::instance()->maintain[0].ball[0].velocity.mod();
-    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData.txt", std::ios::app);
+    std::ofstream ratio_file("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData_one.txt", std::ios::app);
     if(ratio_file.is_open()) {
         ratio_file << " " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y() << std::endl;
         ratio_file.close();
@@ -154,3 +154,4 @@ double CAutoShootFit::recordChipData(int id, int now_power, double send_power) {
     qDebug() << "Chip " << id << " " << ball_vel << " " << my_dist << " " << now_power << " " << send_power << " " << ball_pos.x() << " " << ball_pos.y() << " " << car_pos.x() << " " << car_pos.y();
     return my_dist;
 }
+

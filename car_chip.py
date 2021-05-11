@@ -110,6 +110,8 @@ class BallTestAll: # 多次踢球数据测试
             raw_data = f.readlines()
             for line in raw_data:
                 line_data = line.split()
+                if len(line_data) != 9: # 挑射时排除位数错误数据
+                    continue
                 if line_data[1] != '\n' and line_data[1] != '0':
                     if int(line_data[0].strip()) != old_id or float(line_data[3].strip()) != old_power: # 用id或power改变来区分每次踢球
                         old_id = int(line_data[0].strip())
@@ -213,7 +215,7 @@ class CarDataOne:
         plt.show()
 # class CarDataAll:
 # class ChipData:
-in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData.txt"
+in_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData_one.txt"
 out_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData_all.txt"
 # BallTestOne.read(in_address, out_address)
 BallTestAll.read(in_address, out_address)

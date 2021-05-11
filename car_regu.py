@@ -20,51 +20,51 @@ class LinearLeastSquareModel: # 最小二乘求线性解,用于RANSAC的输入�
         B_fit = scipy.dot(A, model) # 计算的y值,B_fit = model.k*A + model.b
         err_per_point = np.sum( (B - B_fit) ** 2, axis = 1 ) # sum squared error per row
         return err_per_point
-def random_partition(n,n_data):
-    """return n random rows of data (and also the other len(data)-n rows)"""
-    all_idxs = np.arange( n_data )
-    np.random.shuffle(all_idxs)
-    idxs1 = all_idxs[:n]
-    idxs2 = all_idxs[n:]
-    return idxs1, idxs2
-def ransac(data, model, n, k, t, d, debug=False, return_all=False):
-    # 输入:all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True
-    #     data  - 样本点
-    #     model - 假设模型:事先自己确定
-    #     n     - 生成模型所需的最少样本点
-    #     k     - 最大迭代次数
-    #     t     - 阈值:作为判断点满足模型的条件
-    #     d     - 拟合较好时,需要的样本点最少的个数,当做阈值看待
-    # 输出:
-    #     bestfit - 最优拟合解(如果未找到返回nil)
-    iterations = 0
-    bestfit = None
-    besterr = np.inf # 设置默认值
-    best_inlier_idxs = None
-    while iterations < k:
-        maybe_idxs, test_idxs = random_partition(n,data.shape[0])
-        maybeinliers = data[maybe_idxs,:]
-        test_points = data[test_idxs]
-        maybemodel = model.fit(maybeinliers)
-        test_err = model.get_error( test_points, maybemodel)
-        also_idxs = test_idxs[test_err < t] # select indices of rows with accepted points
-        alsoinliers = data[also_idxs,:]
-        if len(alsoinliers) > d:
-            betterdata = np.concatenate( (maybeinliers, alsoinliers) )
-            bettermodel = model.fit(betterdata)
-            better_errs = model.get_error( betterdata, bettermodel)
-            thiserr = np.mean( better_errs )
-            if thiserr < besterr:
-                bestfit = bettermodel
-                besterr = thiserr
-                best_inlier_idxs = np.concatenate( (maybe_idxs, also_idxs) )
-        iterations+=1
-    if bestfit is None:
-        raise ValueError("did not meet fit acceptance criteria")
-    if return_all:
-        return bestfit, {'inliers':best_inlier_idxs}
-    else:
-        return bestfit
+    def random_partition(n,n_data):
+        """return n random rows of data (and also the other len(data)-n rows)"""
+        all_idxs = np.arange( n_data )
+        np.random.shuffle(all_idxs)
+        idxs1 = all_idxs[:n]
+        idxs2 = all_idxs[n:]
+        return idxs1, idxs2
+    def ransac(data, model, n, k, t, d, debug=False, return_all=False):
+        # 输入:all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True
+        #     data  - 样本点
+        #     model - 假设模型:事先自己确定
+        #     n     - 生成模型所需的最少样本点
+        #     k     - 最大迭代次数
+        #     t     - 阈值:作为判断点满足模型的条件
+        #     d     - 拟合较好时,需要的样本点最少的个数,当做阈值看待
+        # 输出:
+        #     bestfit - 最优拟合解(如果未找到返回nil)
+        iterations = 0
+        bestfit = None
+        besterr = np.inf # 设置默认值
+        best_inlier_idxs = None
+        while iterations < k:
+            maybe_idxs, test_idxs = LinearLeastSquareModel.random_partition(n,data.shape[0])
+            maybeinliers = data[maybe_idxs,:]
+            test_points = data[test_idxs]
+            maybemodel = model.fit(maybeinliers)
+            test_err = model.get_error( test_points, maybemodel)
+            also_idxs = test_idxs[test_err < t] # select indices of rows with accepted points
+            alsoinliers = data[also_idxs,:]
+            if len(alsoinliers) > d:
+                betterdata = np.concatenate( (maybeinliers, alsoinliers) )
+                bettermodel = model.fit(betterdata)
+                better_errs = model.get_error( betterdata, bettermodel)
+                thiserr = np.mean( better_errs )
+                if thiserr < besterr:
+                    bestfit = bettermodel
+                    besterr = thiserr
+                    best_inlier_idxs = np.concatenate( (maybe_idxs, also_idxs) )
+            iterations+=1
+        if bestfit is None:
+            raise ValueError("did not meet fit acceptance criteria")
+        if return_all:
+            return bestfit, {'inliers':best_inlier_idxs}
+        else:
+            return bestfit
 class CarRegulation:
     def __init__(self):
         self.rovel = []
@@ -169,8 +169,10 @@ class CarRegulation:
         output_columns = [n_inputs + i for i in range(n_outputs)] # 数组最后一列y:1
         model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
         linear_fit, resids, rank, s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
-        ransac_fit, ransac_data = ransac(all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True) # RANSAC模型
+        ransac_fit, ransac_data = LinearLeastSquareModel.ransac(all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True) # RANSAC模型
         sort_idxs = np.argsort(A_exact[:,0])
+        print('linear_fit', linear_fit)
+        print('ransac_fit', ransac_fit)
         A_col0_sorted = A_exact[sort_idxs] # 秩为2的数组
         plt.plot(A_exact[:,0], B_exact[:,0], 'k.', label='data')
         plt.plot(A_exact[ransac_data['inliers'],0], B_exact[ransac_data['inliers'],0], 'bx', label='RANSAC data')
