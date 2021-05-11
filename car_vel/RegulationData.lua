@@ -7,13 +7,14 @@ local TURN_DIR = 0.0
 
 local rot_speed = 0.0
 local slide_limit = 300
-local rot_limit = 1.0
+local rot_first = 4.0
+local rot_limit = rot_first
 local power = 3500
 local kick_x = 0.0
 local kick_y = 0.0
 local dir_car = 0.0
 -- 2 for Slide move, 1 for Rotate move
-local mode = 2
+local mode = 1
 
 function getpower()
     return function()
@@ -49,13 +50,13 @@ end
 function getflag()
     return function()
         print(player.rawVelMod("Leader"))
-        if mode == 1 and bufcnt(player.rotVel("Leader") > rot_limit - 0.08, 20) and math.abs(player.toPointDir(SHOOT_POS, "Leader")-player.dir("Leader"))<math.pi/180*30 then
+        if mode == 1 and player.rotVel("Leader") > rot_limit*0.9 and math.abs(player.toPointDir(SHOOT_POS, "Leader")-player.dir("Leader"))<rot_limit*2/75 then
             kick_x = player.posX("Leader")
             kick_y = player.posY("Leader")
             dir_car = player.dir("Leader")
             return flag.dribble + flag.kick
         -- if mode == 2 and math.abs(player.posY("Leader")) < slide_limit/75 then
-        elseif mode == 2 and player.rawVelMod("Leader") > slide_limit - 10 and math.abs(player.dir("Leader"))<math.pi/10 then
+        elseif mode == 2 and player.rawVelMod("Leader") > slide_limit*0.9 and math.abs(player.dir("Leader"))<math.pi/10 then
             kick_x = player.posX("Leader")
             kick_y = player.posY("Leader")
             dir_car = player.dir("Leader")
@@ -92,7 +93,7 @@ gPlayTable.CreatePlay{
 firstState = "fetchBall",
 ["fetchBall"] = {
     switch = function()
-        if bufcnt(ball.toPointDist(PLACE_POS[mode])< 250, 20, 9999) then
+        if ball.toPointDist(PLACE_POS[mode]) < 250 and player.infraredOn("Leader") then
             if mode == 1 then
                 return "turn1"
             else
@@ -106,15 +107,15 @@ firstState = "fetchBall",
 ["turn1"] = {
     switch = function()
         rot_speed = 0
-        if bufcnt(not player.infraredOn("Leader"),30,9999) then
+        if not player.infraredOn("Leader") then
             return "fetchBall"
         else
             if player.toTargetDist("Leader")< 200 then
                 if ball.toPointDist(PLACE_POS[1]) < 200 and player.infraredOn("Leader") then
                     rot_limit = rot_limit + 1.0
-                    if(rot_limit > 10.0) then
+                    if(rot_limit > 12.0) then
                         power = power + 500
-                        rot_limit = 2.0
+                        rot_limit = rot_first + 1.0
                     end
                     if(power > 6000) then
                         return "waitforball"
@@ -130,22 +131,19 @@ firstState = "fetchBall",
 ["turn2"] = {
     switch = function()
         debugEngine:gui_debug_line(PLACE_POS[1], SHOOT_POS, 1)
-        debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-500),string.format("limit%.2f",rot_limit),1)
         debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-650),string.format("power%.2f",power),1)
+        debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-500),string.format("limit%.2f",rot_limit),1)
         if rot_speed > rot_limit - 0.08 then
             rot_speed = rot_limit
         else
             rot_speed = rot_speed + 0.08
         end
-        print("check infraredOn")
-        if bufcnt(not player.infraredOn("Leader"),9999) then
-            return "fetchBall"
-        end
-        print("check kick ball")
         if player.kickBall("Leader") then
             return "record"
         end
-        print("checkover kick ball")
+        if not player.infraredOn("Leader") then
+            return "fetchBall"
+        end
     end,
     Leader = task.openSpeed(0, 0, rotspeed(), 0, getflag(), SHOOT_POS, getpower()),
     match = "{L}"
@@ -155,7 +153,7 @@ firstState = "fetchBall",
         if not player.infraredOn("Leader") then
                 return "fetchBall"
         else
-            if bufcnt(player.toTargetDist("Leader")< 200,120) then
+            if player.toTargetDist("Leader")< 200 then
                 if ball.toPointDist(PLACE_POS[2]) < 200 and player.infraredOn("Leader") then
                     slide_limit = slide_limit + 300
                     if(slide_limit > 3900) then
@@ -179,11 +177,11 @@ firstState = "fetchBall",
         debugEngine:gui_debug_line(PLACE_POS[1], SHOOT_POS, 1)
         debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-500),string.format("slidelimit%.2f",slide_limit),1)
         debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-650),string.format("power%.2f",power),1)
-        if bufcnt(not player.infraredOn("Leader"),20) then
-            return "fetchBall"
-        end
         if player.kickBall("Leader") then
             return "record"
+        end
+        if not player.infraredOn("Leader") then
+            return "fetchBall"
         end
         -- if player.posY("Leader") < -500 then
         --     slide_limit = slide_limit - 500
@@ -220,3 +218,4 @@ applicable ={
 attribute = "attack",
 timeout = 99999
 }
+

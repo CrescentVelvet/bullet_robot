@@ -21,6 +21,7 @@
 #include "parammanager.h"
 #include "CommandInterface.h"
 
+
 namespace {
 auto zpm = ZSS::ZParamManager::instance();
 double SHOOT_ACCURACY = 5.0;       //射门精度，角度制
@@ -250,41 +251,47 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
     /***************** rush *****************/
     if(getBallMode == RUSH) {
         if(IF_DEBUG) GDebugEngine::Instance()->gui_debug_msg(me.Pos()+ Utils::Polar2Vector(DEBUG_TEXT_HIGH, -PARAM::Math::PI/1.5), "Rush", COLOR_ORANGE);
-        double angle = (ball.Pos() - me.Pos()).dir();
+        double angle = (ball.Pos() - me.Pos()).dir()/15.0 + ball.Vel().dir()*14.0/15.0;
+        if(getballTask.player.pos.dist(ball.Pos())>500 || ball.Vel().mod()<100) angle = (ball.Pos() - me.Pos()).dir();
+        if(fabs(angle - (ball.Pos() - me.Pos()).dir()) > M_PI/25) angle = (ball.Pos() - me.Pos()).dir();
         if(!ball.Valid()) angle = (interPoint-me.RawPos()).dir();
         CVector ball2target = targetPoint - ball.RawPos();
+//        getballTask.player.angle = angle;
         if (!Utils::InTheirPenaltyArea(targetPoint, PARAM::Vehicle::V2::PLAYER_SIZE)) {
             getballTask.player.angle = ball2target.dir();
         }
         getballTask.player.flag |= PlayerStatus::DRIBBLING;
         getballTask.player.flag |= PlayerStatus::RUSH;
         needdribble = true;
-        if(fraredOn < 4){
+        if(fraredOn < 3){
             CVector vel = CVector(0,0);
-            if(ball.Valid()) {
+            if(ball.Valid()&&ball.Vel().mod()>100) {
                 double temp_angle  = ball2Me.dir();
-                getballTask.player.pos = ball.RawPos() + Utils::Polar2Vector(-PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER, temp_angle/*angle*/);
+                getballTask.player.pos = ball.RawPos() + Utils::Polar2Vector(-PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER, /*temp_angle*/angle);
+            }
+            else if(ball.Vel().mod()<=100){
+                getballTask.player.pos = ball.Pos();
             }
             else getballTask.player.pos = interPoint + Utils::Polar2Vector(2*10, (interPoint-me.RawPos()).dir());
             //            if(ball.Vel().mod() < 1000) vel = Utils::Polar2Vector(2000, ball.Vel().dir());
             //            else vel = CVector(ball.VelX()*2, ball.VelY()*2);
-            double NormalizeDistance = min(ball.Pos().dist(me.Pos()), 1500.0);
-            double NormalizeVelocity = 2500*abs(me.Vel()*ball.Vel()/(ball.Vel().mod()*me.Vel().mod()+0.01));
-            if(ball.Vel().mod()>300) vel = Utils::Polar2Vector(NormalizeDistance / 1500 * NormalizeVelocity +ball.Vel().mod(), ball.Vel().dir());
+            double NormalizeDistance = min(ball.Pos().dist(me.Pos()), 300.0);
+            double NormalizeVelocity = 2000*abs(me.Vel()*ball.Vel()/(ball.Vel().mod()*me.Vel().mod()+0.01));
+            if(ball.Vel().mod()>100) vel = Utils::Polar2Vector(NormalizeDistance / 300.0 * NormalizeVelocity +ball.Vel().mod(), ball.Vel().dir());
             else vel = Utils::Polar2Vector(RUSH_SPEED, angle);
             if(vel.mod() < RUSH_SPEED) vel = vel / vel.mod() * RUSH_SPEED;
-            if(Utils::InTheirPenaltyArea(getballTask.player.pos, 80*10) || Utils::InOurPenaltyArea(getballTask.player.pos, 80*10)){
-                vel = Utils::Polar2Vector(100*10, ball.Vel().dir());
-            }
+//            if(Utils::InTheirPenaltyArea(getballTask.player.pos, 80*10) || Utils::InOurPenaltyArea(getballTask.player.pos, 80*10)){
+//                vel = Utils::Polar2Vector(100*10, ball.Vel().dir());
+//            }
             if(!Utils::IsInField(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE) || !Utils::IsInField(ball.RawPos(),PARAM::Vehicle::V2::PLAYER_SIZE)){
                 Utils::MakeInField(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE);
                 vel = CVector(0,0);
             }
-            if (Utils::InTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY)){
+            if (!(getballTask.player.flag&PlayerStatus::NOT_AVOID_PENALTY) && Utils::InTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY)){
                 getballTask.player.pos = Utils::MakeOutOfTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY,ball.Vel().dir());
                 vel = CVector(0,0);
             }
-            if (robotNum != goalieNumber && Utils::InOurPenaltyArea(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE)){
+            if (!(getballTask.player.flag&PlayerStatus::NOT_AVOID_PENALTY) && robotNum != goalieNumber && Utils::InOurPenaltyArea(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE)){
                 getballTask.player.pos = Utils::MakeOutOfOurPenaltyArea(ball.RawPos(),PARAM::Vehicle::V2::PLAYER_SIZE);
                 vel = CVector(0,0);
             }
@@ -295,6 +302,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
             }
             setSubTask(PlayerRole::makeItGoto(robotNum, getballTask.player.pos, angle, vel,0, RUSH_ACC, RUSH_ROTATE_ACC, 400*10, 15,getballTask.player.flag));
         }else{
+            CVector vel = (getballTask.player.pos - me.Pos()).unit()*100;
             angle = getballTask.player.angle;
             auto&& angle_diff = fabs(Utils::Normalize(me.Dir() - angle));
             double limit_angle_diff = Utils::limitRange(angle_diff,0.0,PARAM::Math::PI/4);
@@ -306,18 +314,18 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
                 getballTask.player.pos = Utils::MakeOutOfTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY);
             }
             int goalieNumber = TaskMediator::Instance()->goalie();
-            if (robotNum != goalieNumber && Utils::InOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY)){
+            if (!getballTask.player.flag&PlayerStatus::NOT_AVOID_PENALTY && robotNum != goalieNumber && Utils::InOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY)){
                 getballTask.player.pos = Utils::MakeOutOfOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY);
             }
             //红外触发达到一定程度时，原地持球
-            if(angle_diff<PARAM::Math::PI/10)
-                getballTask.player.pos = me.Pos();
+            if(angle_diff<PARAM::Math::PI/8)
+                getballTask.player.pos = me.Pos()+(targetPoint-me.Pos()).unit()*50;
             if(IF_DEBUG) {
                 GDebugEngine::Instance()->gui_debug_line(getballTask.player.pos,getballTask.player.pos+Utils::Polar2Vector(400,angle),10,255255255);
                 GDebugEngine::Instance()->gui_debug_msg(getballTask.player.pos+Utils::Polar2Vector(400,angle),QString("d:%1 %2 %3").arg(angle_diff).arg(limit_angle_diff).arg(limit_dist).toLatin1(),10,255255255);
             }
             setSubTask(PlayerRole::makeItGoto(robotNum, getballTask.player.pos, angle,
-                                              CVector(0,0),0,
+                                              vel,0,
                                               500*10, 50,
                                               500*10, 50,
                                               getballTask.player.flag));
@@ -430,7 +438,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
                         getballTask.player.pos = ball.RawPos() + Utils::Polar2Vector(directDist, Utils::Normalize(finalDir - PARAM::Math::PI));
                     }
                 }
-                if (Utils::InTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY)){
+                if (!getballTask.player.flag&PlayerStatus::NOT_AVOID_PENALTY && Utils::InTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY)){
                     getballTask.player.pos = Utils::MakeOutOfTheirPenaltyArea(getballTask.player.pos,AVOID_PENALTY);
                 }
                 if (robotNum != goalieNumber && !ballplacement &&Utils::InOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY)) {
@@ -451,7 +459,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
                     double directDist = PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER  + PARAM::Field::BALL_SIZE - 1.5*10;
                     getballTask.player.pos = ball.RawPos() + Utils::Polar2Vector(directDist, Utils::Normalize(finalDir - PARAM::Math::PI));
                 }
-                if (Utils::InTheirPenaltyArea(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE)){
+                if (!getballTask.player.flag&PlayerStatus::NOT_AVOID_PENALTY && Utils::InTheirPenaltyArea(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE)){
                     getballTask.player.pos = Utils::MakeOutOfTheirPenaltyArea(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE);
                 }
                 if (robotNum != goalieNumber &&  !ballplacement &&Utils::InOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY))
@@ -483,7 +491,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
                 getballTask.player.pos = Utils::MakeOutOfTheirPenaltyArea(getballTask.player.pos,PARAM::Vehicle::V2::PLAYER_SIZE);
             }
             int goalieNumber = TaskMediator::Instance()->goalie();
-            if (robotNum != goalieNumber && Utils::InOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY))
+            if (!ballplacement && robotNum != goalieNumber && Utils::InOurPenaltyArea(getballTask.player.pos,AVOID_PENALTY))
                 getballTask.player.pos = Utils::MakeOutOfOurPenaltyArea(ball.RawPos(),AVOID_PENALTY);
             setSubTask(PlayerRole::makeItGoto(robotNum, getballTask.player.pos, angle,
                                               CVector(0,0),0,            // final speed
@@ -546,7 +554,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
     //    GDebugEngine::Instance()->gui_debug_msg(me.Pos()+ Utils::Polar2Vector(2*DEBUG_TEXT_HIGH, -PARAM::Math::PI/2), QString("new KP: %1").arg(power).toLatin1(), COLOR_ORANGE);
     //    GDebugEngine::Instance()->gui_debug_line(me.RawPos(), me.RawPos()+Utils::Polar2Vector(99999, getballTask.player.angle), COLOR_RED);
     if(kick_flag & PlayerStatus::FORCE_KICK) {
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0, 3100), QString("debug kick 0").toLatin1(), COLOR_GREEN); // wyf
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0, 3100), QString("fuck kick 0").toLatin1(), COLOR_GREEN);
         KickStatus::Instance()->setKick(robotNum, power);
     }
     //    qDebug()<<"fuck"<<power<<needkick<<fabs((me.ImuDir() - getballTask.player.angle))<<fabs(Utils::Normalize(me.ImuDir() - getballTask.player.angle))<<precision<<"frared: "<<fraredOn;
@@ -559,20 +567,24 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000, 3100), QString("IS PARAM TEST: %1").arg(isParamTest).toLatin1(), COLOR_GREEN);
         if(!isParamTest) {
             power = KickRegulation::instance()->regulateCheck(robotNum, power, getballTask.player.angle, chip, precision*PARAM::Math::PI/180.0);
+            GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(1000, 3100), QString("fuck kick 1.0").toLatin1(), COLOR_GREEN);
         }
         if(power > 0.1)
         {
             if(!chip) {
                 KickStatus::Instance()->setKick(robotNum, power);
+                GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0, 3100), QString("fuck kick 1.1").toLatin1(), COLOR_GREEN);
             }
-            else if(fraredOn >= 20) {
+            else if(fraredOn >= 10) {
                 KickStatus::Instance()->setChipKick(robotNum, power);
+                GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0, 3100), QString("fuck kick 1.2").toLatin1(), COLOR_GREEN);
             }
         }
     }
     else if (needkick && (getBallMode == WAIT_TOUCH || getBallMode == INTER_TOUCH || lastGetBallMode == INTER_TOUCH) && fabs(Utils::Normalize(me.Dir() - getballTask.player.angle)) < TOUCH_ACCURACY*PARAM::Math::PI/180.0) {
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0, 3100), QString("fuck kick 2").toLatin1(), COLOR_GREEN);
         if(!chip) KickStatus::Instance()->setKick(robotNum, power);
-        else if(fraredOn >= 20) KickStatus::Instance()->setChipKick(robotNum, power);
+        else if(fraredOn >= 10) KickStatus::Instance()->setChipKick(robotNum, power);
     }
 
     //    }
@@ -585,6 +597,7 @@ void CGetBallV4::plan(const CVisionModule* pVision) {
 
 CPlayerCommand* CGetBallV4::execute(const CVisionModule* pVision) {
     if (subTask()) return subTask()->execute(pVision);
+//    if (getBallMode == RUSH)
     return nullptr;
 }
 
@@ -612,7 +625,7 @@ void CGetBallV4::judgeMode(const CVisionModule * pVision) {
     bool frared = RobotSensor::Instance()->IsInfraredOn(robotNum);
     const int kick_flag = task().player.kick_flag;
     /************** special judge *******************/
-    if (kick_flag & PlayerStatus::NO_RUSH){
+    if (kick_flag & PlayerStatus::NO_RUSH || Utils::InTheirPenaltyArea(task().player.pos, PARAM::Vehicle::V2::PLAYER_SIZE*2)){
         getBallMode = STATIC;
         return;
     }
@@ -973,3 +986,4 @@ bool CGetBallV4::predictedChipInterTime(const CVisionModule* pVision, int robotN
 //    interTime = predictedTime(me, interceptPoint);//截球时间
 //    return true;
 //}
+
