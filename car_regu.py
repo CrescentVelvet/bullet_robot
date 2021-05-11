@@ -1,7 +1,70 @@
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
+import scipy.linalg
 import math
+class LinearLeastSquareModel: # 最小二乘求线性解,用于RANSAC的输入模型      
+    def __init__(self, input_columns, output_columns, debug = False):
+        self.input_columns = input_columns
+        self.output_columns = output_columns
+        self.debug = debug
+    def fit(self, data):
+        A = np.vstack( [data[:,i] for i in self.input_columns] ).T # 第一列Xi-->行Xi
+        B = np.vstack( [data[:,i] for i in self.output_columns] ).T # 第二列Yi-->行Yi
+        x, resids, rank, s = scipy.linalg.lstsq(A, B) # residues:残差和
+        return x # 返回最小平方和向量   
+    def get_error(self, data, model):
+        A = np.vstack( [data[:,i] for i in self.input_columns] ).T # 第一列Xi-->行Xi
+        B = np.vstack( [data[:,i] for i in self.output_columns] ).T # 第二列Yi-->行Yi
+        B_fit = scipy.dot(A, model) # 计算的y值,B_fit = model.k*A + model.b
+        err_per_point = np.sum( (B - B_fit) ** 2, axis = 1 ) # sum squared error per row
+        return err_per_point
+def random_partition(n,n_data):
+    """return n random rows of data (and also the other len(data)-n rows)"""
+    all_idxs = np.arange( n_data )
+    np.random.shuffle(all_idxs)
+    idxs1 = all_idxs[:n]
+    idxs2 = all_idxs[n:]
+    return idxs1, idxs2
+def ransac(data, model, n, k, t, d, debug=False, return_all=False):
+    # 输入:
+    #     data - 样本点
+    #     model - 假设模型:事先自己确定
+    #     n - 生成模型所需的最少样本点
+    #     k - 最大迭代次数
+    #     t - 阈值:作为判断点满足模型的条件
+    #     d - 拟合较好时,需要的样本点最少的个数,当做阈值看待
+    # 输出:
+    #     bestfit - 最优拟合解(如果未找到返回nil)
+    iterations = 0
+    bestfit = None
+    besterr = np.inf # 设置默认值
+    best_inlier_idxs = None
+    while iterations < k:
+        maybe_idxs, test_idxs = random_partition(n,data.shape[0])
+        maybeinliers = data[maybe_idxs,:]
+        test_points = data[test_idxs]
+        maybemodel = model.fit(maybeinliers)
+        test_err = model.get_error( test_points, maybemodel)
+        also_idxs = test_idxs[test_err < t] # select indices of rows with accepted points
+        alsoinliers = data[also_idxs,:]
+        if len(alsoinliers) > d:
+            betterdata = np.concatenate( (maybeinliers, alsoinliers) )
+            bettermodel = model.fit(betterdata)
+            better_errs = model.get_error( betterdata, bettermodel)
+            thiserr = np.mean( better_errs )
+            if thiserr < besterr:
+                bestfit = bettermodel
+                besterr = thiserr
+                best_inlier_idxs = np.concatenate( (maybe_idxs, also_idxs) )
+        iterations+=1
+    if bestfit is None:
+        raise ValueError("did not meet fit acceptance criteria")
+    if return_all:
+        return bestfit, {'inliers':best_inlier_idxs}
+    else:
+        return bestfit
 class CarRegulation:
     def __init__(self):
         self.rovel = []
@@ -35,20 +98,6 @@ class CarRegulation:
                     self.sum_balldir[i][j] = 0
                 else:
                     self.sum_balldir[i][j] = self.sum_balldir[i][j] / num_balldir[i][j] # 求平均
-    def draw2D(self): # 绘制二维图像
-        t_x = []
-        t_y = []
-        for i in range(len(self.rovel)):
-            t_x.append(self.rovel[i] / self.power[i]) # rovel和power相除
-            t_y.append( math.tan( math.atan(self.balldir[i]) - self.cardir[i])) # balldir和cardir相减
-        raw_fit = np.polyfit(t_x, t_y, 1)
-        val_fit = np.poly1d(raw_fit)
-        print('直线拟合结果为：', val_fit)
-        plot_x = np.arange(sorted(t_x)[0], sorted(t_x)[-1], 0.1)
-        plot_y = val_fit(plot_x)
-        plt.scatter(t_x, t_y, color='green')
-        plt.plot(plot_x, plot_y, color='red')
-        plt.show()
     def draw3D(self): # 绘制三维图像
         ax = Axes3D(plt.figure())
         ax.scatter(self.power, self.rovel, self.balldir, c='g') # 绘制散点
@@ -88,6 +137,51 @@ class CarRegulation:
         ax.set_ylabel('rovel', fontdict={'size': 15, 'color': 'black'})
         ax.set_zlabel('balldir', fontdict={'size': 15, 'color': 'black'})
         plt.show()
+    def draw2D(self): # 绘制二维图像
+        t_x = []
+        t_y = []
+        for i in range(len(self.rovel)):
+            t_x.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
+            t_y.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
+        raw_fit = np.polyfit(t_x, t_y, 1)
+        val_fit = np.poly1d(raw_fit)
+        print('直线拟合结果为：', val_fit)
+        plot_x = np.arange(sorted(t_x)[0], sorted(t_x)[-1], 0.1)
+        plot_y = val_fit(plot_x)
+        plt.scatter(t_x, t_y, color='green')
+        plt.plot(plot_x, plot_y, color='red')
+        plt.xlabel('rovel/power')
+        plt.ylabel('balldir-cardir')
+        plt.show()
+    def ransacTest(self):
+        # n_samples = len(self.rovel) # 样本个数
+        n_samples = 500 # 样本个数
+        n_inputs = 1 # 输入变量个数
+        n_outputs = 1 # 输出变量个数
+        A_exact = 20 * np.random.random((n_samples, n_inputs)) # 随机生成0-20之间的500个数据:行向量
+        perfect_fit = 60 * np.random.normal( size = (n_inputs, n_outputs) ) #随机线性度即随机生成一个斜率
+        B_exact = scipy.dot(A_exact, perfect_fit) # y = x * k
+        # A_exact = []
+        # B_exact = []
+        # for i in range(len(self.rovel)):
+        #     A_exact.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
+        #     B_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
+        # A_exact = np.array(A_exact)
+        # B_exact = np.array(B_exact)
+        all_data = np.hstack((A_exact,B_exact)) # 在水平方向上平铺拼接数组
+        input_columns = range(n_inputs) # 数组的第一列x:0
+        output_columns = [n_inputs + i for i in range(n_outputs)] # 数组最后一列y:1
+        model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
+        linear_fit,resids,rank,s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
+        ransac_fit, ransac_data = ransac(all_data, model, 50, 1000, 7e3, 300, debug=False, return_all=True) # RANSAC模型
+        sort_idxs = np.argsort(A_exact[:,0])
+        A_col0_sorted = A_exact[sort_idxs] # 秩为2的数组
+        plt.plot(A_exact[:,0], B_exact[:,0], 'k.', label='data')
+        plt.plot(A_exact[ransac_data['inliers'],0], B_exact[ransac_data['inliers'],0], 'bx', label='RANSAC data')
+        plt.plot(A_col0_sorted[:,0], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,0], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
+        plt.legend() # 添加图例
+        plt.show()
 class RotateTest:
     def read(address):
         car_data = CarRegulation()
@@ -105,7 +199,8 @@ class RotateTest:
                 car_data.assign(t_rovel, t_power, t_ballx, t_bally, t_dir)
         # car_data.summary()
         # car_data.draw3D()
-        car_data.draw2D()
+        # car_data.draw2D()
+        car_data.ransacTest()
 class SlideTest:
     def read(address):
         car_data = CarRegulation()
