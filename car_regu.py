@@ -13,7 +13,7 @@ class LinearLeastSquareModel: # 最小二乘求线性解,用于RANSAC的输入�
         A = np.vstack( [data[:,i] for i in self.input_columns] ).T # 第一列Xi-->行Xi
         B = np.vstack( [data[:,i] for i in self.output_columns] ).T # 第二列Yi-->行Yi
         x, resids, rank, s = scipy.linalg.lstsq(A, B) # residues:残差和
-        return x # 返回最小平方和向量   
+        return x # 返回最小平方和向量
     def get_error(self, data, model):
         A = np.vstack( [data[:,i] for i in self.input_columns] ).T # 第一列Xi-->行Xi
         B = np.vstack( [data[:,i] for i in self.output_columns] ).T # 第二列Yi-->行Yi
@@ -155,7 +155,8 @@ class CarRegulation:
         plt.show()
     def ransacTest(self): # RANSAC随机采样一致算法
         n_samples = len(self.rovel) # 样本个数
-        n_inputs = 1 # 输入变量个数
+        print(n_samples)
+        n_inputs = 2 # 输入变量个数
         n_outputs = 1 # 输出变量个数  
         A_exact = []
         B_exact = []
@@ -164,20 +165,23 @@ class CarRegulation:
             B_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
         A_exact = np.array([A_exact]).T
         B_exact = np.array([B_exact]).T
+        A_exact = np.hstack((np.ones(A_exact.shape),A_exact))
         all_data = np.hstack((A_exact,B_exact)) # 在水平方向上平铺拼接数组
         input_columns = range(n_inputs) # 数组的第一列x:0
         output_columns = [n_inputs + i for i in range(n_outputs)] # 数组最后一列y:1
+        print(input_columns, output_columns)
         model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
         linear_fit, resids, rank, s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
-        ransac_fit, ransac_data = LinearLeastSquareModel.ransac(all_data, model, 20, 1000, 7e3, 40, debug=False, return_all=True) # RANSAC模型
+        ransac_fit, ransac_data = LinearLeastSquareModel.ransac(all_data, model, int(2*n_samples/3), 1000, 0.01, 0.1, debug=False, return_all=True) # RANSAC模型
         sort_idxs = np.argsort(A_exact[:,0])
+        print(ransac_data)
         print('linear_fit', linear_fit)
         print('ransac_fit', ransac_fit)
         A_col0_sorted = A_exact[sort_idxs] # 秩为2的数组
-        plt.plot(A_exact[:,0], B_exact[:,0], 'k.', label='data')
-        plt.plot(A_exact[ransac_data['inliers'],0], B_exact[ransac_data['inliers'],0], 'bx', label='RANSAC data')
-        plt.plot(A_col0_sorted[:,0], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
-        plt.plot(A_col0_sorted[:,0], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
+        plt.plot(A_exact[:,1], B_exact[:,0], 'k.', label='data')
+        plt.plot(A_exact[ransac_data['inliers'],1], B_exact[ransac_data['inliers'],0], 'bx', label='RANSAC data')
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
         plt.legend() # 添加图例
         plt.show()
 class RotateTest:
