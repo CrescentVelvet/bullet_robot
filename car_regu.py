@@ -126,5 +126,5 @@ class SlideTest:
         car_data.draw2D()
 R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
-# RotateTest.read(R_address)
-SlideTest.read(S_address)
+RotateTest.read(R_address)
+# SlideTest.read(S_address)
