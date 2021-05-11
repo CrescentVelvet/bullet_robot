@@ -195,16 +195,10 @@ class Analy_car: # 操作数据
             out_car_list.append(Car_data_one())
         for i in range(len(car_all.all_id)): # 车号划分
             out_car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
-        if flag == 1: # 平射用一次拟合
+        if flag == 1: # 平射挑射都用二次拟合
             for i in range(static_car_num): # 计算拟合函数
                 out_car_list[i].calculate_2()
                 print(i, '---', out_car_list[i].val_fit)
-        elif flag == 0: # 挑射用二次拟合
-            for i in range(static_car_num): # 计算拟合函数
-                out_car_list[i].calculate_2()
-                print(i, '---', out_car_list[i].val_fit)
-        else:
-            print("error in is_FlatChip")
         return out_car_list
     def read_ini(address): # ini数据读取
         robot_conf = MyConfigParser() # ini是小车踢球拟合参数
