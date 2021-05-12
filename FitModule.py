@@ -87,11 +87,10 @@ def Poly1d(x, y, t, d, isShow, needB=True):
     if isShow:
         print('linear_fit', linear_fit)
         print('ransac_fit', ransac_fit)
-        plt.plot(x[:,int(needB)], y[:,0], 'k.', label='data')
-        plt.plot(x[ransac_data['inliers'],int(needB)], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
-        plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,ransac_fit)[:,0], 'g', label='RANSAC fit' )
-        plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,linear_fit)[:,0], 'y', label='linear fit' )
-        plt.legend() # 添加图例
+        plt.plot(x[:,int(needB)], y[:,0], '.', color='black', alpha=0.5, label='data')
+        plt.plot(x[ransac_data['inliers'],int(needB)], y[ransac_data['inliers'],0], 'bx', color='darkcyan', alpha=1.0, label='RANSAC data')
+        plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,ransac_fit)[:,0], color='chocolate', alpha=0.5, linewidth=5, label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,linear_fit)[:,0], color='limegreen', alpha=0.5, linewidth=5, label='linear fit' )
         # plt.show()
     if not needB:
         ransac_fit = np.append([0],ransac_fit)
@@ -116,10 +115,9 @@ def Poly2d(x, y, t, d, isShow):
     if isShow:
         print('linear_fit', linear_fit)
         print('ransac_fit', ransac_fit)
-        plt.plot(x[:,1], y[:,0], 'k.', label='data')
-        plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
-        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], 'g', label='RANSAC fit' )
-        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], 'y', label='linear fit' )
-        plt.legend() # 添加图例
+        plt.plot(x[:,1], y[:,0], '.', color='black', alpha=0.5, label='data')
+        plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', color='darkcyan', alpha=1.0, label='RANSAC data')
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], color='chocolate', alpha=0.5, linewidth=5, label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], color='limegreen', alpha=0.5, linewidth=5, label='linear fit' )
         # plt.show()
     return ransac_fit

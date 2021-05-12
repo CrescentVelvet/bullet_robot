@@ -95,8 +95,8 @@ class CarRegulation:
         A_exact = []
         B_exact = []
         for i in range(len(self.rovel)):
-            if abs(math.atan(self.balldir[i]) - self.cardir[i]) > 0.3: # 排除错误数据
-                continue
+            # if abs(math.atan(self.balldir[i]) - self.cardir[i]) > 0.3: # 排除错误数据
+            #     continue
             B_exact.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
             A_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
         # ransac_fit = FitModule.Poly1d(A_exact, B_exact, 0.01, 10, True, True)
@@ -105,7 +105,8 @@ class CarRegulation:
         plot_fit = np.poly1d(ransac_fit.reshape(1,-1)[0][::-1])
         plot_Y = plot_fit(plot_X)
         # plt.plot(A_exact, B_exact, 'bx')
-        plt.plot(plot_X, plot_Y, 'r', label='polyfit values')
+        plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='real polyfit')
+        plt.legend() # 添加图例
         plt.show()
 class RotateTest:
     def read(address):
