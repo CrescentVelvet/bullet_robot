@@ -6,6 +6,7 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
+import FitModule
 class Flag:
     old_time = -1
 class MyConfigParser(configparser.ConfigParser):
@@ -50,6 +51,12 @@ class Car_data_one: # 单个车数据类
         else:
             raw_fit = np.polyfit(self.maxvel, self.power, 2)
             self.val_fit = np.poly1d(raw_fit)
+    def RANSAC(self):
+        if self.id == -1 or self.id == 4 or self.id == 9:
+            self.val_fit = 0
+        else:
+            raw_fit = FitModule.Poly2d(self.maxvel, self.power, 20, 5, False)
+            self.val_fit = np.poly1d(raw_fit.reshape(1,-1)[0][::-1])
     def draw_txt_one(self): # 绘制拟合曲线
         plot_maxvel = np.arange(0, 7500, 1)
         if self.id == -1:
@@ -187,17 +194,21 @@ class Car_data_all: # 全部车数据
         else:
             print("error in is_FlatChip")
 class Analy_car: # 操作数据
-    def analy_txt(address, flag): # 拟合计算
+    def analy_txt(address, flag_Flat, flag_RANSAC): # 拟合计算
         car_all = Car_data_all() # txt是小车踢球原始数据
-        car_all.read_data(address, flag) # txt数据读取
+        car_all.read_data(address, flag_Flat) # txt数据读取
         out_car_list = []
         for i in range(static_car_num): # 初始化
             out_car_list.append(Car_data_one())
         for i in range(len(car_all.all_id)): # 车号划分
             out_car_list[int(car_all.all_id[i])].assign(int(car_all.all_id[i]), car_all.all_maxvel[i], car_all.all_power[i])
-        if flag == 1: # 平射挑射都用二次拟合
-            for i in range(static_car_num): # 计算拟合函数
+        if flag_RANSAC == 0: # 平射挑射都用二次拟合
+            for i in range(static_car_num):
                 out_car_list[i].calculate_2()
+                print(i, '---', out_car_list[i].val_fit)
+        else: # 使用RANSAC取代直接拟合
+            for i in range(static_car_num):
+                out_car_list[i].RANSAC()
                 print(i, '---', out_car_list[i].val_fit)
         return out_car_list
     def read_ini(address): # ini数据读取
@@ -315,18 +326,19 @@ class Draw_car: # 绘制图像
             plot_maxvel_txt = np.arange(0, 7500, 1)
             plot_power_txt = in_car_txt[i].val_fit(plot_maxvel_txt)
             ax[i] = plt.subplot(4, 4, i+1)
-            plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, '*')
+            plt.plot(in_car_txt[i].maxvel, in_car_txt[i].power, 'bx')
             plt.plot(plot_maxvel_txt, plot_power_txt, 'g')
         plt.show()
 # class FlatData:
 static_car_num = 16
 is_FlatChip = 1 # 1是平射,0是挑射
+is_RANSAC = 1 # 1是RANSAC
 if is_FlatChip:
     txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/FlatData_all.txt"
 else:
     txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ChipData_all.txt"
 ini_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/kickparam.ini"
-car_txt = Analy_car.analy_txt(txt_address, is_FlatChip) ### 读取txt
+car_txt = Analy_car.analy_txt(txt_address, is_FlatChip, is_RANSAC) ### 读取txt
 car_ini = Analy_car.read_ini(ini_address)               ### 读取ini
 # Analy_car.write_ini(ini_address, car_txt)             ### 写入全部ini
 Draw_car.draw_txt_ini(car_txt, car_ini, is_FlatChip)  ### 绘制全部txt和ini

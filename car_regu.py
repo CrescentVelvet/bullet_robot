@@ -97,7 +97,8 @@ class CarRegulation:
         for i in range(len(self.rovel)):
             A_exact.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
             B_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
-        FitModule.Poly1d(A_exact, B_exact, True)
+        # FitModule.Poly1d(A_exact, B_exact, 0.01, 10, True, True)
+        FitModule.Poly2d(A_exact, B_exact, 0.01, 10, True)
 class RotateTest:
     def read(address):
         car_data = CarRegulation()

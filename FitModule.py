@@ -67,8 +67,7 @@ class FitModule:
         else:
             return bestfit
 
-def Poly1d(x, y, needB=True):
-    n_samples = len(x) # 样本个数
+def Poly1d(x, y, t, d, isShow, needB=True):
     x = np.array([x]).T
     y = np.array([y]).T
     n_inputs = 1 # 输入变量个数
@@ -82,14 +81,43 @@ def Poly1d(x, y, needB=True):
     # print(input_columns, output_columns)
     model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
     linear_fit, resids, rank, s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
-    ransac_fit, ransac_data = FitModule.ransac(all_data, model, int(2*n_samples/3), 1000, 0.01, 0.1, debug=False, return_all=True) # RANSAC模型
+    ransac_fit, ransac_data = FitModule.ransac(all_data, model, int(2*len(x)/3), 1000, t, d, debug=False, return_all=True) # RANSAC模型
     sort_idxs = np.argsort(x[:,0])
-    print('linear_fit', linear_fit)
-    print('ransac_fit', ransac_fit)
     A_col0_sorted = x[sort_idxs] # 秩为2的数组
-    plt.plot(x[:,1], y[:,0], 'k.', label='data')
-    plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
-    plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
-    plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
-    plt.legend() # 添加图例
-    plt.show()
+    if isShow:
+        print('linear_fit', linear_fit)
+        print('ransac_fit', ransac_fit)
+        plt.plot(x[:,1], y[:,0], 'k.', label='data')
+        plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
+        plt.legend() # 添加图例
+        plt.show()
+    return ransac_fit
+
+def Poly2d(x, y, t, d, isShow):
+    x = np.array([x]).T
+    y = np.array([y]).T
+    n_inputs = 3 # 输入变量个数
+    n_outputs = 1 # 输出变量个数  
+    x = np.hstack((np.ones(x.shape),x))
+    x = np.hstack((x,(np.array([x[:,1]**2]).T)))
+    all_data = np.hstack((x,y)) # 在水平方向上平铺拼接数组
+    input_columns = range(n_inputs) # 数组的第一列x:0
+    output_columns = [n_inputs + i for i in range(n_outputs)] # 数组最后一列y:1
+    # print(input_columns, output_columns)
+    model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
+    linear_fit, resids, rank, s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
+    ransac_fit, ransac_data = FitModule.ransac(all_data, model, int(2*len(x)/3), 1000, t, d, debug=False, return_all=True) # RANSAC模型
+    sort_idxs = np.argsort(x[:,0])
+    A_col0_sorted = x[sort_idxs] # 秩为2的数组
+    if isShow:
+        print('linear_fit', linear_fit)
+        print('ransac_fit', ransac_fit)
+        plt.plot(x[:,1], y[:,0], 'k.', label='data')
+        plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
+        plt.legend() # 添加图例
+        plt.show()
+    return ransac_fit

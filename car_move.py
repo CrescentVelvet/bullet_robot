@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import configparser
 import numpy as np
 import math
+import FitModule
 class MyConfigParser(configparser.ConfigParser):
     def __init__(self, defaults=None):
         configparser.ConfigParser.__init__(self, defaults=defaults)
@@ -53,6 +54,9 @@ class CarMoveOne:
     def calculate(self): # 计算拟合函数
         raw_fit = np.polyfit(list(set(self.send_vel)), self.avg_vel, 1)
         self.val_fit = np.poly1d(raw_fit)
+    def RANSAC(self):  # 计算RANSAC拟合函数
+        raw_fit = FitModule.Poly1d(list(set(self.send_vel)), self.avg_vel, 10, 10, False, False)
+        self.val_fit = np.poly1d(raw_fit.reshape(1,-1)[0])
 class CarMoveAll:
     def __init__(self):
         self.id = []
@@ -90,12 +94,13 @@ class CarMoveTest:
             car_list.append(CarMoveOne())
         for i in range(len(carcar.id)): # 车号划分
             car_list[carcar.id[i]].assign(carcar.id[i], carcar.send_vel[i], carcar.raw_vel[i])
-        for i in range(static_car_num):
-            print(i, car_list[i].id)
+        # for i in range(static_car_num):
+            # print(i, car_list[i].id)
         for i in range(static_car_num): # 计算中位数并拟合
             if car_list[i].id != -1:
                 car_list[i].average()
-                car_list[i].calculate()
+                # car_list[i].calculate()
+                car_list[i].RANSAC()
         ax = [None] * carcar.getid()
         # robot_conf = MyConfigParser() # 参数写入
         # robot_conf.read(ini_address, encoding="utf-8")
