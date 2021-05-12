@@ -7,9 +7,9 @@ local TURN_DIR = 0.0
 
 local rot_speed = 0.0
 local slide_limit = 300
-local rot_first = 4.0
+local rot_first = -1
 local rot_limit = rot_first
-local power = 3500
+local power = 4000
 local kick_x = 0.0
 local kick_y = 0.0
 local dir_car = 0.0
@@ -43,18 +43,20 @@ function linedir()
 end
 function runpos()
     return function()
-        return PLACE_POS[mode]+CVector(-98*math.cos(player.dir("Leader")),-98*math.sin(player.dir("Leader")))
+        return PLACE_POS[mode] + CVector(-math.cos(player.dir("Leader")), -math.sin(player.dir("Leader")))*98
     end
 end
 
 function getflag()
     return function()
-        print(player.rawVelMod("Leader"))
-        if mode == 1 and player.rotVel("Leader") > rot_limit*0.9 and math.abs(player.toPointDir(SHOOT_POS, "Leader")-player.dir("Leader"))<rot_limit*2/75 then
-            kick_x = player.posX("Leader")
-            kick_y = player.posY("Leader")
-            dir_car = player.dir("Leader")
-            return flag.dribble + flag.kick
+        -- print(player.rawVelMod("Leader"))
+        if mode == 1 and math.abs(player.rotVel("Leader")) > math.abs(rot_limit*0.9) then
+            if  (math.abs(rot_limit) < 0.1 and math.abs(player.rotVel("Leader"))<0.1 and  math.abs(player.dir("Leader"))<0.1) or (math.abs(rot_limit) > 0.1 and  math.abs(player.toPointDir(SHOOT_POS, "Leader")-player.dir("Leader"))<(math.abs(rot_limit))*2/75) then
+                kick_x = player.posX("Leader")
+                kick_y = player.posY("Leader")
+                dir_car = player.dir("Leader")
+                return flag.dribble + flag.kick
+            end
         -- if mode == 2 and math.abs(player.posY("Leader")) < slide_limit/75 then
         elseif mode == 2 and player.rawVelMod("Leader") > slide_limit*0.9 and math.abs(player.dir("Leader"))<math.pi/10 then
             kick_x = player.posX("Leader")
@@ -66,11 +68,22 @@ function getflag()
     end
 end
 
+local use_dir = function()
+    return function()
+        print("usedir:",rot_limit)
+        if rot_limit < 0.1 and rot_limit > -0.1 then
+            print(1)
+            return 1
+        end
+        return 0
+    end
+end
+
 local process = function(power)
     local recordfile = io.open("data/regulation.txt","a")
     omega = rot_limit
     delta_dir = (SHOOT_POS - PLACE_POS[1]):dir() - (ball.pos() - PLACE_POS[1]):dir()
-    print(delta_dir)
+    -- print(delta_dir)
     need_reg = power * math.tan(delta_dir)
     recordfile:write(omega," ",need_reg,"\n")
 end
@@ -93,7 +106,7 @@ gPlayTable.CreatePlay{
 firstState = "fetchBall",
 ["fetchBall"] = {
     switch = function()
-        if ball.toPointDist(PLACE_POS[mode]) < 250 and player.infraredOn("Leader") then
+        if player.toTargetDist("Leader") < 100 and player.infraredOn("Leader") then
             if mode == 1 then
                 return "turn1"
             else
@@ -145,7 +158,7 @@ firstState = "fetchBall",
             return "fetchBall"
         end
     end,
-    Leader = task.openSpeed(0, 0, rotspeed(), 0, getflag(), SHOOT_POS, getpower()),
+    Leader = task.openSpeed(0, 0, rotspeed(), use_dir(), getflag(), SHOOT_POS, getpower()),
     match = "{L}"
 },
 ["slide1"] = {
@@ -188,13 +201,13 @@ firstState = "fetchBall",
         --     return "slide1"
         -- end
     end,
-    Leader = task.openSpeed(0, slidespeed(), 0, 0, getflag(), SHOOT_POS, getpower()),
+    Leader = task.openSpeed(0, slidespeed(), 0, use_dir(), getflag(), SHOOT_POS, getpower()),
     match = "{L}"
 },
 
 ["record"] = {
     switch = function()
-        if (ball.posX()-kick_x) > 1000 then
+        if math.abs(ball.posX()-kick_x) > 1000 then
             -- process((SHOOT_POS - PLACE_POS):mod() + 1000)
             savedata()
             return "fetchBall"

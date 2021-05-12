@@ -87,12 +87,14 @@ def Poly1d(x, y, t, d, isShow, needB=True):
     if isShow:
         print('linear_fit', linear_fit)
         print('ransac_fit', ransac_fit)
-        plt.plot(x[:,1], y[:,0], 'k.', label='data')
-        plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
-        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
-        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
+        plt.plot(x[:,int(needB)], y[:,0], 'k.', label='data')
+        plt.plot(x[ransac_data['inliers'],int(needB)], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
+        plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,ransac_fit)[:,0], 'g', label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,linear_fit)[:,0], 'y', label='linear fit' )
         plt.legend() # 添加图例
-        plt.show()
+        # plt.show()
+    if not needB:
+        ransac_fit = np.append([0],ransac_fit)
     return ransac_fit
 
 def Poly2d(x, y, t, d, isShow):
@@ -116,8 +118,8 @@ def Poly2d(x, y, t, d, isShow):
         print('ransac_fit', ransac_fit)
         plt.plot(x[:,1], y[:,0], 'k.', label='data')
         plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', label='RANSAC data')
-        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], label='RANSAC fit' )
-        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], label='linear fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], 'g', label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], 'y', label='linear fit' )
         plt.legend() # 添加图例
-        plt.show()
+        # plt.show()
     return ransac_fit
