@@ -121,3 +121,30 @@ def Poly2d(x, y, t, d, isShow):
         plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], color='limegreen', alpha=0.5, linewidth=5, label='linear fit' )
         # plt.show()
     return ransac_fit
+
+def Poly3d(x, y, t, d, isShow):
+    x = np.array([x]).T
+    y = np.array([y]).T
+    n_inputs = 4 # 输入变量个数
+    n_outputs = 1 # 输出变量个数  
+    x = np.hstack((np.ones(x.shape),x))
+    x = np.hstack((x,(np.array([x[:,1]**2]).T)))
+    x = np.hstack((x,(np.array([x[:,1]**3]).T)))
+    all_data = np.hstack((x,y)) # 在水平方向上平铺拼接数组
+    input_columns = range(n_inputs) # 数组的第一列x:0
+    output_columns = [n_inputs + i for i in range(n_outputs)] # 数组最后一列y:1
+    # print(input_columns, output_columns)
+    model = LinearLeastSquareModel(input_columns, output_columns, debug = False) # 类的实例化:用最小二乘生成已知模型
+    linear_fit, resids, rank, s = scipy.linalg.lstsq(all_data[:,input_columns], all_data[:,output_columns])
+    ransac_fit, ransac_data = FitModule.ransac(all_data, model, int(2*len(x)/3), 1000, t, d, debug=False, return_all=True) # RANSAC模型
+    sort_idxs = np.argsort(x[:,0])
+    A_col0_sorted = x[sort_idxs] # 秩为2的数组
+    if isShow:
+        print('linear_fit', linear_fit)
+        print('ransac_fit', ransac_fit)
+        plt.plot(x[:,1], y[:,0], '.', color='black', alpha=0.5, label='data')
+        plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', color='Crimson', alpha=1.0, label='RANSAC data')
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], color='chocolate', alpha=0.5, linewidth=5, label='RANSAC fit' )
+        plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,linear_fit)[:,0], color='limegreen', alpha=0.5, linewidth=5, label='linear fit' )
+        # plt.show()
+    return ransac_fit
