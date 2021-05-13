@@ -27,6 +27,7 @@ CKickRegulation::CKickRegulation()
     ZSS::ZParamManager::instance()->loadParam(DRIBBLE_POWER_RADIO, "KickRegulation/dribblePowerRadio", 1.0);
     ZSS::ZParamManager::instance()->loadParam(FLAT_KICK_MAX, "KickLimit/FlatKickMax", 6300.0);
     ZSS::ZParamManager::instance()->loadParam(IS_RIGHT, "ZAlert/IsRight", false);
+//    canshu = 0.5;
 }
 
 bool CKickRegulation::regulate(int player, const CGeoPoint& target, double& needBallVel, double& playerDir, bool isChip) {
@@ -128,55 +129,61 @@ bool CKickRegulation::regulate(int player, const CGeoPoint& target, double& need
 
 double CKickRegulation::regulateCheck(int player, double needBallVel, double needDir, bool isChip, double tolerance) {
     auto& kicker = vision->ourPlayer(player);
-
     if (std::fabs(kicker.Dir() - needDir) > PARAM::Math::PI / 2) {
         return 0.0;
     }
-
     double vel2targetDir, needTanVel, needParalVel;
-    double vel2faceDir, tanVel, paralVel, ballRotVel;
+    double vel2faceDir, tanVel, paralVel, ballRotVel;//旋转线速度
     double vel2targetDir_img, needTanVel_img, needParalVel_img, paralVel_img;
-    if(isChip) needBallVel = std::sqrt(9800.0 * needBallVel/ (2 * std::tan(DRIBBLE_CHIP_DIR)));
-    if(!IS_SIMULATION){
-        vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
+    if(isChip) {
+        needBallVel = std::sqrt(9800.0 * needBallVel / (2 * std::tan(DRIBBLE_CHIP_DIR)));
+    }
+    if(!IS_SIMULATION) {
         vel2targetDir = Utils::Normalize(needDir - kicker.ImuDir());
+        vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
     }
-
     else {
-        vel2targetDir = vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
+        vel2targetDir = Utils::Normalize(needDir - kicker.Dir());
+        vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
     }
-
-    needTanVel = needBallVel * std::sin(vel2targetDir);
-    needParalVel = needBallVel * std::cos(vel2targetDir);
-
+    needTanVel = needBallVel * std::sin(vel2targetDir);//切向速度
+    needParalVel = needBallVel * std::cos(vel2targetDir);//法向速度
     needTanVel_img = needBallVel * std::sin(vel2targetDir_img);
     needParalVel_img = needBallVel * std::cos(vel2targetDir_img);
-
     float vel2faceDir_img;
     float tanVel_img;
-    if(!IS_SIMULATION){
+    if(!IS_SIMULATION) {
         vel2faceDir = Utils::Normalize(kicker.RawVel().dir() - kicker.ImuDir());
         vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
     }
-    else vel2faceDir = vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
+    else {
+        vel2faceDir = vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
+    }
     paralVel = kicker.RawVel().mod() * std::cos(vel2faceDir);
     paralVel_img = kicker.RawVel().mod() * std::cos(vel2faceDir_img);
-    if(!IS_SIMULATION) ballRotVel = kicker.ImuRotateVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
-    else ballRotVel = kicker.RotVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
-//    qDebug()<<"vw:%lf"<<kicker.ImuRotateVel();
-    if(!IS_SIMULATION) ballRotVel *= std::abs(kicker.ImuRotateVel()) / 1.3;
+    if(!IS_SIMULATION) {
+        ballRotVel = kicker.ImuRotateVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
+    }
+    else {
+        ballRotVel = kicker.RotVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
+    }
+    if(!IS_SIMULATION) {
+        ballRotVel *= std::abs(kicker.ImuRotateVel()) / 1.3;
+    }
     tanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + ballRotVel;
     tanVel_img = kicker.RawVel().mod() * std::sin(vel2faceDir_img) + ballRotVel;
-    if(tanVel * tanVel > needBallVel * needBallVel) return 0.0;
-
+    if(tanVel * tanVel > needBallVel * needBallVel) {
+        return 0.0;
+    }
     double error_imu = std::abs(Utils::Normalize(std::asin(needTanVel / needBallVel) - std::asin(tanVel / needBallVel)));
     double error_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(tanVel_img / needBallVel)));
     if(DEBUG_PRINT){
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,200), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(kicker.Dir()).arg(kicker.RawVel().dir()).toLatin1(),COLOR_RED);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,0), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_RED);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-200), QString("realvp: %1   realvt: %2 2veldir:%3").arg(paralVel).arg(tanVel).arg(vel2faceDir).toLatin1(),COLOR_RED);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-400), QString("ballrot: %1 error_imu: %2 error_img: %3").arg(ballRotVel).arg(error_imu).arg(error_img).toLatin1(),COLOR_RED);
-    }
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,200), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,0), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,-200), QString("realvp: %1   realvt: %2 2veldir:%3").arg(paralVel).arg(tanVel).arg(vel2faceDir).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,-400), QString("ballrot: %1 error_imu: %2 error_img: %3").arg(ballRotVel).arg(error_imu).arg(error_img).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,-600), QString("ImuRotateVel: %1 ImuDir: %2 RawRotVel: %3 RotVel: %4 Dir: %5").arg(kicker.ImuRotateVel()).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawRotVel()).arg(kicker.RotVel()).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
+}
     double tolerance_img = 2 * tolerance;
     if(error_imu > tolerance)// || error_img > tolerance_img)
         return 0.0;
@@ -186,6 +193,91 @@ double CKickRegulation::regulateCheck(int player, double needBallVel, double nee
         return (2 * std::pow(needBallVel, 2) * std::tan(DRIBBLE_CHIP_DIR) / 9800.0);
     }
     if(IS_SIMULATION) return std::sqrt(needBallVel * needBallVel - tanVel * tanVel);
-    if(needBallVel < 1100) return std::sqrt(needBallVel * needBallVel - tanVel * tanVel);
+    if(needBallVel < 1100) {return std::sqrt(needBallVel * needBallVel - tanVel * tanVel);}
     return std::sqrt(needBallVel * needBallVel - tanVel * tanVel) - paralVel;//needParalVel - paralVel;
 }
+
+double CKickRegulation::kickCheck(int player, double needBallVel, double needDir, bool isChip, double tolerance) {
+    auto& kicker = vision->ourPlayer(player);
+    if (std::fabs(kicker.Dir() - needDir) > PARAM::Math::PI / 2) {
+        return 0.0;
+    }
+    double vel2targetDir, needTanVel, needParalVel;
+    double vel2faceDir, tanVel, paralVel, ballRotVel, oldballRotVel;//旋转线速度
+    double vel2targetDir_img, needTanVel_img, needParalVel_img, paralVel_img;
+    if(isChip) {
+        needBallVel = std::sqrt(9800.0 * needBallVel / (2 * std::tan(DRIBBLE_CHIP_DIR)));
+    }
+    if(!IS_SIMULATION) {
+        vel2targetDir = Utils::Normalize(needDir - kicker.ImuDir());
+        vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
+    }
+    else {
+        vel2targetDir = Utils::Normalize(needDir - kicker.Dir());
+        vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
+    }
+    needTanVel = needBallVel * std::sin(vel2targetDir);//切向速度
+    needParalVel = needBallVel * std::cos(vel2targetDir);//法向速度
+    needTanVel_img = needBallVel * std::sin(vel2targetDir_img);
+    needParalVel_img = needBallVel * std::cos(vel2targetDir_img);
+    float vel2faceDir_img;
+    float tanVel_img;
+    if(!IS_SIMULATION){
+        vel2faceDir = Utils::Normalize(kicker.RawVel().dir() - kicker.ImuDir());
+        vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
+    }
+    else {
+        vel2faceDir = vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
+    }
+    paralVel = kicker.RawVel().mod() * std::cos(vel2faceDir);
+    paralVel_img = kicker.RawVel().mod() * std::cos(vel2faceDir_img);
+    if(!IS_SIMULATION) {
+        oldballRotVel = kicker.ImuRotateVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
+    }
+    else {
+        oldballRotVel = kicker.RotVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
+    }
+    if(!IS_SIMULATION) {
+        ballRotVel = oldballRotVel;
+        oldballRotVel *= std::abs(kicker.ImuRotateVel()) / 1.3;
+    } // canshu
+    tanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + oldballRotVel;
+    tanVel_img = kicker.RawVel().mod() * std::sin(vel2faceDir_img) + oldballRotVel;
+    if(tanVel * tanVel > needBallVel * needBallVel) {
+        return 0.0;
+    }
+    double a_ball2car = Utils::Normalize(std::asin(needTanVel / needBallVel));
+    double a_rot2vell = Utils::Normalize(6.05727009e+01*a_ball2car*a_ball2car-1.93066298e-01*a_ball2car-2.06514068e+00);
+    double old_power = std::sqrt(needBallVel * needBallVel - tanVel * tanVel);
+    double new_power = std::tan(a_rot2vell) * tanVel;
+    double error_imu = std::abs(Utils::Normalize(std::asin(needTanVel / needBallVel) - std::asin(tanVel / needBallVel)));
+    double error_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(tanVel_img / needBallVel)));
+    if(DEBUG_PRINT){
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,600), QString("angle_ball2car: %1 angle_rot2vell: %2").arg(a_ball2car).arg(a_rot2vell).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,400), QString("old_power: %1 new_power: %2").arg(old_power).arg(new_power).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,200), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,0), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,-200), QString("realvp: %1   realvt: %2 2veldir:%3").arg(paralVel).arg(tanVel).arg(vel2faceDir).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,-400), QString("ballrot: %1 error_imu: %2 error_img: %3").arg(oldballRotVel).arg(error_imu).arg(error_img).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,-600), QString("ImuRotateVel: %1 ImuDir: %2 RawRotVel: %3 RotVel: %4 Dir: %5").arg(kicker.ImuRotateVel()).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawRotVel()).arg(kicker.RotVel()).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
+    }
+    double tolerance_img = 2 * tolerance;
+    if(error_imu > tolerance) {
+        return 0.0;
+    }
+    if(isChip){
+        if(IS_SIMULATION) {
+            return (2 * std::pow(needBallVel, 2) * std::tan(DRIBBLE_CHIP_DIR) / 9800.0);
+        }
+        needBallVel = (-paralVel + std::sqrt(paralVel * paralVel + 2 * needParalVel * 9800.0 / std::tan(DRIBBLE_CHIP_DIR))) / 2;
+        return (2 * std::pow(needBallVel, 2) * std::tan(DRIBBLE_CHIP_DIR) / 9800.0);
+    }
+    if(IS_SIMULATION) {
+        return std::sqrt(needBallVel * needBallVel - tanVel * tanVel);
+    }
+    if(needBallVel < 1100) {
+        return std::sqrt(needBallVel * needBallVel - tanVel * tanVel);
+    }
+    return std::sqrt(needBallVel * needBallVel - tanVel * tanVel) - paralVel;//needParalVel - paralVel;
+}
+
