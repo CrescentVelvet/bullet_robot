@@ -5,23 +5,20 @@ import math
 import FitModule
 class CarRegulation:
     def __init__(self):
-        self.rovel = []
-        self.power = []
-        self.cardir = []
-        self.balldir = []
+        self.id = []
+        self.vel = []
+        self.dir = []
         self.sum_bally = []
-    def assign(self, rovel, power, ballx, bally, cardir):
-        self.rovel.append(rovel)
-        self.power.append(power)
-        self.cardir.append(cardir)
-        self.balldir.append(bally/ballx)
+    def assign(self, iid, ivel, idir):
+        self.id.append(iid)
+        self.vel.append(ivel)
+        self.dir.append(idir)
     def clear(self):
-        self.rovel = []
-        self.power = []
-        self.cardir = []
-        self.balldir = []
+        self.id = []
+        self.vel = []
+        self.dir = []
         self.sum_balldir = []
-    def summary(self): # 求balldir平均值
+    def old_summary(self): # 求balldir平均值
         # print("rovel", len(set(self.rovel)), "power", len(set(self.power)))
         num_balldir = [[0 for cols in range(len(set(self.rovel)))] for rows in range(len(set(self.power)))] # row行,col列
         self.sum_balldir = [[0 for cols in range(len(set(self.rovel)))] for rows in range(len(set(self.power)))]
@@ -36,7 +33,7 @@ class CarRegulation:
                     self.sum_balldir[i][j] = 0
                 else:
                     self.sum_balldir[i][j] = self.sum_balldir[i][j] / num_balldir[i][j] # 求平均
-    def draw3D(self): # 绘制三维图像
+    def old_draw3D(self): # 绘制三维图像
         ax = Axes3D(plt.figure())
         ax.scatter(self.power, self.rovel, self.balldir, c='g') # 绘制散点
         for i in range(len(set(self.power))):
@@ -75,7 +72,7 @@ class CarRegulation:
         ax.set_ylabel('rovel', fontdict={'size': 15, 'color': 'black'})
         ax.set_zlabel('balldir', fontdict={'size': 15, 'color': 'black'})
         plt.show()
-    def draw2D(self): # 绘制二维图像
+    def old_draw2D(self): # 绘制二维图像
         t_x = []
         t_y = []
         for i in range(len(self.rovel)):
@@ -91,61 +88,43 @@ class CarRegulation:
         plt.xlabel('rovel/power')
         plt.ylabel('balldir-cardir')
         plt.show()
-    def ransacTest(self): # RANSAC随机采样一致算法
-        A_exact = []
-        B_exact = []
-        for i in range(len(self.rovel)):
-            # if abs(math.atan(self.balldir[i]) - self.cardir[i]) > 0.3: # 排除错误数据
-            #     continue
-            B_exact.append( math.atan(self.rovel[i] / self.power[i])) # rovel和power相除
-            A_exact.append( math.atan(self.balldir[i]) - self.cardir[i]) # balldir和cardir相减
+    def draw2D(self): # 绘制二维图像
+        raw_fit = np.polyfit(self.dir, self.vel, 2)
+        val_fit = np.poly1d(raw_fit)
+        print('拟合结果为：', val_fit)
+        plot_x = np.arange(sorted(self.dir)[0], sorted(self.dir)[-1], 0.1)
+        plot_y = val_fit(plot_x)
+        plt.plot(self.dir, self.vel, 'bx', color='green')
+        plt.plot(plot_x, plot_y, color='red')
+        plt.xlabel('balldir-cardir')
+        plt.ylabel('rovel/power')
+        plt.show()
+    def ransac(self): # RANSAC随机采样一致算法
+        A_exact = self.dir
+        B_exact = self.vel
         # ransac_fit = FitModule.Poly1d(A_exact, B_exact, 0.01, 10, True, True)
         ransac_fit = FitModule.Poly2d(A_exact, B_exact, 0.005, 10, True)
         plot_X = np.arange(min(A_exact), max(A_exact), 0.01)
         plot_fit = np.poly1d(ransac_fit.reshape(1,-1)[0][::-1])
         plot_Y = plot_fit(plot_X)
-        # plt.plot(A_exact, B_exact, 'bx')
         plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='real polyfit')
         plt.legend() # 添加图例
         plt.show()
-class RotateTest:
+class RegulationTest:
     def read(address):
         car_data = CarRegulation()
         with open(address, "r") as f:
             raw_data = f.readlines()
             for line in raw_data:
                 line_data = line.split()
-                if len(line_data) != 5:
+                if len(line_data) != 3:
                     continue
-                t_rovel = float(line_data[0].strip()) * 98
-                t_power = float(line_data[1].strip())
-                t_ballx = float(line_data[2].strip())
-                t_bally = float(line_data[3].strip())
-                t_dir = float(line_data[4].strip())
-                car_data.assign(t_rovel, t_power, t_ballx, t_bally, t_dir)
-        # car_data.summary()
-        # car_data.draw3D()
-        # car_data.draw2D()
-        car_data.ransacTest()
-class SlideTest:
-    def read(address):
-        car_data = CarRegulation()
-        with open(address, "r") as f:
-            raw_data = f.readlines()
-            for line in raw_data:
-                line_data = line.split()
-                if len(line_data) != 5:
-                    continue
-                t_vel = float(line_data[0].strip())
-                t_power = float(line_data[1].strip())
-                t_ballx = float(line_data[2].strip())
-                t_bally = float(line_data[3].strip())
-                t_dir = float(line_data[4].strip())
-                car_data.assign(t_vel, t_power, t_ballx, t_bally, t_dir)
-        # car_data.summary()
-        # car_data.draw3D()
+                t_id = float(line_data[0].strip())
+                t_vel = float(line_data[1].strip())
+                t_dir = float(line_data[2].strip())
+                car_data.assign(t_id, t_vel, t_dir)
         car_data.draw2D()
+        # car_data.ransac()
 R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
-RotateTest.read(R_address)
-# SlideTest.read(S_address)
+RegulationTest.read(R_address)

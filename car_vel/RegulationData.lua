@@ -7,11 +7,13 @@ local TURN_DIR = 0.0
 
 local rot_speed = 0.0
 local slide_limit = 300
-local rot_first = 1.0
+local rot_first = -8.0
+local rot_max = 9.0
 local rot_limit = rot_first
 local rotate_now = 0.0
 local slide_now = 0.0
-local power = 5000
+local power = 4000
+local power_max = 6000
 local kick_x = 0.0
 local kick_y = 0.0
 local dir_car = 0.0
@@ -52,16 +54,18 @@ end
 function getflag()
     return function()
         if mode == 1 and math.abs(player.imuRotVel("Leader")) > math.abs(rot_limit*0.9) then
-            if (math.abs(rot_limit) < 0.1 and math.abs(player.imuRotVel("Leader"))<0.1 and math.abs(player.dir("Leader"))<0.1) or (math.abs(rot_limit) > 0.1 and  math.abs(player.toPointDir(SHOOT_POS, "Leader")-player.dir("Leader"))<(math.abs(rot_limit))*2/75) then
+            if (math.abs(rot_limit) < 0.1 and math.abs(player.imuRotVel("Leader"))<0.1 and math.abs(player.dir("Leader"))<0.1) or (math.abs(rot_limit) > 0.1 and math.abs(player.toPointDir(SHOOT_POS, "Leader")-player.dir("Leader"))<(math.abs(rot_limit))*2/75) then
                 kick_x = player.posX("Leader")
                 kick_y = player.posY("Leader")
                 rotate_now = player.imuRotVel("Leader")
+                dir_car = player.dir("Leader")
                 return flag.dribble + flag.kick
             end
         elseif mode == 2 and player.rawVelMod("Leader") > slide_limit*0.9 and math.abs(player.dir("Leader"))<math.pi/10 then
             kick_x = player.posX("Leader")
             kick_y = player.posY("Leader")
             slide_now = player.rawVelMod("Leader")
+            dir_car = player.dir("Leader")
             return flag.dribble + flag.kick
         end
         return flag.dribble
@@ -80,10 +84,9 @@ local use_dir = function()
 end
 
 local savedata = function ()
-    dir_car = player.dir("Leader")
     if mode == 1 then
         local recordfile = io.open("data/ReguDataRotate.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",rotate_now/power," ",(ball.posY()-kick_y)/(ball.posX()-kick_x)-dir_car,"\n")
+        recordfile:write(" ",player.num("Leader")," ",rotate_now*98/power," ",(ball.posY()-kick_y)/(ball.posX()-kick_x)-dir_car,"\n")
     else
         local recordfile = io.open("data/ReguDataSlide.txt", "a")
         recordfile:write(" ",player.num("Leader")," ",slide_now/power," ",(ball.posY()-kick_y)/(ball.posX()-kick_x)-dir_car,"\n")
@@ -115,11 +118,11 @@ firstState = "fetchBall",
             if player.toTargetDist("Leader")< 200 then
                 if ball.toPointDist(PLACE_POS[1]) < 200 and player.infraredOn("Leader") then
                     rot_limit = rot_limit + 1.0
-                    if(rot_limit > 12.0) then
+                    if(rot_limit > rot_max) then
                         power = power + 500
-                        rot_limit = rot_first + 1.0
+                        rot_limit = rot_first
                     end
-                    if(power > 6000) then
+                    if(power > power_max) then
                         return "waitforball"
                     end
                     return "turn2"
@@ -192,12 +195,12 @@ firstState = "fetchBall",
 
 ["record"] = {
     switch = function()
-        savedata()
         if math.abs(ball.posX()-kick_x) > 1000 then
+            savedata()
             return "fetchBall"
         end
     end,
-    Leader = task.openSpeed(0, 0, rotspeed(), use_dir(), getflag(), SHOOT_POS, getpower()),
+    Leader = task.openSpeed(0, 0, rotspeed(), use_dir(), _, SHOOT_POS, getpower()),
     match = "{L}"
 },
 
@@ -216,4 +219,3 @@ applicable ={
 attribute = "attack",
 timeout = 99999
 }
-
