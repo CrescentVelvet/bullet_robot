@@ -89,26 +89,34 @@ class CarRegulation:
         plt.ylabel('balldir-cardir')
         plt.show()
     def draw2D(self): # 绘制二维图像
-        raw_fit = np.polyfit(self.dir, self.vel, 2)
+        raw_fit = np.polyfit(self.dir, self.vel, 1)
         val_fit = np.poly1d(raw_fit)
         print('拟合结果为：', val_fit)
-        plot_x = np.arange(sorted(self.dir)[0], sorted(self.dir)[-1], 0.1)
+        plot_x = np.arange(sorted(self.dir)[0], sorted(self.dir)[-1], 0.01)
         plot_y = val_fit(plot_x)
-        plt.plot(self.dir, self.vel, 'bx', color='green')
+        plt.plot(self.dir, self.vel, 'o', color='green')
         plt.plot(plot_x, plot_y, color='red')
+        # for i_x, i_y in zip(self.dir, self.vel):
+        #     plt.text(i_x, i_y, '({}, {})'.format(i_x, i_y))
         plt.xlabel('balldir-cardir')
         plt.ylabel('rovel/power')
         plt.show()
-    def ransac(self): # RANSAC随机采样一致算法
+    def ransac(self, flag): # RANSAC随机采样一致算法
         A_exact = self.dir
         B_exact = self.vel
-        # ransac_fit = FitModule.Poly1d(A_exact, B_exact, 0.01, 10, True, True)
-        ransac_fit = FitModule.Poly2d(A_exact, B_exact, 0.005, 10, True)
+        if flag == 1:
+            ransac_fit = FitModule.Poly1d(A_exact, B_exact, 0.01, 10, True, True)
+        elif flag == 2:
+            ransac_fit = FitModule.Poly2d(A_exact, B_exact, 0.005, 10, True)
+        else:
+            print("error in ransac flag")
         plot_X = np.arange(min(A_exact), max(A_exact), 0.01)
         plot_fit = np.poly1d(ransac_fit.reshape(1,-1)[0][::-1])
         plot_Y = plot_fit(plot_X)
         plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='real polyfit')
         plt.legend() # 添加图例
+        plt.xlabel('balldir-cardir')
+        plt.ylabel('rovel/power')
         plt.show()
 class RegulationTest:
     def read(address):
@@ -117,14 +125,14 @@ class RegulationTest:
             raw_data = f.readlines()
             for line in raw_data:
                 line_data = line.split()
-                if len(line_data) != 3:
-                    continue
+                # if len(line_data) != 3:
+                #     continue
                 t_id = float(line_data[0].strip())
                 t_vel = float(line_data[1].strip())
                 t_dir = float(line_data[2].strip())
                 car_data.assign(t_id, t_vel, t_dir)
-        car_data.draw2D()
-        # car_data.ransac()
+        # car_data.draw2D()
+        car_data.ransac(2)
 R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
 RegulationTest.read(R_address)

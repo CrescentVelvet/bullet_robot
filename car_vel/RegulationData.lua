@@ -86,10 +86,10 @@ end
 local savedata = function ()
     if mode == 1 then
         local recordfile = io.open("data/ReguDataRotate.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",rotate_now*98/power," ",(ball.posY()-kick_y)/(ball.posX()-kick_x)-dir_car,"\n")
+        recordfile:write(" ",player.num("Leader")," ",math.tan(rotate_now*98/power)," ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", rotate_now, " ", rot_limit, " ", dir_car, "\n")
     else
         local recordfile = io.open("data/ReguDataSlide.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",slide_now/power," ",(ball.posY()-kick_y)/(ball.posX()-kick_x)-dir_car,"\n")
+        recordfile:write(" ",player.num("Leader")," ",math.tan(slide_now/power),    " ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", slide_now, " ", power, " ", dir_car,"\n")
     end
 end
 
