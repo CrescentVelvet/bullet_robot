@@ -168,7 +168,7 @@ double CKickRegulation::regulateCheck(int player, double needBallVel, double nee
         ballRotVel = kicker.RotVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
     }
     if(!IS_SIMULATION) {
-        ballRotVel *= std::abs(kicker.ImuRotateVel()) / 1.3;
+        ballRotVel *= 0.8;//std::abs(kicker.ImuRotateVel()) / 1.3;
     }
     tanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + ballRotVel;
     tanVel_img = kicker.RawVel().mod() * std::sin(vel2faceDir_img) + ballRotVel;
@@ -199,11 +199,11 @@ double CKickRegulation::regulateCheck(int player, double needBallVel, double nee
 
 double CKickRegulation::kickCheck(int player, double needBallVel, double needDir, bool isChip, double tolerance) {
     auto& kicker = vision->ourPlayer(player);
-    if (std::fabs(kicker.Dir() - needDir) > PARAM::Math::PI / 2) {
+    if (std::fabs(kicker.Dir() - needDir) > PARAM::Math::PI / 4) {
         return 0.0;
     }
     double vel2targetDir, needTanVel, needParalVel;
-    double vel2faceDir, tanVel, paralVel, ballRotVel, oldballRotVel;//旋转线速度
+    double vel2faceDir, tanVel, paralVel, mytanVel, myballRotVel, oldballRotVel;//旋转线速度
     double vel2targetDir_img, needTanVel_img, needParalVel_img, paralVel_img;
     if(isChip) {
         needBallVel = std::sqrt(9800.0 * needBallVel / (2 * std::tan(DRIBBLE_CHIP_DIR)));
@@ -238,22 +238,24 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
         oldballRotVel = kicker.RotVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
     }
     if(!IS_SIMULATION) {
-        ballRotVel = oldballRotVel;
+        myballRotVel = oldballRotVel;
         oldballRotVel *= std::abs(kicker.ImuRotateVel()) / 1.3;
-    } // canshu
+    }
+    mytanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + myballRotVel;
     tanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + oldballRotVel;
     tanVel_img = kicker.RawVel().mod() * std::sin(vel2faceDir_img) + oldballRotVel;
     if(tanVel * tanVel > needBallVel * needBallVel) {
         return 0.0;
     }
     double a_ball2car = Utils::Normalize(std::asin(needTanVel / needBallVel));
-    double a_rot2vell = Utils::Normalize(6.05727009e+01*a_ball2car*a_ball2car-1.93066298e-01*a_ball2car-2.06514068e+00);
+    double a_rot2vell = Utils::Normalize(std::asin(tanVel / needBallVel));
+    double error_me = std::abs(1.47658335e+01*a_rot2vell*a_rot2vell*a_rot2vell-2.00137149e-01*a_rot2vell*a_rot2vell-7.06464296e-01*a_rot2vell+3.15874621e-03);
     double old_power = std::sqrt(needBallVel * needBallVel - tanVel * tanVel);
     double new_power = std::tan(a_rot2vell) * tanVel;
     double error_imu = std::abs(Utils::Normalize(std::asin(needTanVel / needBallVel) - std::asin(tanVel / needBallVel)));
     double error_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(tanVel_img / needBallVel)));
     if(DEBUG_PRINT){
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,600), QString("angle_ball2car: %1 angle_rot2vell: %2").arg(a_ball2car).arg(a_rot2vell).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,600), QString("angle_ball2car: %1 angle_rot2vell: %2 error_me: %3").arg(a_ball2car).arg(a_rot2vell).arg(error_me).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,400), QString("old_power: %1 new_power: %2").arg(old_power).arg(new_power).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,200), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(-1000,0), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_GREEN);
@@ -280,4 +282,3 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
     }
     return std::sqrt(needBallVel * needBallVel - tanVel * tanVel) - paralVel;//needParalVel - paralVel;
 }
-

@@ -331,8 +331,8 @@ class Draw_car: # 绘制图像
         plt.show()
 # class FlatData:
 static_car_num = 16
-is_FlatChip = 1 # 1是平射,0是挑射
-is_RANSAC = 1 # 1是RANSAC
+is_FlatChip = 0 # 1是平射,0是挑射
+is_RANSAC = 0 # 1是RANSAC
 if is_FlatChip:
     txt_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/FlatData_all.txt"
 else:

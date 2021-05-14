@@ -89,41 +89,44 @@ class CarRegulation:
         plt.ylabel('balldir-cardir')
         plt.show()
     def draw2D(self, flag): # 绘制二维图像
-        raw_fit = np.polyfit(self.vel, self.dir, flag)
+        X_exact = self.vel
+        Y_exact = self.dir
+        raw_fit = np.polyfit(X_exact, Y_exact, flag)
         val_fit = np.poly1d(raw_fit)
         print('拟合结果为：', val_fit)
-        plot_x = np.arange(sorted(self.vel)[0], sorted(self.dir)[-1], 0.01)
+        plot_X = np.arange(min(X_exact), max(X_exact), 0.01)
         plot_y = val_fit(plot_x)
-        plt.plot(self.vel, self.dir, 'o', color='green')
+        plt.plot(X_exact, Y_exact, 'o', color='green')
         plt.plot(plot_x, plot_y, color='blue')
-        # for i_x, i_y in zip(self.vel, self.dir):
-        #     plt.text(i_x, i_y, '({}, {})'.format(i_x, i_y))
-        plt.xlabel('balldir-cardir')
-        plt.ylabel('rovel/power')
+        # for i_x, i_y in zip(X_exact, Y_exact):
+        #     plt.text(i_x, i_y, '({:.6f}, {:.6f})'.format(i_x, i_y))
+        plt.xlabel('rovel/power')
+        plt.ylabel('balldir-cardir')
         plt.show()
     def ransac(self, flag): # RANSAC随机采样一致算法
-        A_exact = self.vel
-        B_exact = self.dir
+        X_exact = self.vel
+        Y_exact = self.dir
         if flag == 1:
-            ransac_fit = FitModule.Poly1d(A_exact, B_exact, 0.01, 10, True, True)
+            ransac_fit = FitModule.Poly1d(X_exact, Y_exact, 0.01, 10, True, True)
         elif flag == 2:
-            ransac_fit = FitModule.Poly2d(A_exact, B_exact, 0.005, 10, True)
+            ransac_fit = FitModule.Poly2d(X_exact, Y_exact, 0.005, 10, True)
         elif flag == 3:
-            ransac_fit = FitModule.Poly3d(A_exact, B_exact, 0.005, 10, True)
+            ransac_fit = FitModule.Poly3d(X_exact, Y_exact, 0.005, 10, True)
+            print(("double error_me = std::abs({}*a_rot2vell*a_rot2vell*a_rot2vell+{}*a_rot2vell*a_rot2vell+{}*a_rot2vell+{});").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
         else:
             print("error in ransac flag")
-        plot_X = np.arange(min(A_exact), max(A_exact), 0.01)
+        plot_X = np.arange(min(X_exact), max(X_exact), 0.01)
         plot_fit = np.poly1d(ransac_fit.reshape(1,-1)[0][::-1])
         plot_Y = plot_fit(plot_X)
         plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='real polyfit')
         line_x = np.arange(-0.2, 0.2, 0.01)
         line_y = np.zeros(len(line_x))
         for i in range(len(line_x)):
-            line_y[i] = -math.tanh(line_x[i]*10)/10
+            line_y[i] = -math.tanh(line_x[i]*20)/6
         plt.plot(line_x, line_y, color='blue', linewidth=3, label='line fit')
         plt.legend() # 添加图例
-        plt.xlabel('balldir-cardir')
-        plt.ylabel('rovel/power')
+        plt.xlabel('rovel/power')
+        plt.ylabel('balldir-cardir')
         plt.show()
 class RegulationTest:
     def read(address):
@@ -140,6 +143,6 @@ class RegulationTest:
                 car_data.assign(t_id, t_vel, t_dir)
         # car_data.draw2D(3)
         car_data.ransac(3)
-R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate.txt"
+R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_all.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
 RegulationTest.read(R_address)

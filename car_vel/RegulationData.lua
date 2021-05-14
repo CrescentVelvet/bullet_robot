@@ -7,18 +7,21 @@ local TURN_DIR = 0.0
 
 local rot_speed = 0.0
 local slide_limit = 300
-local rot_first = -8.0
+local rot_first = -10.0
 local rot_max = 9.0
 local rot_limit = rot_first
+local rot_test = 0
 local rotate_now = 0.0
 local slide_now = 0.0
-local power = 4000
+local power = 3000
 local power_max = 6000
 local kick_x = 0.0
 local kick_y = 0.0
 local dir_car = 0.0
 -- 2 for Slide move, 1 for Rotate move
-local mode = 1
+local mode = 2
+local regutest = false
+local theta = 0
 
 function getpower()
     return function()
@@ -30,9 +33,19 @@ function rotspeed()
         return rot_speed
     end
 end
-function slidespeed()
+function rottest()
     return function()
-        return -slide_limit
+        return rot_test
+    end
+end
+function slidespeed(i)
+    return function()
+        if i == 0 then
+            return -slide_limit * math.sin(theta)
+        end
+        if i == 1 then
+            return -slide_limit * math.cos(theta)
+        end
     end
 end
 function slidedir()
@@ -61,7 +74,7 @@ function getflag()
                 dir_car = player.dir("Leader")
                 return flag.dribble + flag.kick
             end
-        elseif mode == 2 and player.rawVelMod("Leader") > slide_limit*0.9 and math.abs(player.dir("Leader"))<math.pi/10 then
+        elseif mode == 2 and player.rawVelMod("Leader") > slide_limit*0.9 and math.abs(player.imuRotVel("Leader"))<0.3 then
             kick_x = player.posX("Leader")
             kick_y = player.posY("Leader")
             slide_now = player.rawVelMod("Leader")
@@ -74,7 +87,6 @@ end
 
 local use_dir = function()
     return function()
-        print("usedir:",rot_limit)
         if rot_limit < 0.1 and rot_limit > -0.1 then
             print(1)
             return 1
@@ -86,10 +98,10 @@ end
 local savedata = function ()
     if mode == 1 then
         local recordfile = io.open("data/ReguDataRotate.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",math.tan(rotate_now*98/power)," ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", rotate_now, " ", rot_limit, " ", dir_car, "\n")
+        recordfile:write(" ",player.num("Leader")," ",math.tan(rotate_now*98/power)," ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", rotate_now, " ", rot_limit, " ", dir_car, " ", player.dir("Leader"), " ", power, "\n")
     else
         local recordfile = io.open("data/ReguDataSlide.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",math.tan(slide_now/power),    " ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", slide_now, " ", power, " ", dir_car,"\n")
+        recordfile:write(" ",player.num("Leader")," ",math.tan(slide_now/power),    " ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", slide_now, " ", power, " ", dir_car, " ", player.dir("Leader"), "\n")
     end
 end
 
@@ -125,6 +137,10 @@ firstState = "fetchBall",
                     if(power > power_max) then
                         return "waitforball"
                     end
+                    if regutest then
+                        rot_test = (math.random()-0.5)*18
+                        return "testrugulation"
+                    end
                     return "turn2"
                 end
             end
@@ -158,9 +174,11 @@ firstState = "fetchBall",
         if not player.infraredOn("Leader") then
                 return "fetchBall"
         else
-            if player.toTargetDist("Leader")< 200 then
+            print(player.toTargetDist("Leader"), math.abs(player.dir("Leader")-TURN_DIR), math.abs(player.imuRotVel("Leader")),  math.abs(player.rotVel("Leader")))
+            if player.toTargetDist("Leader")< 200 and math.abs(player.dir("Leader")-TURN_DIR)<0.1 and math.abs(player.imuRotVel("Leader"))<0.3 then
                 if ball.toPointDist(PLACE_POS[2]) < 200 and player.infraredOn("Leader") then
                     slide_limit = slide_limit + 300
+                    theta = (math.random()-0.5)*2*math.pi
                     if(slide_limit > 3900) then
                         power = power + 500
                         slide_limit = 500
@@ -183,13 +201,13 @@ firstState = "fetchBall",
         debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-500),string.format("slidelimit%.2f",slide_limit),1)
         debugEngine:gui_debug_msg(CGeoPoint:new_local(-1500,-650),string.format("power%.2f",power),1)
         if player.kickBall("Leader") then
-            return "record"
+            return "recordslide"
         end
         if not player.infraredOn("Leader") then
             return "fetchBall"
         end
     end,
-    Leader = task.openSpeed(0, slidespeed(), 0, use_dir(), getflag(), SHOOT_POS, getpower()),
+    Leader = task.openSpeed(slidespeed(0), slidespeed(1), 0, 1, getflag(), SHOOT_POS, getpower()),
     match = "{L}"
 },
 
@@ -204,10 +222,31 @@ firstState = "fetchBall",
     match = "{L}"
 },
 
+["recordslide"] = {
+    switch = function()
+        if math.abs(ball.posX()-kick_x) > 1000 then
+            savedata()
+            return "fetchBall"
+        end
+    end,
+    Leader = task.openSpeed(slidespeed(0), slidespeed(1), 0, 1, _, SHOOT_POS, getpower()),
+    match = "{L}"
+},
+
 ["waitforball"] = {
     switch = function()
     end,
     Leader = task.stop(),
+    match = "{L}"
+},
+
+["testrugulation"] = {
+    switch = function()
+        if player.kickBall("Leader") or not player.infraredOn("Leader") then
+            return "fetchBall"
+        end
+    end,
+    Leader = task.openSpeed(0, 0, rottest(), 0, flag.dribble+flag.kick, SHOOT_POS, 9000),
     match = "{L}"
 },
 
@@ -219,3 +258,4 @@ applicable ={
 attribute = "attack",
 timeout = 99999
 }
+

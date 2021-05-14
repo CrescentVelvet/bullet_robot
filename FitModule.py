@@ -85,8 +85,8 @@ def Poly1d(x, y, t, d, isShow, needB=True):
     sort_idxs = np.argsort(x[:,0])
     A_col0_sorted = x[sort_idxs] # 秩为2的数组
     if isShow:
-        print('linear_fit', linear_fit)
-        print('ransac_fit', ransac_fit)
+        # print('linear_fit', linear_fit)
+        # print('ransac_fit', ransac_fit)
         plt.plot(x[:,int(needB)], y[:,0], '.', color='black', alpha=0.5, label='data')
         plt.plot(x[ransac_data['inliers'],int(needB)], y[ransac_data['inliers'],0], 'bx', color='Crimson', alpha=1.0, label='RANSAC data')
         plt.plot(A_col0_sorted[:,int(needB)], np.dot(A_col0_sorted,ransac_fit)[:,0], color='chocolate', alpha=0.5, linewidth=5, label='RANSAC fit' )
@@ -113,8 +113,8 @@ def Poly2d(x, y, t, d, isShow):
     sort_idxs = np.argsort(x[:,0])
     A_col0_sorted = x[sort_idxs] # 秩为2的数组
     if isShow:
-        print('linear_fit', linear_fit)
-        print('ransac_fit', ransac_fit)
+        # print('linear_fit', linear_fit)
+        # print('ransac_fit', ransac_fit)
         plt.plot(x[:,1], y[:,0], '.', color='black', alpha=0.5, label='data')
         plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', color='Crimson', alpha=1.0, label='RANSAC data')
         plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], color='chocolate', alpha=0.5, linewidth=5, label='RANSAC fit' )
@@ -140,8 +140,8 @@ def Poly3d(x, y, t, d, isShow):
     sort_idxs = np.argsort(x[:,0])
     A_col0_sorted = x[sort_idxs] # 秩为2的数组
     if isShow:
-        print('linear_fit', linear_fit)
-        print('ransac_fit', ransac_fit)
+        # print('linear_fit', linear_fit)
+        # print('ransac_fit', ransac_fit)
         plt.plot(x[:,1], y[:,0], '.', color='black', alpha=0.5, label='data')
         plt.plot(x[ransac_data['inliers'],1], y[ransac_data['inliers'],0], 'bx', color='Crimson', alpha=1.0, label='RANSAC data')
         plt.plot(A_col0_sorted[:,1], np.dot(A_col0_sorted,ransac_fit)[:,0], color='chocolate', alpha=0.5, linewidth=5, label='RANSAC fit' )
