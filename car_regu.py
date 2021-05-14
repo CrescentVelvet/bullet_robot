@@ -112,7 +112,7 @@ class CarRegulation:
             ransac_fit = FitModule.Poly2d(X_exact, Y_exact, 0.005, 10, True)
         elif flag == 3:
             ransac_fit = FitModule.Poly3d(X_exact, Y_exact, 0.005, 10, True)
-            print(("double error_me = std::abs({}*a_rot2vell*a_rot2vell*a_rot2vell+{}*a_rot2vell*a_rot2vell+{}*a_rot2vell+{});").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
+            print(("double fit_ball2car = std::abs({}*act_rot2vell*act_rot2vell*act_rot2vell+{}*act_rot2vell*act_rot2vell+{}*act_rot2vell+{});").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
         else:
             print("error in ransac flag")
         plot_X = np.arange(min(X_exact), max(X_exact), 0.01)
