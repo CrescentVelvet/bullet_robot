@@ -112,7 +112,7 @@ class CarRegulation:
             ransac_fit = FitModule.Poly2d(X_exact, Y_exact, 0.005, 10, True)
         elif flag == 3:
             ransac_fit = FitModule.Poly3d(X_exact, Y_exact, 0.005, 10, True)
-            print(("double fit_ball2car = std::abs({}*act_rot2vell*act_rot2vell*act_rot2vell+{}*act_rot2vell*act_rot2vell+{}*act_rot2vell+{});").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
+            print(("double fit_ball2car = {}*act_rot2vell*act_rot2vell*act_rot2vell+{}*act_rot2vell*act_rot2vell+{}*act_rot2vell+{});").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
         else:
             print("error in ransac flag")
         plot_X = np.arange(min(X_exact), max(X_exact), 0.01)
@@ -143,6 +143,6 @@ class RegulationTest:
                 car_data.assign(t_id, t_vel, t_dir)
         # car_data.draw2D(3)
         car_data.ransac(3)
-R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_all.txt"
+R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/newReguDataRotate.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
 RegulationTest.read(R_address)

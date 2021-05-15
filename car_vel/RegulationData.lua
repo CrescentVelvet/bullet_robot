@@ -19,8 +19,8 @@ local kick_x = 0.0
 local kick_y = 0.0
 local dir_car = 0.0
 -- 2 for Slide move, 1 for Rotate move
-local mode = 2
-local regutest = false
+local mode = 1
+local regutest = true
 local theta = 0
 
 function getpower()
@@ -98,10 +98,10 @@ end
 local savedata = function ()
     if mode == 1 then
         local recordfile = io.open("data/ReguDataRotate.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",math.tan(rotate_now*98/power)," ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", rotate_now, " ", rot_limit, " ", dir_car, " ", player.dir("Leader"), " ", power, "\n")
+        recordfile:write(" ",player.num("Leader")," ",math.atan(rotate_now*98/power)," ",math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car, " ", rotate_now, " ", rot_limit, " ", dir_car, " ", player.dir("Leader"), " ", power, "\n")
     else
         local recordfile = io.open("data/ReguDataSlide.txt", "a")
-        recordfile:write(" ",player.num("Leader")," ",math.tan(slide_now/power),    " ",math.tan(math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car), " ", slide_now, " ", power, " ", dir_car, " ", player.dir("Leader"), "\n")
+        recordfile:write(" ",player.num("Leader")," ",math.atan(slide_now/power),    " ",math.atan2((ball.posY()-kick_y),(ball.posX()-kick_x))-dir_car, " ", slide_now, " ", power, " ", dir_car, " ", player.dir("Leader"), "\n")
     end
 end
 
@@ -258,4 +258,3 @@ applicable ={
 attribute = "attack",
 timeout = 99999
 }
-
