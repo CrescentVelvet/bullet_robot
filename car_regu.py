@@ -112,18 +112,21 @@ class CarRegulation:
             ransac_fit = FitModule.Poly2d(X_exact, Y_exact, 0.005, 10, True)
         elif flag == 3:
             ransac_fit = FitModule.Poly3d(X_exact, Y_exact, 0.005, 10, True)
-            print(("double fit_ball2car = {}*act_rot2vell*act_rot2vell*act_rot2vell+{}*act_rot2vell*act_rot2vell+{}*act_rot2vell+{});").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
+            print(("double fit_ball2car = {}*act_rot2vell*act_rot2vell*act_rot2vell+{}*act_rot2vell*act_rot2vell+{}*act_rot2vell+{};").format(ransac_fit.T[0][3],ransac_fit.T[0][2],ransac_fit.T[0][1],ransac_fit.T[0][0]))
         else:
             print("error in ransac flag")
         plot_X = np.arange(min(X_exact), max(X_exact), 0.01)
         plot_fit = np.poly1d(ransac_fit.reshape(1,-1)[0][::-1])
         plot_Y = plot_fit(plot_X)
-        plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='real polyfit')
+        plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='RANSAC fit')
         line_x = np.arange(-0.2, 0.2, 0.01)
-        line_y = np.zeros(len(line_x))
+        tan_y = np.zeros(len(line_x))
+        lin_y = np.zeros(len(line_x))
         for i in range(len(line_x)):
-            line_y[i] = -math.tanh(line_x[i]*20)/6
-        plt.plot(line_x, line_y, color='blue', linewidth=3, label='line fit')
+            tan_y[i] = -math.tanh(line_x[i]*20)/6
+            lin_y[i] = 1 * line_x[i]
+        plt.plot(line_x, tan_y, color='blue', alpha=1.0, linewidth=3, label='tan fit')
+        plt.plot(line_x, lin_y, color='blue', alpha=1.0, linewidth=3, label='lin fit')
         plt.legend() # 添加图例
         plt.xlabel('rovel/power')
         plt.ylabel('balldir-cardir')
@@ -143,6 +146,6 @@ class RegulationTest:
                 car_data.assign(t_id, t_vel, t_dir)
         # car_data.draw2D(3)
         car_data.ransac(3)
-R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/newReguDataRotate.txt"
+R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_reset.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
 RegulationTest.read(R_address)
