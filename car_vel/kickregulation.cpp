@@ -249,18 +249,21 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
     if(wyf_tanVel * wyf_tanVel > needBallVel * needBallVel) {
         return 0.0;
     }
+    double imu_rovel = kicker.ImuRotateVel();
     double hcr_rot2vell = std::asin(tanVel / needBallVel);
     double act_rot2vell = std::asin(wyf_tanVel / needBallVel);
     double act_ball2car = std::asin(needTanVel / needBallVel);
-    double fit_ball2car = std::abs(16.023600549358974*act_rot2vell*act_rot2vell*act_rot2vell-0.535063147169339*act_rot2vell*act_rot2vell-0.7343726089756484*act_rot2vell+0.011217253743703446);
+    double len_ball2car = vel2targetDir;
+    double fit_ball2car = 66.5886879698936*act_rot2vell*act_rot2vell*act_rot2vell-0.5064795527640488*act_rot2vell*act_rot2vell-2.0434019330089854*act_rot2vell+0.02063418647997339);
     double error_wyf = std::abs(Utils::Normalize(fit_ball2car - act_ball2car));
     double error_imu = std::abs(Utils::Normalize(act_ball2car - hcr_rot2vell));
     double error_wyf_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(wyf_tanVel_img / needBallVel)));
     double error_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(tanVel_img / needBallVel)));
+//    tolerance = imu_rovel * tolerance;
     if(DEBUG_PRINT){
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1200), QString("kickCheck").toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1200), QString("imu_rovel: %1").arg(imu_rovel).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1000), QString("hcr_rot2vell: %1 act_rot2vell: %2").arg(hcr_rot2vell).arg(act_rot2vell).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,800), QString("act_ball2car: %1 fit_ball2car: %2").arg(act_ball2car).arg(fit_ball2car).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,800), QString("act_ball2car: %1 len_ball2car: %2 fit_ball2car: %3").arg(act_ball2car).arg(len_ball2car).arg(fit_ball2car).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,600), QString("error_wyf: %1 error_imu: %2").arg(error_wyf).arg(error_imu).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,400), QString("error_wyf_img: %1 error_img: %2").arg(error_wyf_img).arg(error_img).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,200), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
