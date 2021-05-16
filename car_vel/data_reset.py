@@ -39,7 +39,51 @@ import math
 #         f.write(' ')
 #         f.write(str(raw_dircar[i]))
 #         f.write('\n')
-with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_old.txt", "r") as f:
+# with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_old.txt", "r") as f:
+#     raw_0 = []
+#     raw_1 = []
+#     raw_2 = []
+#     raw_data = f.readlines()
+#     for line in raw_data:
+#         line_data = line.split()
+#         if line_data[0] != '\n':
+#             raw_0.append(int(float(line_data[0].strip())))
+#         if line_data[1] != '\n':
+#             raw_1.append(float(line_data[1].strip()))
+#         if line_data[2] != '\n':
+#             raw_2.append(float(line_data[2].strip()))
+# with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_reset.txt", "w") as f:
+#     for i in range(len(raw_0)):
+#         f.write(' ')
+#         f.write(str(raw_0[i]))
+#         f.write(' ')
+#         f.write(str(math.atan(math.atan(raw_1[i]))))
+#         f.write(' ')
+#         f.write(str(math.atan(raw_2[i])))
+#         f.write('\n')
+# with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_reset.txt", "r") as f:
+#     raw_0 = []
+#     raw_1 = []
+#     raw_2 = []
+#     raw_data = f.readlines()
+#     for line in raw_data:
+#         line_data = line.split()
+#         if line_data[0] != '\n':
+#             raw_0.append(int(float(line_data[0].strip())))
+#         if line_data[1] != '\n':
+#             raw_1.append(float(line_data[1].strip()))
+#         if line_data[2] != '\n':
+#             raw_2.append(float(line_data[2].strip()))
+# with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_rovelbig.txt", "w") as f:
+#     for i in range(len(raw_0)):
+#         f.write(' ')
+#         f.write(str(raw_0[i]))
+#         f.write(' ')
+#         f.write(str(math.atan(math.tan(raw_1[i])*10)))
+#         f.write(' ')
+#         f.write(str(raw_2[i]))
+#         f.write('\n')
+with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_reset.txt", "r") as f:
     raw_0 = []
     raw_1 = []
     raw_2 = []
@@ -52,12 +96,12 @@ with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_old
             raw_1.append(float(line_data[1].strip()))
         if line_data[2] != '\n':
             raw_2.append(float(line_data[2].strip()))
-with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_reset.txt", "w") as f:
+with open("/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_newrovelbig.txt", "w") as f:
     for i in range(len(raw_0)):
         f.write(' ')
         f.write(str(raw_0[i]))
         f.write(' ')
-        f.write(str(math.atan(math.atan(raw_1[i]))))
+        f.write(str(math.atan(math.tan(raw_1[i])*abs(math.tan(raw_1[i])))))
         f.write(' ')
-        f.write(str(math.atan(raw_2[i])))
+        f.write(str(raw_2[i]))
         f.write('\n')

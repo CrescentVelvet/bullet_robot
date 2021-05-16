@@ -119,14 +119,20 @@ class CarRegulation:
         plot_fit = np.poly1d(ransac_fit.reshape(1,-1)[0][::-1])
         plot_Y = plot_fit(plot_X)
         plt.plot(plot_X, plot_Y, color='red', alpha=1.0, linewidth=3, label='RANSAC fit')
-        line_x = np.arange(-0.2, 0.2, 0.01)
+        line_x = np.arange(-0.15, 0.15, 0.01)
         tan_y = np.zeros(len(line_x))
         lin_y = np.zeros(len(line_x))
+        ran_y = np.zeros(len(line_x))
+        ran2_y = np.zeros(len(line_x))
         for i in range(len(line_x)):
             tan_y[i] = -math.tanh(line_x[i]*20)/6
-            lin_y[i] = 1 * line_x[i]
-        plt.plot(line_x, tan_y, color='blue', alpha=1.0, linewidth=3, label='tan fit')
-        plt.plot(line_x, lin_y, color='blue', alpha=1.0, linewidth=3, label='lin fit')
+            lin_y[i] = 0.2 * line_x[i]
+            ran_y[i] = 19.190577857534688*line_x[i]*line_x[i]*line_x[i]-0.2924188081034752*line_x[i]*line_x[i]+0.3329685836993624*line_x[i]
+            ran2_y[i] = (0.27734032759846383*line_x[i]*line_x[i]*line_x[i]-0.043449314014431195*line_x[i]*line_x[i])*1
+        plt.plot(line_x, tan_y, color='green', alpha=1.0, linewidth=3, label='tan fit')
+        plt.plot(line_x, lin_y, color='green', alpha=1.0, linewidth=3, label='lin fit')
+        # plt.plot(line_x, ran_y, color='blue', alpha=1.0, linewidth=3, label='ran fit')
+        plt.plot(line_x, ran2_y, color='blue', alpha=1.0, linewidth=3, label='ran2 fit')
         plt.legend() # 添加图例
         plt.xlabel('rovel/power')
         plt.ylabel('balldir-cardir')
@@ -146,6 +152,6 @@ class RegulationTest:
                 car_data.assign(t_id, t_vel, t_dir)
         # car_data.draw2D(3)
         car_data.ransac(3)
-R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_reset.txt"
+R_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataRotate_newrovelbig.txt"
 S_address = "/home/zjunlict-vision-1/Desktop/czk/Kun2/ZBin/data/ReguDataSlide.txt"
 RegulationTest.read(R_address)

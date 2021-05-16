@@ -209,7 +209,7 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
         needBallVel = std::sqrt(9800.0 * needBallVel / (2 * std::tan(DRIBBLE_CHIP_DIR)));
     }
     if(!IS_SIMULATION) {
-        vel2targetDir = Utils::Normalize(needDir - kicker.ImuDir());
+        vel2targetDir = Utils::Normalize(needDir) - Utils::Normalize(kicker.ImuDir());
         vel2targetDir_img = Utils::Normalize(needDir - kicker.Dir());
     }
     else {
@@ -223,8 +223,8 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
     float vel2faceDir_img;
     float tanVel_img, wyf_tanVel_img;
     if(!IS_SIMULATION){
-        vel2faceDir = Utils::Normalize(kicker.RawVel().dir() - kicker.ImuDir());
-        vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
+        vel2faceDir = Utils::Normalize(kicker.RawVel().dir()) - Utils::Normalize(kicker.ImuDir());
+        vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir()) - Utils::Normalize(kicker.Dir());
     }
     else {
         vel2faceDir = vel2faceDir_img = Utils::Normalize(kicker.RawVel().dir() - kicker.Dir());
@@ -242,30 +242,57 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
     if(!IS_SIMULATION) {
         hcr_ballRotVel *= std::abs(kicker.ImuRotateVel()) / 1.3;
     }
-    wyf_tanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + wyf_ballRotVel;
+    double param_fit, param_tanvel; // 参数
+    if(IS_SIMULATION) {
+        param_fit = 1.0;
+        param_tanvel = 1.0;
+    }
+    else {
+        param_fit = 1.0;
+        param_tanvel = 0.1;
+    }
+    wyf_tanVel = param_tanvel * kicker.RawVel().mod() * std::sin(vel2faceDir) + wyf_ballRotVel;
     wyf_tanVel_img = kicker.RawVel().mod() * std::sin(vel2faceDir_img) + wyf_ballRotVel;
     tanVel = kicker.RawVel().mod() * std::sin(vel2faceDir) + hcr_ballRotVel;
     tanVel_img = kicker.RawVel().mod() * std::sin(vel2faceDir_img) + hcr_ballRotVel;
     if(wyf_tanVel * wyf_tanVel > needBallVel * needBallVel) {
         return 0.0;
     }
-    double param = 1.0;
-    double imu_rovel = kicker.ImuRotateVel();
+    double imu_rovel = kicker.ImuRotateVel() * PARAM::Vehicle::V2::PLAYER_CENTER_TO_BALL_CENTER;
     double hcr_rot2vell = std::asin(tanVel / needBallVel);
     double act_rot2vell = std::asin(wyf_tanVel / needBallVel);
-    double act_ball2car = std::asin(needTanVel / needBallVel);
-    double len_ball2car = vel2targetDir;
-    double fit_ball2car = -1*param*(19.190577857534688*act_rot2vell*act_rot2vell*act_rot2vell+-0.2924188081034752*act_rot2vell*act_rot2vell+-0.8329685836993624*act_rot2vell);
-    double error_wyf = std::abs(Utils::Normalize(fit_ball2car - act_ball2car));
+    double big_rot2vell = std::atan2(wyf_tanVel * wyf_tanVel, std::sqrt(needBallVel*needBallVel-wyf_tanVel*wyf_tanVel+wyf_tanVel*wyf_tanVel*wyf_tanVel*wyf_tanVel));
+//    double act_ball2car = std::asin(needTanVel / needBallVel);
+    double act_ball2car = vel2targetDir;
+    double fit_ball2car = param_fit * big_rot2vell * imu_rovel / std::abs(imu_rovel);
+//    double fit_ball2car = 0.27734032759846383*big_rot2vell*big_rot2vell*big_rot2vell+-0.043449314014431195*big_rot2vell*big_rot2vell;
+//    double fit_ball2car = param*(19.190577857534688*act_rot2vell*act_rot2vell*act_rot2vell-0.2924188081034752*act_rot2vell*act_rot2vell+0.3329685836993624*act_rot2vell);
+//    double fit_ball2car = param*(30.190577857534688*act_rot2vell*act_rot2vell*act_rot2vell+-0.2924188081034752*act_rot2vell*act_rot2vell+-0.8329685836993624*act_rot2vell);
+//    double fit_ball2car = param*(19.190577857534688*act_rot2vell*act_rot2vell*act_rot2vell+-0.2924188081034752*act_rot2vell*act_rot2vell+-0.8329685836993624*act_rot2vell);
+//    double error_wyf = std::abs(Utils::Normalize(act_ball2car - fit_ball2car));
+    double error_wyf = std::abs(Utils::Normalize(std::abs(act_ball2car) - std::abs(fit_ball2car)));
     double error_imu = std::abs(Utils::Normalize(act_ball2car - hcr_rot2vell));
     double error_wyf_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(wyf_tanVel_img / needBallVel)));
     double error_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(tanVel_img / needBallVel)));
-//    tolerance = imu_rovel * tolerance;
+//    if (std::abs(imu_rovel) < 3 ) {
+//        tolerance = tolerance / 5;
+//    }
+//    else if (std::abs(imu_rovel) > 3) {
+//        tolerance = tolerance / 3;
+//    }
+//    else if (std::abs(imu_rovel) > 6) {
+//        tolerance = tolerance / 1;
+//    }
+    tolerance = tolerance * std::abs(imu_rovel) / 1000;
     if(DEBUG_PRINT){
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1200), QString("error_wyf: %1 error_imu: %2").arg(error_wyf).arg(error_imu).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,2000), QString("KickerVel: %1 wyf_ballRotVel: %2").arg(kicker.RawVel().mod() * std::sin(vel2faceDir)).arg(wyf_ballRotVel).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1800), QString("needDir: %1 kickerDir: %2 kickerDir_img: %3").arg(needDir).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1600), QString("wyf_tanVel: %1 needBallVel: %2").arg(wyf_tanVel).arg(needBallVel).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1400), QString("error_wyf: %1 error_imu: %2").arg(error_wyf).arg(error_imu).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1200), QString("big_rot2vell: %1 error_imu: %2").arg(big_rot2vell).arg(error_imu).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1000), QString("act_ball2car: %1 hcr_rot2vell: %2").arg(act_ball2car).arg(hcr_rot2vell).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,800), QString("fit_ball2car: %1 act_rot2vell: %2").arg(fit_ball2car).arg(act_rot2vell).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,600), QString("imu_rovel: %1 len_ball2car: %2").arg(imu_rovel).arg(len_ball2car).toLatin1(),COLOR_GREEN);
+        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,600), QString("imu_rovel: %1 tolerance: %2").arg(imu_rovel).arg(tolerance).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,400), QString("error_wyf_img: %1 error_img: %2").arg(error_wyf_img).arg(error_img).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,200), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,0), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_GREEN);
@@ -274,7 +301,8 @@ double CKickRegulation::kickCheck(int player, double needBallVel, double needDir
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-600), QString("ImuRotateVel: %1 ImuDir: %2 RawRotVel: %3 RotVel: %4 Dir: %5").arg(kicker.ImuRotateVel()).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawRotVel()).arg(kicker.RotVel()).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
     }
     double tolerance_img = 2 * tolerance;
-    if((error_wyf > tolerance/2)||(error_wyf_img > tolerance_img)) {
+//    if(((error_wyf > tolerance) && (std::abs(act_ball2car) > std::abs(fit_ball2car)))||(error_wyf_img > tolerance_img)) {
+    if( ( error_wyf > tolerance ) || ( act_ball2car*imu_rovel < 0 ) ) {
         return 0.0;
     }
     if(isChip){
