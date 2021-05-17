@@ -200,30 +200,32 @@ double CKickRegulation::regulateCheck(int player, double needBallVel, double nee
     double error_imu = std::abs(Utils::Normalize(act_ball2car - now_rot2vell));
     double error_temp_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(temp_tanVel_img / needBallVel)));
     double error_img = std::abs(Utils::Normalize(std::asin(needTanVel_img / needBallVel) - std::asin(tanVel_img / needBallVel)));
-    tolerance = tolerance * std::abs(imu_rovel) / 1500;
+    if (std::abs(imu_rovel) > 500.0) {
+        tolerance = tolerance * std::abs(imu_rovel) / 1500;
+    }
 //    if (imu_rovel > 800) {
 //        tolerance = 5 * tolerance;
 //    }
     if(DEBUG_PRINT){
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1400), QString("real_kickerDir: %1 kickerDir: %2").arg(real_kickerDir).arg(kickerDir).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1200), QString("old_fit: %1 temp_ballRotVel: %2").arg(old_fit).arg(temp_ballRotVel).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1000), QString("KickerVel: %1 temp_ballRotVel: %2").arg(kicker.RawVel().mod() * std::sin(vel2faceDir)).arg(temp_ballRotVel).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,800), QString("needDir: %1 kickerDir: %2 kickerDir_img: %3").arg(needDir).arg(kickerDir).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,600), QString("temp_tanVel: %1 needBallVel: %2").arg(temp_tanVel).arg(needBallVel).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,400), QString("error_temp: %1 error_imu: %2").arg(error_temp).arg(error_imu).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,200), QString("big_rot2vell: %1 error_imu: %2").arg(big_rot2vell).arg(error_imu).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,0), QString("act_ball2car: %1 now_rot2vell: %2").arg(act_ball2car).arg(now_rot2vell).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-200), QString("fit_ball2car: %1 act_rot2vell: %2").arg(fit_ball2car).arg(act_rot2vell).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1400), QString("real_kickerDir: %1 kickerDir: %2").arg(real_kickerDir).arg(kickerDir).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1200), QString("old_fit: %1 temp_ballRotVel: %2").arg(old_fit).arg(temp_ballRotVel).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,1000), QString("KickerVel: %1 temp_ballRotVel: %2").arg(kicker.RawVel().mod() * std::sin(vel2faceDir)).arg(temp_ballRotVel).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,800), QString("needDir: %1 kickerDir: %2 kickerDir_img: %3").arg(needDir).arg(kickerDir).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,600), QString("temp_tanVel: %1 needBallVel: %2").arg(temp_tanVel).arg(needBallVel).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,400), QString("error_temp: %1 error_imu: %2").arg(error_temp).arg(error_imu).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,200), QString("big_rot2vell: %1 error_imu: %2").arg(big_rot2vell).arg(error_imu).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,0), QString("act_ball2car: %1 now_rot2vell: %2").arg(act_ball2car).arg(now_rot2vell).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-200), QString("fit_ball2car: %1 act_rot2vell: %2").arg(fit_ball2car).arg(act_rot2vell).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-400), QString("imu_rovel: %1 tolerance: %2").arg(imu_rovel).arg(tolerance).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-600), QString("error_temp_img: %1 error_img: %2").arg(error_temp_img).arg(error_img).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-800), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(kickerDir).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-1000), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_GREEN);
-        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-1200), QString("realvp: %1   realvt: %2 2veldir:%3").arg(paralVel).arg(tanVel).arg(vel2faceDir).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-600), QString("error_temp_img: %1 error_img: %2").arg(error_temp_img).arg(error_img).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-800), QString("needDir: %1  kickerDir: %2 velDir: %3").arg(needDir).arg(kickerDir).arg(kicker.RawVel().dir()).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-1000), QString("needvp: %1  needvt: %2 2targetdir: %3").arg(needParalVel).arg(needTanVel).arg(vel2targetDir).toLatin1(),COLOR_GREEN);
+//        GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-1200), QString("realvp: %1   realvt: %2 2veldir:%3").arg(paralVel).arg(tanVel).arg(vel2faceDir).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-1400), QString("ballrot: %1 error_imu: %2 error_img: %3").arg(now_ballRotVel).arg(error_imu).arg(error_img).toLatin1(),COLOR_GREEN);
         GDebugEngine::Instance()->gui_debug_msg(CGeoPoint(0,-1600), QString("ImuRotateVel: %1 ImuDir: %2 RawRotVel: %3 RotVel: %4 Dir: %5").arg(kicker.ImuRotateVel()).arg(Utils::Normalize(kicker.ImuDir())).arg(kicker.RawRotVel()).arg(kicker.RotVel()).arg(kicker.Dir()).toLatin1(),COLOR_GREEN);
     }
     double tolerance_img = 2 * tolerance;
-    if( ( error_imu > tolerance ) || ( act_ball2car*imu_rovel < 0 ) ) {
+    if(error_imu > tolerance || (imu_rovel > 100.0 && act_ball2car * imu_rovel < 0)) {
         return 0.0;
     }
     if(isChip){
