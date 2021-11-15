@@ -5,11 +5,11 @@
 ```
 由尺寸计算转动惯量
 ```python
-python inertia_calculator.py
+python dancer_urdf_model/inertia_calculator.py
 ```
 由转动惯量计算尺寸
 ```python
-python length_calculator.py
+python dancer_urdf_model/length_calculator.py
 ```
 [Gym安装教程](https://blog.csdn.net/ms961516792/article/details/79122914)
 
@@ -28,6 +28,7 @@ IP address	210.32.151.94
 ```
 ## DDPG算法
 DDPG用来解决连续动作问题
+
 [baselines3知乎教程](https://zhuanlan.zhihu.com/p/149771220)
 [baselines3代码](https://github.com/DLR-RM/stable-baselines3)
 [baselines3官方文档](https://stable-baselines3.readthedocs.io/en/master/)
@@ -81,8 +82,7 @@ pip uninstall tensorboard
 pip uninstall tensorboard-plugin-wit
 pip install tensorboard
 ```
-生成网址http://localhost:6006/
-进入即可查看，30s刷新一次
+生成网址http://localhost:6006/进入即可查看，30s刷新一次
 ## 文件说明
 搭建机器学习环境
 ```
@@ -120,14 +120,13 @@ car_flat.py
 car_move.py
 car_regu.py
 ```
-强化学习代码，无用，存储懒得删除的代码
+强化学习代码，无用，懒得删除的代码
 ```
 train.py
 ```
 ## 效果图片
-<img width=850 src="https://img-blog.csdnimg.cn/20210401215002255.png" alt="模型爬起站立"/>
 模型爬起站立
-
+<img width=850 src="https://img-blog.csdnimg.cn/20210401215002255.png" alt="模型爬起站立"/>
 ## motion代码
 一些注释
 ```
@@ -144,13 +143,23 @@ gcc ./d_test.c -o ./d_test.out
 ```
 ## motion思路
 motion_hub.cpp里527行WALK_TO_BALL调用GenerateNewGait函数，对步态单元tmp_gait和其序列gait_queue进行赋值
-motion_hub.cpp是整体运动控制,包含了很多状态与条件.walk_test.cpp是测试步行的简化版.
+
+motion_hub.cpp是整体运动控制,包含了很多状态与条件.walk_test.cpp是测试步行的简化版
+
 motion_hub.cpp里1302行GUARD_LEFT调用ServoPublish函数，传入单步函数GetOneStep计算结果，发送控制信号给关节舵机
+
 dmotion_math.hpp里327行的ServoPublish函数，对关节舵机序列cur_servo_angles进行赋值
+
 walk_test.cpp里225行调用PendulumWalk.cpp里的步态函数GiveAStepTick，传入gait_queue的首位，再删除gait_queue首位
+
 GiveAStepTick调用GiveAStep函数和GiveATick函数
+
 GiveAStep调用OneFootLanding.cpp里的单步函数GetOneStep
+
 GiveAStep调用ThreeInterpolation.cpp里的三次插值曲线函数GetPoints和EvalHere和Calculate
+
 EvalHere调用Polynomial.hpp里的计算多项式函数compute
+
 compute调用PolynomialInternal.hpp里的迭代函数compute
+
 Calculate调用Eigen库的矩阵LU分解函数lu().solve
